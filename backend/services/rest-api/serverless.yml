@@ -1,0 +1,43 @@
+org: informatik
+app: umfragetool
+service: rest-api
+frameworkVersion: '3'
+
+useDotenv: true
+
+provider:
+  name: aws
+  runtime: python3.9
+  stage: dev
+  region: eu-central-1
+  environment:
+    # Environment variables scripts can use with os.environ[]
+    DATABASE_URL: ${env:DATABASE_URL} # Only used for local development defined in .env file
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - secretsmanager:GetSecretValue
+      Resource: arn:aws:secretsmanager:us-east-1:123456789012:secret:prod/rds/db-credentials-abc123 # EXAMPLE REPLACE WITH ACTUAL VALUE
+
+# every function defined in the handler.py file must be listed here (if it should be deployed)
+functions:
+  createDatabase:
+    handler: handler.create_database
+    events:
+      - httpApi:
+          method: POST
+          path: /database
+  addData:
+    handler: handler.add_data 
+    events:
+      - httpApi:
+          method: POST
+          path: /data
+        
+plugins:
+  - serverless-python-requirements # Plugin to handle python requirements
+
+custom:
+  pythonRequirements: 
+    dockerizePip: true
+
