@@ -1,9 +1,7 @@
 import json
-import os
-from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from models import Base, Administrator
-from utils.database import create_database_connection, create_local_engine
+from backend.models.models import Base, Administrator
+from backend.utils.database import create_local_engine
 
 engine = create_local_engine()
 
