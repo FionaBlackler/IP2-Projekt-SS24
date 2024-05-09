@@ -2,13 +2,14 @@ import json
 import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from models import Base, Administrator 
+from models import Base, Administrator
 from utils.database import create_database_connection, create_local_engine
 
 engine = create_local_engine()
 
+
 # Database connection with aws secrets manager
-#engine, Session = create_database_connection()
+# engine, Session = create_database_connection()
 
 def create_database(event, context):
     Base.metadata.create_all(engine)
@@ -20,6 +21,7 @@ def create_database(event, context):
         "body": json.dumps(body)
     }
     return response
+
 
 def add_data(event, context):
     Session = sessionmaker(bind=engine)
