@@ -4,7 +4,7 @@ import boto3
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from botocore.exceptions import ClientError
-from models import Base, Administrator
+
 
 def get_secret(secret_name, region_name="eu-central-1"):
     """Retrieve a secret from AWS Secrets Manager"""
@@ -18,6 +18,7 @@ def get_secret(secret_name, region_name="eu-central-1"):
     else:
         secret = get_secret_value_response["SecretString"]
         return json.loads(secret)
+
 
 def create_database_connection():
     """Create a database connection using credentials stored in AWS Secrets Manager"""
@@ -37,6 +38,7 @@ def create_database_connection():
 
     Session = sessionmaker(bind=engine)
     return engine, Session
+
 
 def create_local_engine():
     # Database connection with local database
