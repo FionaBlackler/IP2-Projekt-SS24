@@ -1,4 +1,5 @@
 import json
+import os
 import boto3
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -36,3 +37,9 @@ def create_database_connection():
 
     Session = sessionmaker(bind=engine)
     return engine, Session
+
+def create_local_engine():
+    # Database connection with local database
+    DATABASE_URL = os.environ['DATABASE_URL']
+    engine = create_engine(DATABASE_URL, echo=True)
+    return engine

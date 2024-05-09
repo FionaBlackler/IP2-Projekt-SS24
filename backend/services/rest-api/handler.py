@@ -3,11 +3,9 @@ import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from models import Base, Administrator 
-from utils.database import create_database_connection
+from utils.database import create_database_connection, create_local_engine
 
-# Database connection with local database
-DATABASE_URL = os.environ['DATABASE_URL']
-engine = create_engine(DATABASE_URL, echo=True)
+engine = create_local_engine()
 
 # Database connection with aws secrets manager
 #engine, Session = create_database_connection()
