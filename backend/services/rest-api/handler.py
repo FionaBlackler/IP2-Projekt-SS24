@@ -7,7 +7,6 @@ from utils.database import create_database_connection, create_local_engine
 
 engine = create_local_engine()
 
-
 # Database connection with aws secrets manager
 # engine, Session = create_database_connection()
 
