@@ -3,3 +3,4 @@ pymysql
 mysql
 mysqlclient
 mysql-connector-python
+boto3

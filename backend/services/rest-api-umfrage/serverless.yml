@@ -20,16 +20,26 @@ provider:
       Resource: arn:aws:secretsmanager:us-east-1:123456789012:secret:prod/rds/db-credentials-abc123 # EXAMPLE REPLACE WITH ACTUAL VALUE
 
 functions:
-  hello:
+  deleteUmfrageById:
     handler: handler.deleteUmfrageById
     events:
       - httpApi:
           path: /umfrage/{id}
           method: delete
-
+  createSession:
+    handler: handler.createSession
+    events:
+      - httpApi:
+          path: /session/{id}
+          method: post
 plugins:
   - serverless-python-requirements # Plugin to handle python requirements
 
 custom:
   pythonRequirements:
     dockerizePip: true
+
+package:
+  include:
+    - ../models/**
+    - ../utils/**

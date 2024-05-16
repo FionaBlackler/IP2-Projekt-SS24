@@ -1,6 +1,6 @@
 org: informatik
 app: umfragetool
-service: rest-api
+service: db-setup
 frameworkVersion: '3'
 
 useDotenv: true
@@ -22,18 +22,19 @@ provider:
 # every function defined in the handler.py file must be listed here (if it should be deployed)
 functions:
   createDatabase:
-    handler: handler.create_database
+    handler: handler.createDatabase
     events:
       - httpApi:
           method: POST
-          path: /database
-  addData:
-    handler: handler.add_data 
+          path: /create-database
+
+  addExampleData:
+    handler: handler.addExampleData 
     events:
       - httpApi:
           method: POST
-          path: /data
-        
+          path: /add-example-data
+
 plugins:
   - serverless-python-requirements # Plugin to handle python requirements
 
@@ -41,3 +42,7 @@ custom:
   pythonRequirements: 
     dockerizePip: true
 
+package:
+  include:
+    - ../models/**
+    - ../utils/**
