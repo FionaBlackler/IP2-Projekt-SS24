@@ -21,11 +21,11 @@ provider:
 
 functions:
   hello:
-    handler: handler.hello
+    handler: handler.deleteUmfrageById
     events:
       - httpApi:
-          path: /
-          method: get
+          path: /umfrage/{id}
+          method: delete
 
 plugins:
   - serverless-python-requirements # Plugin to handle python requirements
