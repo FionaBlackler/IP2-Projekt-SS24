@@ -43,5 +43,5 @@ def create_database_connection():
 def create_local_engine():
     # Database connection with local database
     DATABASE_URL = os.environ['DATABASE_URL']
-    engine = create_engine(DATABASE_URL, echo=True)
+    engine = create_engine(DATABASE_URL, echo=False)
     return engine

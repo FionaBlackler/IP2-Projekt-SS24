@@ -10,11 +10,16 @@ engine = create_local_engine()
 # engine, Session = create_database_connection()
 
 def createDatabase(event, context):
-    """Create database tables"""
-
+    """Drop all existing tables and create new database tables"""
+    
+    # Drop all tables
+    Base.metadata.drop_all(engine)
+    
+    # Create new tables
     Base.metadata.create_all(engine)
+    
     body = {
-        "message": "Database tables created successfully!"
+        "message": "Database tables dropped and created successfully!"
     }
     response = {
         "statusCode": 200,
@@ -35,6 +40,7 @@ def addExampleData(event, context):
     umfrage = Umfrage(
         admin_id=1,
         titel="Example Survey",
+        beschreibung="This is an example survey.",
         erstellungsdatum=datetime(2023, 5, 16),
         status="active",
         administrator=admin
@@ -43,18 +49,22 @@ def addExampleData(event, context):
     # Create Fragen
     frage1 = Frage(
         umfrage=umfrage,
+        local_id=1,
         text="What is the capital of France?",
         typ_id='1',
         bestaetigt="Paris",
-        verneint="Not Paris"
+        verneint="Not Paris",
+        punktzahl=1
     )
     
     frage2 = Frage(
         umfrage=umfrage,
+        local_id=2,
         text="What is 2 + 2?",
         typ_id='1',
         bestaetigt="4",
-        verneint="Not 4"
+        verneint="Not 4",
+        punktzahl=1
     )
     
     # Create AntwortOptionen

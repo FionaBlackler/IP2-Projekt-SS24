@@ -17,8 +17,9 @@ class Administrator(Base):
 class Umfrage(Base):
     __tablename__ = 'umfragen'
     id = Column(Integer, primary_key=True)
-    admin_id = Column(Integer, ForeignKey('administratoren.id', ondelete='CASCADE'))
+    admin_id = Column(Integer, ForeignKey('administratoren.id', ondelete='CASCADE'), nullable=False)
     titel = Column(String(255), nullable=False)
+    beschreibung = Column(Text, nullable=False)
     erstellungsdatum = Column(Date, nullable=False)
     archivierungsdatum = Column(Date)
     status = Column(String(50), nullable=False)
@@ -34,6 +35,7 @@ class Frage(Base):
     umfrage_id = Column(Integer, ForeignKey('umfragen.id', ondelete='CASCADE'))
     text = Column(Text, nullable=False)
     typ_id = Column(CHAR(1), nullable=False)
+    punktzahl = Column(Integer, nullable=False)
     bestaetigt = Column(String(50))
     verneint = Column(String(50))
     umfrage = relationship("Umfrage", back_populates="fragen")
@@ -46,7 +48,6 @@ class AntwortOption(Base):
     id = Column(Integer, primary_key=True)
     text = Column(Text, nullable=False)
     ist_richtig = Column(Boolean, nullable=False)
-    punktzahl = Column(Integer)
     frage_id = Column(Integer, ForeignKey('fragen.id', ondelete='CASCADE'))
     frage = relationship("Frage", back_populates="antwort_optionen")
     teilnehmer_antworten = relationship("TeilnehmerAntwort", back_populates="antwort_option", cascade="all, delete")

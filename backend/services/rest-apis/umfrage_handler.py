@@ -1,9 +1,11 @@
 from datetime import datetime, timedelta
 import json
 import logging
+from jsonschema import SchemaError, ValidationError, validate
 from sqlalchemy.orm import sessionmaker
 
-from models.models import AntwortOption, Sitzung, Umfrage, Frage
+from models.models import Administrator, AntwortOption, Sitzung, Umfrage, Frage
+from models.schemas import umfrage_schema
 from utils.database import create_local_engine
 
 engine = create_local_engine()
@@ -60,33 +62,69 @@ def uploadUmfrage(event, context):
     "accepts the json format in the request body and stores it in the database"
     session = Session()
 
-    # try to parse and map the json to our datamodel, return 400 if it fails
+    # verify admin ID is provided in the path and admin exists
+    if "admin_id" not in event["queryStringParameters"]:
+        return {
+            "statusCode": 400,
+            "body": json.dumps({"message": "admin_id is required"})
+        }
+
+    admin_id = event["queryStringParameters"]["admin_id"]
+    admin = session.query(Administrator).filter(Administrator.id == admin_id).first()
+    if not admin:
+        return {
+            "statusCode": 404,
+            "body": json.dumps({"message": "Administrator not found"})
+        }
+
     try:
+        if isinstance(event["body"], str):
+            body = json.loads(event['body'])
+        else:
+            # body is already a dict (e.g., when testing locally)
+            body = event['body']
 
-        # get body of request
-        body = json.loads(event['body'])
+        # Validate JSON against schema
+        try:
+            validate(instance=body, schema=umfrage_schema)
+        except ValidationError as e:
+            return {
+                "statusCode": 400,
+                "body": json.dumps({"message": f"JSON validation error: {e.message}"})
+                
+            }
+        except SchemaError as e:
+            return {
+                "statusCode": 500,
+                "body": json.dumps({"message": f"JSON schema error: {e.message}"})
+            }
 
+        # JSON is valid, map to datamodel
         json_fragen = body["fragen"]
-
         fragen = []
-        for f_obj in json_fragen:
+
+        for index, f_obj in enumerate(json_fragen):
             frage = Frage(
-                local_id=f_obj['frage_id'],
+                local_id = index,
                 text=f_obj['frage_text'],
                 typ_id=f_obj['art'],
                 punktzahl=f_obj['punktzahl']
             )
-        
+
             # K Questions need special handling
             if f_obj['art'] == 'K':
-                frage.bestaetigt =  f_obj['richtige_anworten']["bestaetigt"]
-                frage.verneint = f_obj['richtige_anworten']["verneint"]
+                frage.bestaetigt = f_obj['kategorien']["bestaetigt"]
+                frage.verneint = f_obj['kategorien']["verneint"]
 
-            valid_options = [AntwortOption(text=option, ist_richtig=True) for option in f_obj["richtige_anworten"]]
+            valid_options = [AntwortOption(text=option, ist_richtig=True) for option in f_obj["richtige_antworten"]]
             invalid_options = [AntwortOption(text=option, ist_richtig=False) for option in f_obj["falsche_antworten"]]
+            frage.antwort_optionen = valid_options + invalid_options
+
+            fragen.append(frage)
 
         # create new Umfrage object
         umfrage = Umfrage(
+            admin_id=admin.id,
             titel=body['titel'],
             beschreibung=body['beschreibung'],
             erstellungsdatum=datetime.now(),
@@ -96,7 +134,15 @@ def uploadUmfrage(event, context):
 
         # add the new Umfrage to the session
         session.add(umfrage)
-        session.commit()
+
+        try:
+            session.commit()
+        except Exception as e:
+            session.rollback()
+            return {
+                "statusCode": 500,
+                "body": json.dumps({"message": f"Database commit error: {str(e)}"})
+            }
 
         return {
             "statusCode": 201,
@@ -106,10 +152,25 @@ def uploadUmfrage(event, context):
             })
         }
 
-    except:
+    except json.JSONDecodeError:
         return {
             "statusCode": 400,
-            "body": json.dumps({"message": "Invalid JSON format"})
+            "body": json.dumps({
+                "message": "Invalid JSON format",
+                "line": e.lineno,
+                "column": e.colno
+                })
+        }
+    except KeyError as e:
+        return {
+            "statusCode": 400,
+            "body": json.dumps({
+                "message": f"Missing key in JSON: {str(e)}"})
+        }
+    except Exception as e:
+        return {
+            "statusCode": 500,
+            "body": json.dumps({"message": f"Internal server error: {str(e)}"})
         }
 
 
