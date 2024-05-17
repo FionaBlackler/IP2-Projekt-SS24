@@ -2,7 +2,8 @@ from datetime import datetime, timedelta
 import json
 import logging
 from sqlalchemy.orm import sessionmaker
-from models.models import Sitzung, Umfrage
+
+from models.models import AntwortOption, Sitzung, Umfrage, Frage
 from utils.database import create_local_engine
 
 engine = create_local_engine()
@@ -54,6 +55,63 @@ def deleteUmfrageById(event, context):
         "body": json.dumps(body)
     }
     return response
+
+def uploadUmfrage(event, context):
+    "accepts the json format in the request body and stores it in the database"
+    session = Session()
+
+    # try to parse and map the json to our datamodel, return 400 if it fails
+    try:
+
+        # get body of request
+        body = json.loads(event['body'])
+
+        json_fragen = body["fragen"]
+
+        fragen = []
+        for f_obj in json_fragen:
+            frage = Frage(
+                local_id=f_obj['frage_id'],
+                text=f_obj['frage_text'],
+                typ_id=f_obj['art'],
+                punktzahl=f_obj['punktzahl']
+            )
+        
+            # K Questions need special handling
+            if f_obj['art'] == 'K':
+                frage.bestaetigt =  f_obj['richtige_anworten']["bestaetigt"]
+                frage.verneint = f_obj['richtige_anworten']["verneint"]
+
+            valid_options = [AntwortOption(text=option, ist_richtig=True) for option in f_obj["richtige_anworten"]]
+            invalid_options = [AntwortOption(text=option, ist_richtig=False) for option in f_obj["falsche_antworten"]]
+
+        # create new Umfrage object
+        umfrage = Umfrage(
+            titel=body['titel'],
+            beschreibung=body['beschreibung'],
+            erstellungsdatum=datetime.now(),
+            status='aktiv',
+            fragen=fragen
+        )
+
+        # add the new Umfrage to the session
+        session.add(umfrage)
+        session.commit()
+
+        return {
+            "statusCode": 201,
+            "body": json.dumps({
+                "message": "Umfrage created successfully",
+                "umfrage_id": umfrage.id
+            })
+        }
+
+    except:
+        return {
+            "statusCode": 400,
+            "body": json.dumps({"message": "Invalid JSON format"})
+        }
+
 
 def createSession(event, context):
     session = Session()

@@ -45,8 +45,17 @@ functions:
       - httpApi:
           path: /session/{id}
           method: post
+  uploadUmfrage:
+    handler: umfrage_handler.uploadUmfrage
+    events:
+      - httpApi:
+          path: /umfrage/upload
+          method: post
+
+  
 plugins:
   - serverless-python-requirements # Plugin to handle python requirements
+  - serverless-dotenv-plugin # Plugin to load environment variables from .env file
 
 custom:
   pythonRequirements:

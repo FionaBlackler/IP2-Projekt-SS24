@@ -30,6 +30,7 @@ class Umfrage(Base):
 class Frage(Base):
     __tablename__ = 'fragen'
     id = Column(Integer, primary_key=True)
+    local_id = Column(Integer, nullable=False)
     umfrage_id = Column(Integer, ForeignKey('umfragen.id', ondelete='CASCADE'))
     text = Column(Text, nullable=False)
     typ_id = Column(CHAR(1), nullable=False)
@@ -39,11 +40,13 @@ class Frage(Base):
     antwort_optionen = relationship("AntwortOption", back_populates="frage", cascade="all, delete")
 
 
+
 class AntwortOption(Base):
     __tablename__ = 'antwort_optionen'
     id = Column(Integer, primary_key=True)
     text = Column(Text, nullable=False)
     ist_richtig = Column(Boolean, nullable=False)
+    punktzahl = Column(Integer)
     frage_id = Column(Integer, ForeignKey('fragen.id', ondelete='CASCADE'))
     frage = relationship("Frage", back_populates="antwort_optionen")
     teilnehmer_antworten = relationship("TeilnehmerAntwort", back_populates="antwort_option", cascade="all, delete")
