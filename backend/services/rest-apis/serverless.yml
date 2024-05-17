@@ -1,6 +1,6 @@
 org: informatik
 app: umfragetool
-service: db-setup
+service: rest-api-umfrage
 frameworkVersion: '3'
 
 useDotenv: true
@@ -19,30 +19,35 @@ provider:
         - secretsmanager:GetSecretValue
       Resource: arn:aws:secretsmanager:us-east-1:123456789012:secret:prod/rds/db-credentials-abc123 # EXAMPLE REPLACE WITH ACTUAL VALUE
 
-# every function defined in the handler.py file must be listed here (if it should be deployed)
 functions:
   createDatabase:
-    handler: handler.createDatabase
+    handler: db_handler.createDatabase
     events:
       - httpApi:
           method: POST
           path: /create-database
 
   addExampleData:
-    handler: handler.addExampleData 
+    handler: db_handler.addExampleData
     events:
       - httpApi:
           method: POST
           path: /add-example-data
-
+  deleteUmfrageById:
+    handler: umfrage_handler.deleteUmfrageById
+    events:
+      - httpApi:
+          path: /umfrage/{id}
+          method: delete
+  createSession:
+    handler: umfrage_handler.createSession
+    events:
+      - httpApi:
+          path: /session/{id}
+          method: post
 plugins:
   - serverless-python-requirements # Plugin to handle python requirements
 
 custom:
-  pythonRequirements: 
+  pythonRequirements:
     dockerizePip: true
-
-package:
-  include:
-    - ../models/**
-    - ../utils/**

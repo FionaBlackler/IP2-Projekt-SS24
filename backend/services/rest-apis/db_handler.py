@@ -1,12 +1,6 @@
 from datetime import datetime
 import json
 from sqlalchemy.orm import sessionmaker
-import sys
-import os
-
-# change sys path to import modules from parent directory
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
-
 from models.models import AntwortOption, Base, Administrator, Frage, Sitzung, TeilnehmerAntwort, Umfrage
 from utils.database import create_local_engine
 

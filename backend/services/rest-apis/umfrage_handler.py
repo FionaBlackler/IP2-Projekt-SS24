@@ -1,13 +1,7 @@
 from datetime import datetime, timedelta
 import json
 import logging
-import os
-import sys
 from sqlalchemy.orm import sessionmaker
-
-# change sys path to import modules from parent directory
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
-
 from models.models import Sitzung, Umfrage
 from utils.database import create_local_engine
 
