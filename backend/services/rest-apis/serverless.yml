@@ -33,6 +33,8 @@ functions:
       - httpApi:
           method: POST
           path: /add-example-data
+
+  # Umfragen Functions
   deleteUmfrageById:
     handler: umfrage_handler.deleteUmfrageById
     events:
@@ -50,6 +52,22 @@ functions:
     events:
       - httpApi:
           path: /umfrage/upload
+          method: post
+
+  # Auth Functions
+  functions:
+  register:
+    handler: auth_handler.register
+    events:
+      - http:
+          path: register
+          method: post
+
+  login:
+    handler: auth_handler.login
+    events:
+      - http:
+          path: login
           method: post
 
   

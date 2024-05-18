@@ -10,7 +10,7 @@ class Administrator(Base):
     id = Column(Integer, primary_key=True)
     email = Column(String(255), nullable=False)
     name = Column(String(50), nullable=False)
-    password = Column(String(50), nullable=False)
+    password = Column(String(200), nullable=False)
     umfragen = relationship("Umfrage", back_populates="administrator", cascade="all, delete")
 
 
