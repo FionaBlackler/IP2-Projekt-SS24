@@ -16,12 +16,13 @@ logger = logging.getLogger()
 # engine, Session = create_database_connection()
 Session = sessionmaker(bind=engine)
 
+
 def deleteUmfrageById(event, context):
     session = Session()
     try:
         # Extrahiere die ID aus der URL
         umfrage_id = event['pathParameters']['id']
-        
+
         logger.info(f"Deleting Umfrage with ID {umfrage_id}.")
 
         # finde die Umfrage in der Datenbank
@@ -32,31 +33,27 @@ def deleteUmfrageById(event, context):
             session.delete(umfrage)
             session.commit()
             # Erstelle die Antwort
-            body = {
-                "message": f"Umfrage mit ID {umfrage_id} wurde erfolgreich gelöscht.",
-                "input": event,
+            response = {
+                "response_status": 200,
+                "body": json.dumps({"message": f"Umfrage mit ID {umfrage_id} wurde erfolgreich entfernt."})
             }
         else:
-            body = {
-                "message": f"Umfrage mit ID {umfrage_id} wurde nicht gefunden.",
-                "input": event,
+            response = {
+                "response_status": 400,
+                "body": json.dumps({"message": f"Umfrage mit ID {umfrage_id} wurde nicht gefunden."})
             }
-
-        response_status = 200
     except Exception as e:
         session.rollback()
-        body = {
-            "message": str(e)
+        response = {
+            "statusCode": 500,
+            "body": json.dumps({"message": "Internal Server Error, contact Backend-Team for more Info"})
         }
-        response_status = 400
+        logger.error(str(e))
     finally:
         session.close()
 
-    response = {
-        "statusCode": response_status,
-        "body": json.dumps(body)
-    }
     return response
+
 
 def uploadUmfrage(event, context):
     "accepts the json format in the request body and stores it in the database"
@@ -91,7 +88,7 @@ def uploadUmfrage(event, context):
             return {
                 "statusCode": 400,
                 "body": json.dumps({"message": f"JSON validation error: {e.message}"})
-                
+
             }
         except SchemaError as e:
             return {
@@ -105,7 +102,7 @@ def uploadUmfrage(event, context):
 
         for index, f_obj in enumerate(json_fragen):
             frage = Frage(
-                local_id = index,
+                local_id=index,
                 text=f_obj['frage_text'],
                 typ_id=f_obj['art'],
                 punktzahl=f_obj['punktzahl']
@@ -159,7 +156,7 @@ def uploadUmfrage(event, context):
                 "message": "Invalid JSON format",
                 "line": e.lineno,
                 "column": e.colno
-                })
+            })
         }
     except KeyError as e:
         return {
