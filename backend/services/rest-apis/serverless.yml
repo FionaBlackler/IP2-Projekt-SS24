@@ -39,7 +39,7 @@ functions:
     handler: umfrage_handler.deleteUmfrageById
     events:
       - httpApi:
-          path: /umfrage/{id}
+          path: /umfrage/delete/{id}
           method: delete
   createSession:
     handler: umfrage_handler.createSession
@@ -74,6 +74,7 @@ functions:
 plugins:
   - serverless-python-requirements # Plugin to handle python requirements
   - serverless-dotenv-plugin # Plugin to load environment variables from .env file
+  - serverless-offline # Plugin to run serverless offline
 
 custom:
   pythonRequirements:
