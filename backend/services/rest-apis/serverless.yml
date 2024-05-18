@@ -25,14 +25,14 @@ functions:
     events:
       - httpApi:
           method: POST
-          path: /create-database
+          path: /database/create
 
   addExampleData:
     handler: db_handler.addExampleData
     events:
       - httpApi:
           method: POST
-          path: /add-example-data
+          path: /database/addExampleData
 
   # Umfragen Functions
   deleteUmfrageById:
@@ -60,14 +60,14 @@ functions:
     handler: auth_handler.register
     events:
       - http:
-          path: register
+          path: /register
           method: post
 
   login:
     handler: auth_handler.login
     events:
       - http:
-          path: login
+          path: /login
           method: post
 
   
