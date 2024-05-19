@@ -54,8 +54,6 @@ functions:
           path: /umfrage/upload
           method: post
 
-  # Auth Functions
-  functions:
   register:
     handler: auth_handler.register
     events:
