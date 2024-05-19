@@ -1,20 +1,20 @@
 # Client
-- Fragen bekommen (Live ausfüllen)
-- ergebnis senden nach ausfüllen (nach frage, nach gesamter?)
-- Nach Frage (senden von Ergebnis / richtigkeit)
+- ❌ Fragen bekommen (Live ausfüllen)
+- ❌ Ergebnis senden nach ausfüllen (nach Frage, nach gesamter?)
+- ❌ Nach Frage (senden von Ergebnis / Richtigkeit)
 
 # Umfragen
-- alle umfragen für admin interface holen
-- archivieren von Umfrage
-- löschen der Umfrage (fertig)
-- Umfrage Starten / Session erstellung (Fertig?)
-- Session stoppen
-- Umfrage upload (in progress)
-- Umfrage holen
-- statistik daten anfordern 
+- ❌ Alle Umfragen für Admin Interface holen
+- ❌ Archivieren von Umfrage
+- ✅ Löschen der Umfrage
+- 🚧 Umfrage starten / Session erstellen (Fertig?)
+- ❌ Session stoppen
+- ✅ Umfrage upload (in progress)
+- ❌ Umfrage holen
+- ❌ Statistik Daten anfordern
 
 # Admin
-- login / logout 
-- registrieren
-- selber löschen (und alles in verbindung)
-- (passswort vergessen / ändern)
+- ✅ Login / Logout
+- ✅ Registrieren
+- ❌ Selber löschen (und alles in Verbindung)
+- ❌ Passwort vergessen / ändern
