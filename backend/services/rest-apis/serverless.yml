@@ -53,6 +53,12 @@ functions:
       - httpApi:
           path: /umfrage/upload
           method: post
+  getAllUmfragen:
+    handler: umfrage_handler.getAllUmfragen
+    events:
+      - httpApi:
+          path: /umfrage/getAll
+          method: get
 
   # Auth Functions
   functions:
