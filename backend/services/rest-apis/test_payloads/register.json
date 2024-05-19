@@ -1,0 +1,7 @@
+{
+    "body": {
+        "name": "NewAdmin",
+        "email": "NewAdmin@hft-stuttgart.de",
+        "password": "supersecretpassword"
+    }
+}
