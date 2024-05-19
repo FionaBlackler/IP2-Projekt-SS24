@@ -215,3 +215,46 @@ def createSession(event, context):
             "endzeit": end_time.isoformat()
         })
     }
+
+
+def getAllUmfragen(event, context):
+    session = Session()
+    try:
+        # finde alle Umfragen
+        umfragen = session.query(Umfrage).all()
+
+        if umfragen:
+            # Konvertiere Umfragen in ein JSON Format
+            umfragen_list = []
+            for umfrage in umfragen:
+                umfrage_json = {
+                    "id": umfrage.id,
+                    "admin_id": umfrage.admin_id,
+                    "titel": umfrage.titel,
+                    "beschreibung": umfrage.beschreibung,
+                    "erstellungsdatum": str(umfrage.erstellungsdatum),
+                    "archivierungsdatum": str(umfrage.archivierungsdatum) if umfrage.archivierungsdatum else None,
+                    "status": umfrage.status,
+                }
+                umfragen_list.append(umfrage_json)
+
+            # Response mit den Umfragen
+            response = {
+                "statusCode": 200,
+                "body": json.dumps({"umfragen": umfragen_list})
+            }
+        else:
+            response = {
+                "response_status": 204
+            }
+    except Exception as e:
+        session.rollback()
+        response = {
+            "statusCode": 500,
+            "body": json.dumps({"message": "Internal Server Error, contact Backend-Team for more Info"})
+        }
+        logger.error(str(e))
+    finally:
+        session.close()
+
+    return response

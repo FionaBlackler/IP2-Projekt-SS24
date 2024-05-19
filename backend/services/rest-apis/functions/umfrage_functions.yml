@@ -1,0 +1,24 @@
+deleteUmfrageById:
+  handler: handlers.umfrage_handler.deleteUmfrageById
+  events:
+    - httpApi:
+        path: /umfrage/delete/{id}
+        method: delete
+createSession:
+  handler: handlers.umfrage_handler.createSession
+  events:
+    - httpApi:
+        path: /session/{id}
+        method: post
+uploadUmfrage:
+  handler: handlers.umfrage_handler.uploadUmfrage
+  events:
+    - httpApi:
+        path: /umfrage/upload
+        method: post
+getAllUmfragen:
+  handler: handlers.umfrage_handler.getAllUmfragen
+  events:
+    - httpApi:
+        path: /umfrage/getAll
+        method: get
