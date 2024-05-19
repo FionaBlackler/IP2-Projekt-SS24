@@ -221,7 +221,7 @@ def getAllUmfragenFromAdmin(event, context):
     session = Session()
     try:
         # Extrahiere die ID aus der URL
-        admin_id = event['pathParameters']['id']
+        admin_id = event['pathParameters']['adminId']
 
         logger.info(f"Deleting Umfrage with ID {admin_id}.")
         umfragen = session.query(Umfrage).filter_by(admin_id=admin_id)

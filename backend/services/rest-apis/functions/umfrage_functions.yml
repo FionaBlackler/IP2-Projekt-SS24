@@ -20,5 +20,5 @@ getAllUmfragenFromAdmin:
   handler: handlers.umfrage_handler.getAllUmfragenFromAdmin
   events:
     - httpApi:
-        path: /umfrage/get/{id}
+        path: /umfrage/getAll/{adminId}
         method: get
