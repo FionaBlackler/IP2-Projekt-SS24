@@ -1,9 +1,13 @@
-from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, Date, DateTime, Boolean, Text, CHAR
+from sqlalchemy import Table, create_engine, Column, Integer, String, ForeignKey, Date, DateTime, Boolean, Text, CHAR
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
 
 Base = declarative_base()
 
+teilnehmer_antwort_optionen = Table('teilnehmer_antwort_optionen', Base.metadata,
+    Column('teilnehmer_antwort_id', Integer, ForeignKey('teilnehmer_antworten.id', ondelete='CASCADE'), primary_key=True),
+    Column('antwort_option_id', Integer, ForeignKey('antwort_optionen.id', ondelete='CASCADE'), primary_key=True)
+)
 
 class Administrator(Base):
     __tablename__ = 'administratoren'
@@ -23,6 +27,7 @@ class Umfrage(Base):
     erstellungsdatum = Column(Date, nullable=False)
     archivierungsdatum = Column(Date)
     status = Column(String(50), nullable=False)
+    json_text = Column(Text, nullable=False)
     administrator = relationship("Administrator", back_populates="umfragen")
     fragen = relationship("Frage", back_populates="umfrage", cascade="all, delete")
     sitzungen = relationship("Sitzung", back_populates="umfrage", cascade="all, delete")
@@ -42,7 +47,6 @@ class Frage(Base):
     antwort_optionen = relationship("AntwortOption", back_populates="frage", cascade="all, delete")
 
 
-
 class AntwortOption(Base):
     __tablename__ = 'antwort_optionen'
     id = Column(Integer, primary_key=True)
@@ -50,8 +54,11 @@ class AntwortOption(Base):
     ist_richtig = Column(Boolean, nullable=False)
     frage_id = Column(Integer, ForeignKey('fragen.id', ondelete='CASCADE'))
     frage = relationship("Frage", back_populates="antwort_optionen")
-    teilnehmer_antworten = relationship("TeilnehmerAntwort", back_populates="antwort_option", cascade="all, delete")
-
+    teilnehmer_antworten = relationship(
+        "TeilnehmerAntwort",
+        secondary=teilnehmer_antwort_optionen,
+        back_populates="antwort_optionen"
+    )
 
 class Sitzung(Base):
     __tablename__ = 'sitzungen'
@@ -66,9 +73,12 @@ class Sitzung(Base):
 
 class TeilnehmerAntwort(Base):
     __tablename__ = 'teilnehmer_antworten'
-    antwort_id = Column(Integer, ForeignKey('antwort_optionen.id'), primary_key=True)
-    sitzung_id = Column(Integer, ForeignKey('sitzungen.id', ondelete='CASCADE'), primary_key=True)
-    teilnehmer_gewaehlt = Column(Integer, nullable=False)
-    gewaehlte_antwort = Column(Boolean, primary_key=True)
-    antwort_option = relationship("AntwortOption", back_populates="teilnehmer_antworten")
+    id = Column(Integer, primary_key=True)
+    antwort_id = Column(Integer, ForeignKey('antwort_optionen.id'), nullable=False)
+    sitzung_id = Column(Integer, ForeignKey('sitzungen.id', ondelete='CASCADE'), nullable=False)
     sitzung = relationship("Sitzung", back_populates="teilnehmer_antworten")
+    antwort_optionen = relationship(
+        "AntwortOption",
+        secondary=teilnehmer_antwort_optionen,
+        back_populates="teilnehmer_antworten"
+    )

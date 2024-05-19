@@ -8,6 +8,7 @@ from models.models import Administrator, AntwortOption, Sitzung, Umfrage, Frage
 from models.schemas import umfrage_schema
 from utils.database import create_local_engine
 
+
 engine = create_local_engine()
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
 logger = logging.getLogger()
@@ -15,7 +16,6 @@ logger = logging.getLogger()
 # Database connection with aws secrets manager
 # engine, Session = create_database_connection()
 Session = sessionmaker(bind=engine)
-
 
 def deleteUmfrageById(event, context):
     session = Session()
@@ -59,14 +59,7 @@ def uploadUmfrage(event, context):
     "accepts the json format in the request body and stores it in the database"
     session = Session()
 
-    # verify admin ID is provided in the path and admin exists
-    if "admin_id" not in event["queryStringParameters"]:
-        return {
-            "statusCode": 400,
-            "body": json.dumps({"message": "admin_id is required"})
-        }
-
-    admin_id = event["queryStringParameters"]["admin_id"]
+    admin_id = event["pathParameters"]["admin_id"]
     admin = session.query(Administrator).filter(Administrator.id == admin_id).first()
     if not admin:
         return {
@@ -126,7 +119,8 @@ def uploadUmfrage(event, context):
             beschreibung=body['beschreibung'],
             erstellungsdatum=datetime.now(),
             status='aktiv',
-            fragen=fragen
+            fragen=fragen,
+            json_text=json.dumps(body)
         )
 
         # add the new Umfrage to the session
@@ -173,13 +167,6 @@ def uploadUmfrage(event, context):
 
 def createSession(event, context):
     session = Session()
-
-    # Check if 'id' parameter is provided in the path
-    if 'pathParameters' not in event or 'id' not in event['pathParameters']:
-        return {
-            "statusCode": 400,
-            "body": json.dumps({"message": "Umfrage ID is required"})
-        }
 
     umfrage_id = event['pathParameters']['id']
 
@@ -258,3 +245,29 @@ def getAllUmfragen(event, context):
         session.close()
 
     return response
+
+def getUmfrage(event, context):
+    """Get the full original JSON of a Umfrage by ID"""
+
+    session = Session()
+    try:
+        umfrage_id = event['pathParameters']['id']
+        umfrage = session.query(Umfrage).filter(Umfrage.id == umfrage_id).first()
+
+        if umfrage:
+            response = {
+                "statusCode": 200,
+                "body": umfrage.json_text,
+            }
+        else:
+            response = {
+                "statusCode": 404,
+                "body": json.dumps({"message": "Umfrage not found"})
+            }
+    except Exception as e:
+        response = {
+            "statusCode": 500,
+            "body": json.dumps({"message": "Internal Server Error, contact Backend-Team for more Info"})
+        }
+        logger.error(str(e))
+    
