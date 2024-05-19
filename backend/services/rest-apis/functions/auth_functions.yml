@@ -1,0 +1,13 @@
+register:
+  handler: handlers.auth_handler.register
+  events:
+    - http:
+        path: /register
+        method: post
+
+login:
+  handler: handlers.auth_handler.login
+  events:
+    - http:
+        path: /login
+        method: post

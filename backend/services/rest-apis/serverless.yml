@@ -20,61 +20,10 @@ provider:
       Resource: arn:aws:secretsmanager:us-east-1:123456789012:secret:prod/rds/db-credentials-abc123 # EXAMPLE REPLACE WITH ACTUAL VALUE
 
 functions:
-  createDatabase:
-    handler: db_handler.createDatabase
-    events:
-      - httpApi:
-          method: POST
-          path: /database/create
+  - ${file(./functions/umfrage_functions.yml)}
+  - ${file(./functions/auth_functions.yml)}
+  - ${file(./functions/db_functions.yml)}
 
-  addExampleData:
-    handler: db_handler.addExampleData
-    events:
-      - httpApi:
-          method: POST
-          path: /database/addExampleData
-
-  # Umfragen Functions
-  deleteUmfrageById:
-    handler: umfrage_handler.deleteUmfrageById
-    events:
-      - httpApi:
-          path: /umfrage/delete/{id}
-          method: delete
-  createSession:
-    handler: umfrage_handler.createSession
-    events:
-      - httpApi:
-          path: /session/{id}
-          method: post
-  uploadUmfrage:
-    handler: umfrage_handler.uploadUmfrage
-    events:
-      - httpApi:
-          path: /umfrage/upload
-          method: post
-  getAllUmfragen:
-    handler: umfrage_handler.getAllUmfragen
-    events:
-      - httpApi:
-          path: /umfrage/getAll
-          method: get
-
-  # Auth Functions
-  functions:
-  register:
-    handler: auth_handler.register
-    events:
-      - http:
-          path: /register
-          method: post
-
-  login:
-    handler: auth_handler.login
-    events:
-      - http:
-          path: /login
-          method: post
 
   
 plugins:
