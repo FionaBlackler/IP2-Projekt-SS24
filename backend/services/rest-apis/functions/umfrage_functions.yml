@@ -16,9 +16,9 @@ uploadUmfrage:
     - httpApi:
         path: /umfrage/upload
         method: post
-getAllUmfragen:
-  handler: handlers.umfrage_handler.getAllUmfragen
+getAllUmfragenFromAdmin:
+  handler: handlers.umfrage_handler.getAllUmfragenFromAdmin
   events:
     - httpApi:
-        path: /umfrage/getAll
+        path: /umfrage/get/{id}
         method: get

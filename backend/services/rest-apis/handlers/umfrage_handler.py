@@ -217,11 +217,14 @@ def createSession(event, context):
     }
 
 
-def getAllUmfragen(event, context):
+def getAllUmfragenFromAdmin(event, context):
     session = Session()
     try:
-        # finde alle Umfragen
-        umfragen = session.query(Umfrage).all()
+        # Extrahiere die ID aus der URL
+        admin_id = event['pathParameters']['id']
+
+        logger.info(f"Deleting Umfrage with ID {admin_id}.")
+        umfragen = session.query(Umfrage).filter_by(admin_id=admin_id)
 
         if umfragen:
             # Konvertiere Umfragen in ein JSON Format
