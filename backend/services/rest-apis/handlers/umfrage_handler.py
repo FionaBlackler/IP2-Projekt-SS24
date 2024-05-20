@@ -210,8 +210,8 @@ def getAllUmfragenFromAdmin(event, context):
         # Extrahiere die ID aus der URL
         admin_id = event['pathParameters']['adminId']
 
-        logger.info(f"Deleting Umfrage with ID {admin_id}.")
-        umfragen = session.query(Umfrage).filter_by(admin_id=admin_id)
+        logger.info(f"Get all Umfragen from Admin with ID {admin_id}.")
+        umfragen = session.query(Umfrage).filter_by(admin_id=admin_id, archivierungsdatum=None)
 
         if umfragen:
             # Konvertiere Umfragen in ein JSON Format
@@ -274,6 +274,10 @@ def getUmfrage(event, context):
             "body": json.dumps({"message": "Internal Server Error, contact Backend-Team for more Info"})
         }
         logger.error(str(e))
+    finally:
+        session.close()
+
+    return response
 
 
 def archiveUmfrage(event, context):
@@ -301,13 +305,13 @@ def archiveUmfrage(event, context):
             session.commit()
 
             response = {
-                "response_status": 200,
+                "statusCode": 200,
                 "body": json.dumps({"message": message})
             }
 
         else:
             response = {
-                "response_status": 400,
+                "statusCode": 400,
                 "body": json.dumps({"message": f"Umfrage mit ID {umfrage_id} wurde nicht gefunden."})
             }
 
