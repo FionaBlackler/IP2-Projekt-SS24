@@ -21,7 +21,7 @@ def deleteUmfrageById(event, context):
     session = Session()
     try:
         # Extrahiere die ID aus der URL
-        umfrage_id = event['pathParameters']['id']
+        umfrage_id = event['pathParameters']['umfrageId']
 
         logger.info(f"Deleting Umfrage with ID {umfrage_id}.")
 
@@ -168,7 +168,7 @@ def uploadUmfrage(event, context):
 def createSession(event, context):
     session = Session()
 
-    umfrage_id = event['pathParameters']['id']
+    umfrage_id = event['pathParameters']['umfrageId']
 
     # Verify the Umfrage exists
     umfrage = session.query(Umfrage).filter(Umfrage.id == umfrage_id).first()
@@ -249,6 +249,7 @@ def getAllUmfragenFromAdmin(event, context):
 
     return response
 
+
 def getUmfrage(event, context):
     """Get the full original JSON of a Umfrage by ID"""
 
@@ -273,4 +274,51 @@ def getUmfrage(event, context):
             "body": json.dumps({"message": "Internal Server Error, contact Backend-Team for more Info"})
         }
         logger.error(str(e))
-    
+
+
+def archiveUmfrage(event, context):
+    session = Session()
+    try:
+        # Extrahiere die ID aus der URL
+        umfrage_id = event['pathParameters']['umfrageId']
+
+        logger.info(f"Archive Umfrage with ID {umfrage_id}.")
+
+        # finde die Umfrage in der Datenbank
+        umfrage = session.query(Umfrage).filter_by(id=umfrage_id).first()
+
+        if umfrage:
+            if umfrage.archivierungsdatum:
+                # remove Archivierungsdatum
+                umfrage.archivierungsdatum = None
+                message = f"Umfrage mit ID {umfrage_id} wurde erfolgreich aus dem Archiv entfernt"
+            else:
+                # Add Archivierungsdatum
+                umfrage.archivierungsdatum = datetime.now()
+                message = f"Umfrage mit ID {umfrage_id} wurde erfolgreich archiviert"
+
+            session.add(umfrage)
+            session.commit()
+
+            response = {
+                "response_status": 200,
+                "body": json.dumps({"message": message})
+            }
+
+        else:
+            response = {
+                "response_status": 400,
+                "body": json.dumps({"message": f"Umfrage mit ID {umfrage_id} wurde nicht gefunden."})
+            }
+
+    except Exception as e:
+        session.rollback()
+        response = {
+            "statusCode": 500,
+            "body": json.dumps({"message": "Internal Server Error, contact Backend-Team for more Info"})
+        }
+        logger.error(str(e))
+    finally:
+        session.close()
+
+    return response

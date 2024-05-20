@@ -2,13 +2,13 @@ deleteUmfrageById:
   handler: handlers.umfrage_handler.deleteUmfrageById
   events:
     - httpApi:
-        path: /umfrage/delete/{id}
+        path: /umfrage/delete/{umfrageId}
         method: delete
 createSession:
   handler: handlers.umfrage_handler.createSession
   events:
     - httpApi:
-        path: /session/{id}
+        path: /session/{umfrageId}
         method: post
 uploadUmfrage:
   handler: handlers.umfrage_handler.uploadUmfrage
@@ -21,4 +21,10 @@ getAllUmfragenFromAdmin:
   events:
     - httpApi:
         path: /umfrage/getAll/{adminId}
+        method: get
+archiveUmfrage:
+  handler: handlers.umfrage_handler.archiveUmfrage
+  events:
+    - httpApi:
+        path: /umfrage/archive/{umfrageId}
         method: get
