@@ -66,6 +66,7 @@ class Sitzung(Base):
     startzeit = Column(DateTime, nullable=False)
     endzeit = Column(DateTime, nullable=False)
     teilnehmerzahl = Column(Integer, nullable=False)
+    aktiv = Column(Boolean, nullable=False, default=True)
     umfrage_id = Column(Integer, ForeignKey('umfragen.id', ondelete='CASCADE'))
     umfrage = relationship("Umfrage", back_populates="sitzungen")
     teilnehmer_antworten = relationship("TeilnehmerAntwort", back_populates="sitzung", cascade="all, delete")
@@ -77,8 +78,10 @@ class TeilnehmerAntwort(Base):
     antwort_id = Column(Integer, ForeignKey('antwort_optionen.id'), nullable=False)
     sitzung_id = Column(Integer, ForeignKey('sitzungen.id', ondelete='CASCADE'), nullable=False)
     sitzung = relationship("Sitzung", back_populates="teilnehmer_antworten")
+    ist_richtig = Column(Boolean, nullable=False)
     antwort_optionen = relationship(
         "AntwortOption",
         secondary=teilnehmer_antwort_optionen,
         back_populates="teilnehmer_antworten"
     )
+

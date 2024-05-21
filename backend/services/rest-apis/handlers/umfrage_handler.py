@@ -203,6 +203,69 @@ def createSession(event, context):
         })
     }
 
+def deleteSession(event, context):
+    session = Session()
+
+    try:
+        sitzung_id = event['pathParameters']['sitzungId']
+
+        # Verify the Sitzung exists
+        sitzung: Sitzung = session.query(Sitzung).filter(Sitzung.id == sitzung_id).first()
+        if not sitzung:
+            return {
+                "statusCode": 404,
+                "body": json.dumps({"message": "Sitzung not found"})
+            }
+        session.delete(sitzung)
+        session.commit()
+
+        response = {
+            "statusCode": 200,
+            "body": json.dumps({"message": "Sitzung deleted successfully"})
+        }
+
+    except Exception as e:
+        response = {
+            "statusCode": 400,
+            "body": json.dumps({"message": "Internal Server Error, contact Backend-Team for more Info"})
+        }
+        logger.error(str(e))
+    finally:
+        session.close()
+
+    return response
+
+def endSession(event, context):
+    session = Session()
+    try:
+        sitzung_id = event['pathParameters']['sitzungId']
+
+        # Verify the Sitzung exists
+        sitzung: Sitzung = session.query(Sitzung).filter(Sitzung.id == sitzung_id).first()
+        if not sitzung:
+            return {
+                "statusCode": 404,
+                "body": json.dumps({"message": "Sitzung not found"})
+            }
+        sitzung.aktiv = False
+        session.commit()
+
+        response = {
+            "statusCode": 200,
+            "body": json.dumps({"message": "Sitzung ended successfully"})
+        }
+
+    except Exception as e:
+        response = {
+            "statusCode": 400,
+            "body": json.dumps({"message": "Internal Server Error, contact Backend-Team for more Info"})
+        }
+        logger.error(str(e))
+    finally:
+        session.close()
+
+    return response
+
 
 def getAllUmfragenFromAdmin(event, context):
     session = Session()
@@ -326,3 +389,5 @@ def archiveUmfrage(event, context):
         session.close()
 
     return response
+
+

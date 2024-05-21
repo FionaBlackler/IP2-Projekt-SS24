@@ -8,13 +8,25 @@ createSession:
   handler: handlers.umfrage_handler.createSession
   events:
     - httpApi:
-        path: /session/{umfrageId}
+        path: /umfrage/{umfrageId}/sitzung
         method: post
+deleteSession:
+  handler: handlers.umfrage_handler.deleteSession
+  events:
+    - httpApi:
+        path: /sitzung/delete/{sitzungId}
+        method: delete
+endSession:
+  handler: handlers.umfrage_handler.endSession
+  events:
+    - httpApi:
+        path: /sitzung/end/{sitzungId}
+        method: post        
 uploadUmfrage:
   handler: handlers.umfrage_handler.uploadUmfrage
   events:
     - httpApi:
-        path: /umfrage/upload/{admin_id}
+        path: /umfrage/upload/{adminId}
         method: post
 getAllUmfragenFromAdmin:
   handler: handlers.umfrage_handler.getAllUmfragenFromAdmin
