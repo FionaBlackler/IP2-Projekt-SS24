@@ -1,5 +1,5 @@
 import { Layout } from 'antd'
-import ProtectedRoutes from '../routes/protected.routes.jsx'
+import ProtectedRoute from '../routes/protected.route.jsx'
 
 const ProtectedLayout = () => {
     return (
@@ -7,7 +7,7 @@ const ProtectedLayout = () => {
             <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
                 <div style={{ flexGrow: 1 }}>
                     <Layout.Content>
-                        <ProtectedRoutes />
+                        <ProtectedRoute />
                     </Layout.Content>
                 </div>
             </div>

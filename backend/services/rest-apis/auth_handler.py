@@ -1,31 +1,35 @@
 from datetime import datetime, timedelta
 import json
-import jwt
 import bcrypt
+import jwt
 from sqlalchemy.orm import Session, sessionmaker
 from pydantic import BaseModel, ValidationError
 from models.models import Administrator
 from utils.database import create_local_engine
 
-
 engine = create_local_engine()
 # IMPORTANT: This is a simple example and should not be used in production.
 SECRET_KEY = "umfragetool2024"
 
+
 class UserCreateLogin(BaseModel):
     email: str
     password: str
+
 
 class UserCreateRegister(BaseModel):
     name: str
     email: str
     password: str
 
+
 def hash_password(password: str) -> str:
     return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
+
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))
+
 
 def create_token(user_id: int, email: str) -> str:
     payload = {
@@ -39,7 +43,6 @@ def create_token(user_id: int, email: str) -> str:
 
 
 def login(event, context):
-
     Session = sessionmaker(bind=engine)
     session = Session()
 
@@ -48,7 +51,7 @@ def login(event, context):
             data = json.loads(event["body"])
         else:
             # body is already a dict (e.g., when testing locally)
-            data  = event['body']
+            data = event['body']
 
         user_data = UserCreateLogin(**data)
     except (json.JSONDecodeError, ValidationError) as e:
@@ -71,8 +74,8 @@ def login(event, context):
         "body": json.dumps({"jwt_token": token})
     }
 
-def register(event, context):
 
+def register(event, context):
     Session = sessionmaker(bind=engine)
     session = Session()
 
@@ -81,15 +84,15 @@ def register(event, context):
             data = json.loads(event["body"])
         else:
             # body is already a dict (e.g., when testing locally)
-            data  = event['body']
-            
+            data = event['body']
+
         user_data = UserCreateRegister(**data)
     except (json.JSONDecodeError, ValidationError) as e:
         return {
             "statusCode": 400,
             "body": json.dumps({"message": "Invalid input"})
         }
-    
+
     # check if user already exists
     admin = session.query(Administrator).filter(Administrator.email == user_data.email).first()
 
@@ -98,7 +101,7 @@ def register(event, context):
             "statusCode": 400,
             "body": json.dumps({"message": "User already exists"})
         }
-    
+
     hashed_password = hash_password(user_data.password)
     admin = Administrator(name=user_data.name, email=user_data.email, password=hashed_password)
     session.add(admin)

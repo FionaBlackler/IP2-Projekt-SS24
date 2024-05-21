@@ -7,38 +7,48 @@ export const login = ({ email, password }) => {
 
         try {
             const { data } = await axios.post(
-                'waiting_for_backend_url',
+                'http://localhost:3000/dev/login',
                 { email, password }
             )
 
+            const { jwt_token } = data
+
             dispatch({
                 type: actionTypes.LOGIN_SUCCESS,
-                payload: { accessToken: data.accessToken }
+                payload: { accessToken: jwt_token }
             })
         } catch (error) {
+            const errorMessage = error.response && error.response.data && error.response.data.message
+                ? error.response.data.message
+                : error.message
+
             dispatch({
                 type: actionTypes.LOGIN_FAILURE,
-                payload: { error: 'An error occurred' }
+                payload: errorMessage
             })
         }
     }
 }
 
-export const register = ({ fullName, email, password }) => {
+export const register = ({ name, email, password }) => {
     return async (dispatch) => {
         dispatch({ type: actionTypes.REGISTER_REQUEST })
 
         try {
             await axios.post(
-                'waiting_for_backend_url',
-                { fullName, email, password }
+                'http://localhost:3000/dev/register',
+                { name, email, password }
             )
 
             dispatch({ type: actionTypes.REGISTER_SUCCESS })
         } catch (error) {
+            const errorMessage = error.response && error.response.data && error.response.data.message
+                ? error.response.data.message
+                : error.message
+
             dispatch({
                 type: actionTypes.REGISTER_FAILURE,
-                payload: { error: 'An error occurred' }
+                payload: errorMessage
             })
         }
     }
