@@ -6,10 +6,29 @@ const initialState = {
     error: null
 }
 
-const authReducer = (state = initialState, action) => {
+export const adminRegister = (state = {}, action) => {
+    switch (action.type) {
+        case actionTypes.REGISTER_REQUEST:
+            return {
+                loading: true
+            }
+        case actionTypes.REGISTER_SUCCESS:
+            return {
+                message: action.payload,
+                success: true
+            }
+        case actionTypes.REGISTER_FAILURE:
+            return {
+                error: action.payload
+            }
+        default:
+            return state
+    }
+}
+
+export const adminLogin = (state = initialState, action) => {
     switch (action.type) {
         case actionTypes.LOGIN_REQUEST:
-        case actionTypes.REGISTER_REQUEST:
             return {
                 ...state,
                 error: null
@@ -27,17 +46,6 @@ const authReducer = (state = initialState, action) => {
                 ...state,
                 error: action.payload.error
             }
-
-        case actionTypes.REGISTER_SUCCESS:
-            return {
-                ...state,
-                error: null
-            }
-        case actionTypes.REGISTER_FAILURE:
-            return {
-                ...state,
-                error: action.payload.error
-            }
         case actionTypes.LOGOUT:
             localStorage.removeItem('accessToken')
             return {
@@ -50,5 +58,3 @@ const authReducer = (state = initialState, action) => {
             return state
     }
 }
-
-export default authReducer
