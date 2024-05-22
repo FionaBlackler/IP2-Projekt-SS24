@@ -358,18 +358,29 @@ def archiveUmfrage(event, context):
             if umfrage.archivierungsdatum:
                 # remove Archivierungsdatum
                 umfrage.archivierungsdatum = None
-                message = f"Umfrage mit ID {umfrage_id} wurde erfolgreich aus dem Archiv entfernt"
+                logger.info( f"Umfrage mit ID {umfrage_id} wurde erfolgreich aus dem Archiv entfernt")
             else:
                 # Add Archivierungsdatum
                 umfrage.archivierungsdatum = datetime.now()
-                message = f"Umfrage mit ID {umfrage_id} wurde erfolgreich archiviert"
+                logger.info(f"Umfrage mit ID {umfrage_id} wurde erfolgreich archiviert")
 
             session.add(umfrage)
             session.commit()
 
+            # Convert Umfrage object to JSON
+            umfrage_json = {
+                "id": umfrage.id,
+                "admin_id": umfrage.admin_id,
+                "titel": umfrage.titel,
+                "beschreibung": umfrage.beschreibung,
+                "erstellungsdatum": str(umfrage.erstellungsdatum),
+                "archivierungsdatum": str(umfrage.archivierungsdatum) if umfrage.archivierungsdatum else None,
+                "status": umfrage.status,
+            }
+
             response = {
                 "statusCode": 200,
-                "body": json.dumps({"message": message})
+                "body": json.dumps(umfrage_json)
             }
 
         else:
