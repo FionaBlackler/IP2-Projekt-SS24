@@ -274,7 +274,7 @@ def getAllUmfragenFromAdmin(event, context):
         admin_id = event['pathParameters']['adminId']
 
         logger.info(f"Get all Umfragen from Admin with ID {admin_id}.")
-        umfragen = session.query(Umfrage).filter_by(admin_id=admin_id, archivierungsdatum=None)
+        umfragen = session.query(Umfrage).filter_by(admin_id=admin_id)
 
         if umfragen:
             # Konvertiere Umfragen in ein JSON Format
