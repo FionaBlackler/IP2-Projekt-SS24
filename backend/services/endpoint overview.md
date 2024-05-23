@@ -1,11 +1,11 @@
 # Client
-- ❌ Fragen bekommen (Live ausfüllen)
+- ✅ Fragen bekommen (Live ausfüllen)
 - ❌ Ergebnis senden nach ausfüllen (nach Frage, nach gesamter?)
 - ❌ Nach Frage (senden von Ergebnis / Richtigkeit)
 
 # Umfragen
 - ✅ Alle Umfragen für Admin Interface holen
-- ❌ Archivieren von Umfrage
+- ✅ Archivieren von Umfrage
 - ✅ Löschen der Umfrage
 - ✅ Umfrage starten / Session erstellen
 - ✅ Session stoppen

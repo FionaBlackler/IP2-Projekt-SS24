@@ -41,7 +41,7 @@ def create_token(user_id: int, email: str) -> str:
     return token
 
 def login(event, context):
-    
+
     with Session() as session:
         try:
             if isinstance(event["body"], str):
