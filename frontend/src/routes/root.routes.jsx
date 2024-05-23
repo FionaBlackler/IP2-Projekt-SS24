@@ -8,6 +8,7 @@ function RootRoutes() {
     return (
         <BrowserRouter>
             <Routes>
+                {/*<Route path="/" element={<ProtectedRoute component={Dashboard} />} />*/}
                 <Route path="/" element={<ProtectedRoute component={Homepage} />} />
                 <Route exact={true} path="/login" element={<Login />} />
                 <Route exact={true} path="/register" element={<Register />} />
