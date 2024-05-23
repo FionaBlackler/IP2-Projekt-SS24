@@ -54,215 +54,270 @@ def deleteUmfrageById(event, context):
 
     return response
 
-
 def uploadUmfrage(event, context):
     "accepts the json format in the request body and stores it in the database"
-    session = Session()
-
-    admin_id = event["pathParameters"]["admin_id"]
-    admin = session.query(Administrator).filter(Administrator.id == admin_id).first()
-    if not admin:
+    
+    try:
+        admin_id = event["pathParameters"]["admin_id"]
+    except KeyError:
         return {
-            "statusCode": 404,
-            "body": json.dumps({"message": "Administrator not found"})
+            "statusCode": 400,
+            "body": json.dumps({"message": "Bad Request: 'admin_id' is required in pathParameters"}),
+            "headers": {"Content-Type": "application/json"}
         }
 
-    try:
-        if isinstance(event["body"], str):
-            body = json.loads(event['body'])
-        else:
-            # body is already a dict (e.g., when testing locally)
-            body = event['body']
-
-        # Validate JSON against schema
+    with Session() as session:
         try:
-            validate(instance=body, schema=umfrage_schema)
-        except ValidationError as e:
-            return {
-                "statusCode": 400,
-                "body": json.dumps({"message": f"JSON validation error: {e.message}"})
+            admin = session.query(Administrator).filter(Administrator.id == admin_id).first()
+            if not admin:
+                return {
+                    "statusCode": 404,
+                    "body": json.dumps({"message": "Administrator not found"}),
+                    "headers": {"Content-Type": "application/json"}
+                }
 
-            }
-        except SchemaError as e:
-            return {
-                "statusCode": 500,
-                "body": json.dumps({"message": f"JSON schema error: {e.message}"})
-            }
+            if isinstance(event["body"], str):
+                body = json.loads(event['body'])
+            else:
+                # body is already a dict (e.g., when testing locally)
+                body = event['body']
 
-        # JSON is valid, map to datamodel
-        json_fragen = body["fragen"]
-        fragen = []
+            # Validate JSON against schema
+            try:
+                validate(instance=body, schema=umfrage_schema)
+            except ValidationError as e:
+                return {
+                    "statusCode": 400,
+                    "body": json.dumps({"message": f"JSON validation error: {e.message}"}),
+                    "headers": {"Content-Type": "application/json"}
+                }
+            except SchemaError as e:
+                return {
+                    "statusCode": 500,
+                    "body": json.dumps({"message": f"JSON schema error: {e.message}"}),
+                    "headers": {"Content-Type": "application/json"}
+                }
 
-        for index, f_obj in enumerate(json_fragen):
-            frage = Frage(
-                local_id=index,
-                text=f_obj['frage_text'],
-                typ_id=f_obj['art'],
-                punktzahl=f_obj['punktzahl']
+            # JSON is valid, map to datamodel
+            json_fragen = body["fragen"]
+            fragen = []
+
+            for index, f_obj in enumerate(json_fragen):
+                frage = Frage(
+                    local_id=index,
+                    text=f_obj['frage_text'],
+                    typ_id=f_obj['art'],
+                    punktzahl=f_obj['punktzahl']
+                )
+
+                # K Questions need special handling
+                if f_obj['art'] == 'K':
+                    frage.bestaetigt = f_obj['kategorien']["bestaetigt"]
+                    frage.verneint = f_obj['kategorien']["verneint"]
+
+                valid_options = [AntwortOption(text=option, ist_richtig=True) for option in f_obj["richtige_antworten"]]
+                invalid_options = [AntwortOption(text=option, ist_richtig=False) for option in f_obj["falsche_antworten"]]
+                frage.antwort_optionen = valid_options + invalid_options
+
+                fragen.append(frage)
+
+            # create new Umfrage object
+            umfrage = Umfrage(
+                admin_id=admin.id,
+                titel=body['titel'],
+                beschreibung=body['beschreibung'],
+                erstellungsdatum=datetime.now(),
+                status='aktiv',
+                fragen=fragen,
+                json_text=json.dumps(body)
             )
 
-            # K Questions need special handling
-            if f_obj['art'] == 'K':
-                frage.bestaetigt = f_obj['kategorien']["bestaetigt"]
-                frage.verneint = f_obj['kategorien']["verneint"]
+            # add the new Umfrage to the session
+            session.add(umfrage)
 
-            valid_options = [AntwortOption(text=option, ist_richtig=True) for option in f_obj["richtige_antworten"]]
-            invalid_options = [AntwortOption(text=option, ist_richtig=False) for option in f_obj["falsche_antworten"]]
-            frage.antwort_optionen = valid_options + invalid_options
+            try:
+                session.commit()
+            except Exception as e:
+                session.rollback()
+                logger.error("Database commit error: %s", str(e))
+                return {
+                    "statusCode": 500,
+                    "body": json.dumps({"message": f"Database commit error: {str(e)}"}),
+                    "headers": {"Content-Type": "application/json"}
+                }
 
-            fragen.append(frage)
-
-        # create new Umfrage object
-        umfrage = Umfrage(
-            admin_id=admin.id,
-            titel=body['titel'],
-            beschreibung=body['beschreibung'],
-            erstellungsdatum=datetime.now(),
-            status='aktiv',
-            fragen=fragen,
-            json_text=json.dumps(body)
-        )
-
-        # add the new Umfrage to the session
-        session.add(umfrage)
-
-        try:
-            session.commit()
-        except Exception as e:
-            session.rollback()
             return {
-                "statusCode": 500,
-                "body": json.dumps({"message": f"Database commit error: {str(e)}"})
+                "statusCode": 201,
+                "body": json.dumps({
+                    "message": "Umfrage created successfully",
+                    "umfrage_id": umfrage.id
+                }),
+                "headers": {"Content-Type": "application/json"}
             }
 
-        return {
-            "statusCode": 201,
-            "body": json.dumps({
-                "message": "Umfrage created successfully",
-                "umfrage_id": umfrage.id
-            })
-        }
-
-    except json.JSONDecodeError:
-        return {
-            "statusCode": 400,
-            "body": json.dumps({
-                "message": "Invalid JSON format",
-                "line": e.lineno,
-                "column": e.colno
-            })
-        }
-    except KeyError as e:
-        return {
-            "statusCode": 400,
-            "body": json.dumps({
-                "message": f"Missing key in JSON: {str(e)}"})
-        }
-    except Exception as e:
-        return {
-            "statusCode": 500,
-            "body": json.dumps({"message": f"Internal server error: {str(e)}"})
-        }
+        except json.JSONDecodeError as e:
+            return {
+                "statusCode": 400,
+                "body": json.dumps({
+                    "message": "Invalid JSON format",
+                    "line": e.lineno,
+                    "column": e.colno
+                }),
+                "headers": {"Content-Type": "application/json"}
+            }
+        except KeyError as e:
+            return {
+                "statusCode": 400,
+                "body": json.dumps({
+                    "message": f"Missing key in JSON: {str(e)}"
+                }),
+                "headers": {"Content-Type": "application/json"}
+            }
+        except Exception as e:
+            logger.error("Internal server error: %s", str(e))
+            return {
+                "statusCode": 500,
+                "body": json.dumps({"message": f"Internal server error: {str(e)}"}),
+                "headers": {"Content-Type": "application/json"}
+            }
 
 
 def createSession(event, context):
-    session = Session()
-
-    umfrage_id = event['pathParameters']['umfrageId']
-
-    # Verify the Umfrage exists
-    umfrage = session.query(Umfrage).filter(Umfrage.id == umfrage_id).first()
-    if not umfrage:
+    try:
+        umfrage_id = event['pathParameters']['umfrageId']
+    except KeyError:
         return {
-            "statusCode": 404,
-            "body": json.dumps({"message": "Umfrage not found"})
+            "statusCode": 400,
+            "body": json.dumps({"message": "Bad Request: 'umfrageId' is required in pathParameters"}),
+            "headers": {"Content-Type": "application/json"}
         }
+    
+    with Session() as session:
+        try:
+            # Verify the Umfrage exists
+            umfrage = session.query(Umfrage).filter(Umfrage.id == umfrage_id).first()
+            if not umfrage:
+                return {
+                    "statusCode": 404,
+                    "body": json.dumps({"message": "Umfrage not found"}),
+                    "headers": {"Content-Type": "application/json"}
+                }
 
-    # Set session length (e.g., 15 minutes)
-    session_length_minutes = 15
-    start_time = datetime.now()
-    end_time = start_time + timedelta(minutes=session_length_minutes)
+            # Set session length (e.g., 15 minutes)
+            session_length_minutes = 15
+            start_time = datetime.now()
+            end_time = start_time + timedelta(minutes=session_length_minutes)
 
-    # Create a new Sitzung (Session)
-    sitzung = Sitzung(
-        startzeit=start_time,
-        endzeit=end_time,
-        teilnehmerzahl=0,
-        umfrage_id=umfrage.id
-    )
-    session.add(sitzung)
-    session.commit()
+            # Create a new Sitzung (Session)
+            sitzung = Sitzung(
+                startzeit=start_time,
+                endzeit=end_time,
+                teilnehmerzahl=0,
+                umfrage_id=umfrage.id
+            )
+            session.add(sitzung)
+            session.commit()
 
-    return {
-        "statusCode": 201,
-        "body": json.dumps({
-            "message": "Sitzung created successfully",
-            "sitzung_id": sitzung.id,
-            "startzeit": start_time.isoformat(),
-            "endzeit": end_time.isoformat()
-        })
-    }
+            response = {
+                "statusCode": 201,
+                "body": json.dumps({
+                    "message": "Sitzung created successfully",
+                    "sitzung_id": sitzung.id,
+                    "startzeit": start_time.isoformat(),
+                    "endzeit": end_time.isoformat()
+                }),
+                "headers": {"Content-Type": "application/json"}
+            }
+        except Exception as e:
+            session.rollback()
+            logger.error("Error creating Sitzung: %s", str(e))
+            response = {
+                "statusCode": 500,
+                "body": json.dumps({"message": "Internal Server Error, contact Backend-Team for more Info"}),
+                "headers": {"Content-Type": "application/json"}
+            }
+
+    return response
 
 def deleteSession(event, context):
-    session = Session()
-
     try:
         sitzung_id = event['pathParameters']['sitzungId']
-
-        # Verify the Sitzung exists
-        sitzung: Sitzung = session.query(Sitzung).filter(Sitzung.id == sitzung_id).first()
-        if not sitzung:
-            return {
-                "statusCode": 404,
-                "body": json.dumps({"message": "Sitzung not found"})
-            }
-        session.delete(sitzung)
-        session.commit()
-
-        response = {
-            "statusCode": 200,
-            "body": json.dumps({"message": "Sitzung deleted successfully"})
-        }
-
-    except Exception as e:
-        response = {
+    except KeyError:
+        return {
             "statusCode": 400,
-            "body": json.dumps({"message": "Internal Server Error, contact Backend-Team for more Info"})
+            "body": json.dumps({"message": "Bad Request: 'sitzungId' is required in pathParameters"}),
+            "headers": {"Content-Type": "application/json"}
         }
-        logger.error(str(e))
-    finally:
-        session.close()
+
+    with Session() as session:
+        try:
+            # Verify the Sitzung exists
+            sitzung = session.query(Sitzung).filter(Sitzung.id == sitzung_id).first()
+            if not sitzung:
+                return {
+                    "statusCode": 404,
+                    "body": json.dumps({"message": "Sitzung not found"}),
+                    "headers": {"Content-Type": "application/json"}
+                }
+            
+            session.delete(sitzung)
+            session.commit()
+
+            response = {
+                "statusCode": 200,
+                "body": json.dumps({"message": "Sitzung deleted successfully"}),
+                "headers": {"Content-Type": "application/json"}
+            }
+
+        except Exception as e:
+            session.rollback()
+            logger.error("Error deleting Sitzung: %s", str(e))
+            response = {
+                "statusCode": 500,
+                "body": json.dumps({"message": "Internal Server Error, contact Backend-Team for more Info"}),
+                "headers": {"Content-Type": "application/json"}
+            }
 
     return response
 
 def endSession(event, context):
-    session = Session()
     try:
         sitzung_id = event['pathParameters']['sitzungId']
-
-        # Verify the Sitzung exists
-        sitzung: Sitzung = session.query(Sitzung).filter(Sitzung.id == sitzung_id).first()
-        if not sitzung:
-            return {
-                "statusCode": 404,
-                "body": json.dumps({"message": "Sitzung not found"})
-            }
-        sitzung.aktiv = False
-        session.commit()
-
-        response = {
-            "statusCode": 200,
-            "body": json.dumps({"message": "Sitzung ended successfully"})
-        }
-
-    except Exception as e:
-        response = {
+    except KeyError:
+        return {
             "statusCode": 400,
-            "body": json.dumps({"message": "Internal Server Error, contact Backend-Team for more Info"})
+            "body": json.dumps({"message": "Bad Request: 'sitzungId' is required in pathParameters"}),
+            "headers": {"Content-Type": "application/json"}
         }
-        logger.error(str(e))
-    finally:
-        session.close()
+
+    with Session() as session:
+        try:
+            # Verify the Sitzung exists
+            sitzung = session.query(Sitzung).filter(Sitzung.id == sitzung_id).first()
+            if not sitzung:
+                return {
+                    "statusCode": 404,
+                    "body": json.dumps({"message": "Sitzung not found"}),
+                    "headers": {"Content-Type": "application/json"}
+                }
+            
+            sitzung.aktiv = False
+            session.commit()
+
+            response = {
+                "statusCode": 200,
+                "body": json.dumps({"message": "Sitzung ended successfully"}),
+                "headers": {"Content-Type": "application/json"}
+            }
+
+        except Exception as e:
+            session.rollback()
+            logger.error("Error ending Sitzung: %s", str(e))
+            response = {
+                "statusCode": 500,
+                "body": json.dumps({"message": "Internal Server Error, contact Backend-Team for more Info"}),
+                "headers": {"Content-Type": "application/json"}
+            }
 
     return response
 
@@ -316,29 +371,39 @@ def getAllUmfragenFromAdmin(event, context):
 def getUmfrage(event, context):
     """Get the full original JSON of a Umfrage by ID"""
 
-    session = Session()
     try:
         umfrage_id = event['pathParameters']['id']
-        umfrage = session.query(Umfrage).filter(Umfrage.id == umfrage_id).first()
-
-        if umfrage:
-            response = {
-                "statusCode": 200,
-                "body": umfrage.json_text,
-            }
-        else:
-            response = {
-                "statusCode": 404,
-                "body": json.dumps({"message": "Umfrage not found"})
-            }
-    except Exception as e:
-        response = {
-            "statusCode": 500,
-            "body": json.dumps({"message": "Internal Server Error, contact Backend-Team for more Info"})
+    except KeyError:
+        return {
+            "statusCode": 400,
+            "body": json.dumps({"message": "Bad Request: 'id' is required in pathParameters"}),
+            "headers": {"Content-Type": "application/json"}
         }
-        logger.error(str(e))
-    finally:
-        session.close()
+
+    with Session() as session:
+        try:
+            umfrage = session.query(Umfrage).filter(Umfrage.id == umfrage_id).first()
+
+            if umfrage:
+                response = {
+                    "statusCode": 200,
+                    "body": umfrage.json_text,
+                    "headers": {"Content-Type": "application/json"}
+                }
+            else:
+                response = {
+                    "statusCode": 404,
+                    "body": json.dumps({"message": "Umfrage not found"}),
+                    "headers": {"Content-Type": "application/json"}
+                }
+        except Exception as e:
+            session.rollback()
+            logger.error("Error querying Umfrage: %s", str(e))
+            response = {
+                "statusCode": 500,
+                "body": json.dumps({"message": "Internal Server Error, contact Backend-Team for more Info"}),
+                "headers": {"Content-Type": "application/json"}
+            }
 
     return response
 
@@ -400,5 +465,58 @@ def archiveUmfrage(event, context):
         session.close()
 
     return response
+
+def getQuestionsWithOptions(event, context):
+    """Get all Fragen with AntwortOptionen for a given Umfrage ID"""
+    try:
+        umfrage_id = event['pathParameters']['umfrageId']
+    except KeyError:
+        return {
+            "statusCode": 400,
+            "body": json.dumps({"message": "Bad Request: 'umfrageId' is required in pathParameters"})
+        }
+    
+    with Session() as session:
+        try:
+            umfrage = session.query(Umfrage).filter(Umfrage.id == umfrage_id).first()
+
+            if not umfrage:
+                return {
+                    "statusCode": 404,
+                    "body": json.dumps({"message": "Umfrage not found"}),
+                    "headers": {"Content-Type": "application/json"}
+                }
+            
+            fragen = umfrage.fragen
+            fragen_with_options = []
+
+            for frage in fragen:
+                frage_json = {
+                    "id": frage.id,
+                    "text": frage.text,
+                    "typ_id": frage.typ_id,
+                    "punktzahl": frage.punktzahl,
+                    "antwort_optionen": [{"id": option.id, "text": option.text, "ist_richtig": option.ist_richtig} for option in frage.antwort_optionen]
+                }
+                fragen_with_options.append(frage_json)
+            
+            response = {
+                "statusCode": 200,
+                "body": json.dumps({"fragen": fragen_with_options}),
+                "headers": {"Content-Type": "application/json"}
+            }
+
+        except Exception as e:
+            session.rollback()
+            logger.error("Error querying Umfrage: %s", str(e))
+            response = {
+                "statusCode": 500,
+                "body": json.dumps({"message": "Internal Server Error, contact Backend-Team for more Info"}),
+                "headers": {"Content-Type": "application/json"}
+            }
+
+    return response
+
+
 
 

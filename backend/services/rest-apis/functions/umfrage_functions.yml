@@ -40,3 +40,9 @@ archiveUmfrage:
     - httpApi:
         path: /umfrage/archive/{umfrageId}
         method: get
+getQuestionsWithOptions:
+  handler: handlers.umfrage_handler.getQuestionsWithOptions
+  events:
+    - httpApi:
+        path: /umfrage/{umfrageId}/fragen
+        method: get

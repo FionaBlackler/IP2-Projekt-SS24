@@ -7,10 +7,13 @@ from pydantic import BaseModel, ValidationError
 from models.models import Administrator
 from utils.database import create_local_engine
 
-
 engine = create_local_engine()
 # IMPORTANT: This is a simple example and should not be used in production.
 SECRET_KEY = "umfragetool2024"
+
+# Database connection with aws secrets manager
+# engine, Session = create_database_connection()
+Session = sessionmaker(bind=engine)
 
 class UserCreateLogin(BaseModel):
     email: str
@@ -37,74 +40,86 @@ def create_token(user_id: int, email: str) -> str:
     token = jwt.encode(payload, SECRET_KEY, algorithm="HS256")
     return token
 
-
 def login(event, context):
+    
+    with Session() as session:
+        try:
+            if isinstance(event["body"], str):
+                data = json.loads(event["body"])
+            else:
+                # body is already a dict (e.g., when testing locally)
+                data  = event['body']
 
-    Session = sessionmaker(bind=engine)
-    session = Session()
-
-    try:
-        if isinstance(event["body"], str):
-            data = json.loads(event["body"])
-        else:
-            # body is already a dict (e.g., when testing locally)
-            data  = event['body']
-
-        user_data = UserCreateLogin(**data)
-    except (json.JSONDecodeError, ValidationError) as e:
-        return {
-            "statusCode": 400,
-            "body": json.dumps({"message": "Invalid input format"})
-        }
-
-    print(user_data)
-
-    admin = session.query(Administrator).filter(Administrator.email == user_data.email).first()
-    if not admin or not verify_password(user_data.password, admin.password):
-        return {
-            "statusCode": 401,
-            "body": json.dumps({"message": "Invalid credentials"})
-        }
-    token = create_token(admin.id, admin.email)
-    return {
-        "statusCode": 200,
-        "body": json.dumps({"jwt_token": token})
-    }
+            user_data = UserCreateLogin(**data)
+        except (json.JSONDecodeError, ValidationError) as e:
+            return {
+                "statusCode": 400,
+                "body": json.dumps({"message": "Invalid input format"}),
+                "headers": {"Content-Type": "application/json"}
+            }
+        try:
+            admin = session.query(Administrator).filter(Administrator.email == user_data.email).first()
+            if not admin or not verify_password(user_data.password, admin.password):
+                return {
+                    "statusCode": 401,
+                    "body": json.dumps({"message": "Invalid credentials"}),
+                    "headers": {"Content-Type": "application/json"}
+                }
+            token = create_token(admin.id, admin.email)
+            return {
+                "statusCode": 200,
+                "body": json.dumps({"jwt_token": token}),
+                "headers": {"Content-Type": "application/json"}
+            }
+        except Exception as e:
+            return {
+                "statusCode": 500,
+                "body": json.dumps({"message": "Internal Server Error, contact Backend-Team for more Info"}),
+                "headers": {"Content-Type": "application/json"}
+            }
 
 def register(event, context):
 
-    Session = sessionmaker(bind=engine)
-    session = Session()
-
-    try:
-        if isinstance(event["body"], str):
-            data = json.loads(event["body"])
-        else:
-            # body is already a dict (e.g., when testing locally)
-            data  = event['body']
+    with Session() as session:
+        try:
+            if isinstance(event["body"], str):
+                data = json.loads(event["body"])
+            else:
+                # body is already a dict (e.g., when testing locally)
+                data  = event['body']
+                
+            user_data = UserCreateRegister(**data)
+        except (json.JSONDecodeError, ValidationError) as e:
+            return {
+                "statusCode": 400,
+                "body": json.dumps({"message": "Invalid input"}),
+                "headers": {"Content-Type": "application/json"}
+            }
+        
+        try:
+            # check if user already exists
+            admin = session.query(Administrator).filter(Administrator.email == user_data.email).first()
+            if admin:
+                return {
+                    "statusCode": 400,
+                    "body": json.dumps({"message": "User already exists"}),
+                    "headers": {"Content-Type": "application/json"}
+                }
             
-        user_data = UserCreateRegister(**data)
-    except (json.JSONDecodeError, ValidationError) as e:
-        return {
-            "statusCode": 400,
-            "body": json.dumps({"message": "Invalid input"})
-        }
-    
-    # check if user already exists
-    admin = session.query(Administrator).filter(Administrator.email == user_data.email).first()
+            hashed_password = hash_password(user_data.password)
+            admin = Administrator(name=user_data.name, email=user_data.email, password=hashed_password)
+            session.add(admin)
+            session.commit()
 
-    if admin:
-        return {
-            "statusCode": 400,
-            "body": json.dumps({"message": "User already exists"})
-        }
-    
-    hashed_password = hash_password(user_data.password)
-    admin = Administrator(name=user_data.name, email=user_data.email, password=hashed_password)
-    session.add(admin)
-    session.commit()
-
-    return {
-        "statusCode": 201,
-        "body": json.dumps({"message": "User created successfully"})
-    }
+            return {
+                "statusCode": 201,
+                "body": json.dumps({"message": "User created successfully"}),
+                "headers": {"Content-Type": "application/json"}
+            }
+        
+        except Exception as e:
+            return {
+                "statusCode": 500,
+                "body": json.dumps({"message": "Internal Server Error, contact Backend-Team for more Info"}),
+                "headers": {"Content-Type": "application/json"}
+            }

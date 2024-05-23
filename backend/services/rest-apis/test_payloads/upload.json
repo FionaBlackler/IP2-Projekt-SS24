@@ -5,10 +5,9 @@
   "headers": {
     "Content-Type": "application/json"
   },
-  "queryStringParameters": {
+  "pathParameters": {
     "admin_id": "1"
   },
-  "pathParameters": null,
   "stageVariables": null,
   "requestContext": {
     "resourcePath": "/{proxy+}",
