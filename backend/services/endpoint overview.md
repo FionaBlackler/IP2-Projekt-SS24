@@ -11,6 +11,7 @@
 - ✅ Session stoppen
 - ✅ Umfrage upload (in progress)
 - ✅ Umfrage holen
+- ❌ Teilnehmer sendet eine Antwort von einer Frage
 - ❌ Statistik Daten anfordern
 
 # Admin
