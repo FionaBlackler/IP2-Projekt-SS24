@@ -1,30 +1,51 @@
 import UploadComponent from './UploadComponent.jsx';
-import axios from "axios";
-import {useState, useEffect} from "react";
-import {useDropzone} from "react-dropzone";
+import { useState, useEffect } from "react";
+import { useDropzone } from "react-dropzone";
+import "./scrollBar.css";
+import "./hoverDropzone.css";
 
 const UmfragePopup = () => {
     const [loading, setLoading] = useState([]);
+    const [newItemsCount, setNewItemsCount] = useState(0);
 
-    const handleUpload = (acceptedFiles) => {
+    const handleUpload = (acceptedFiles, fileRejections) => {
+        if (fileRejections.length > 0) {
+            console.log("ERROR");
+        }
+        const newUploadedItems = [];
         acceptedFiles.forEach((file, index) => {
-            console.log(loading.length + index)
             const reader = new FileReader();
             reader.onload = () => {
                 const fileContent = reader.result;
-                setLoading(prevLoading => [
-                    ...prevLoading,
-                    {
-                        item: loading.length + index,
-                        component: <UploadComponent file={fileContent.toString()} key={prevLoading.length + index} fileName={"HAHAHAH"}/>
-                    }
-                ]);
+                newUploadedItems.push({
+                    item: loading.length + index,
+                    component: <UploadComponent json={fileContent.toString()} fileName={file.name} />,
+                });
+                if (newUploadedItems.length === acceptedFiles.length) {
+                    setLoading(prevLoading => {
+                        const updatedLoading = [...prevLoading, ...newUploadedItems];
+                        //const itemsToShow = updatedLoading.slice(-2); // Keep only the latest 20 elements
+                        setNewItemsCount(newUploadedItems.length);
+                        return updatedLoading;
+                    });
+                }
             };
-            reader.readAsText(file); // Read the file as text
+            reader.readAsText(file);
         });
     };
 
+    useEffect(() => {
+        if (newItemsCount > 0) {
+            const timer = setTimeout(() => {
+                setNewItemsCount(0);
+            }, newItemsCount*100);
+
+            return () => clearTimeout(timer);
+        }
+    }, [newItemsCount]);
+
     const {
+        isDragActive,
         getRootProps,
         getInputProps,
     } = useDropzone({
@@ -34,10 +55,6 @@ const UmfragePopup = () => {
         onDrop: handleUpload,
         maxSize: 1000000
     });
-
-    useEffect(() => {
-        console.log(loading);
-    }, [loading]);
 
     return (
         <div className='w-[1398.09px] h-[766px] absolute left-0 right-0'>
@@ -50,9 +67,10 @@ const UmfragePopup = () => {
                 </div>
                 <div className='px-[5%] h-[68.3%] flex flex-col space-y-4'>
                     <div {...getRootProps()}
-                         className='w-full h-[190px] bg-[#EEDFCE] rounded-[45px] outline-[#4A362F] outline-[5px] outline-dashed outline-offset-2 overflow-auto flex flex-col items-center justify-center space-y-3'>
+                         className={'parentHover w-full h-[190px] bg-[#EEDFCE] rounded-[45px] outline-[#4A362F] outline-[5px] outline-dashed outline-offset-2 overflow-auto flex flex-col items-center justify-center space-y-3'}>
                         <input {...getInputProps()} />
-                        <svg width="80" height="104" viewBox="0 0 80 104" fill="none"
+                        <svg className={isDragActive ? 'dragging icon' : 'icon'} width="80" height="104"
+                             viewBox="0 0 80 104" fill="none"
                              xmlns="http://www.w3.org/2000/svg">
                             <mask id="path-1-inside-1_256_1525" fill="white">
                                 <path fillRule="evenodd" clipRule="evenodd"
@@ -73,20 +91,23 @@ const UmfragePopup = () => {
                                 fill="black"/>
                         </svg>
                         <span
-                            className="w-full h-[41.57px] text-center text-black text-xl font-normal font-['Inter']">Ziehen
-                            Sie die Umfrage herein um Sie hochzuladen
+                            className="w-full h-[41.57px] text-center text-black text-xl font-normal font-['Inter']">Ziehen oder Drücken Sie um Ihre Umfrage hochzuladen
                         </span>
-
                     </div>
-                    <div>
-
-                    </div>
-                    <div className='w-full h-[310px] px-[3%] block space-y-[10px] overflow-y-scroll'>
-                        {loading.map((l, index) => (
-                            <div key={index}>
-                                {l.component}
-                            </div>
-                        ))}
+                    <div></div>
+                    <div className='w-full h-[310px] overflow-y-scroll' id="scrollbar2">
+                        <div
+                            className='min-w-0 px-[3%] flex flex-col-reverse space-y-reverse space-y-[10px] justify-end'>
+                            {loading.map((l, index) => (
+                                <div
+                                    key={index}
+                                    className='item-enter'
+                                    style={{animationDelay: newItemsCount > 0 && index >= (loading.length - newItemsCount) ? `${(index - (loading.length - newItemsCount)) * 0.05}s` : '0s'}}
+                                >
+                                    {l.component}
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 </div>
             </div>
