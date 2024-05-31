@@ -518,3 +518,8 @@ def getQuestionsWithOptions(event, context):
             }
 
     return response
+
+
+def saveTeilnehmerAntwort(event, context):
+    # TODO
+    return None
