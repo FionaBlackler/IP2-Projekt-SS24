@@ -1,7 +1,7 @@
 # Client
 - ✅ Fragen bekommen (Live ausfüllen)
 - ❌ Ergebnis senden nach ausfüllen (nach Frage, nach gesamter?)
-- ❌ Nach Frage (senden von Ergebnis / Richtigkeit)
+- ❌ Save TeilnehmerAntwort nach jeder Frage die er ausgefüllt hat
 
 # Umfragen
 - ✅ Alle Umfragen für Admin Interface holen
