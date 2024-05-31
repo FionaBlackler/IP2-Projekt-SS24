@@ -8,7 +8,6 @@ from models.models import Administrator, AntwortOption, Sitzung, Umfrage, Frage
 from models.schemas import umfrage_schema
 from utils.database import create_local_engine
 
-
 engine = create_local_engine()
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
 logger = logging.getLogger()
@@ -16,6 +15,21 @@ logger = logging.getLogger()
 # Database connection with aws secrets manager
 # engine, Session = create_database_connection()
 Session = sessionmaker(bind=engine)
+
+
+# Helper Methode um Umfragen in Json umzuwandeln
+def create_umfrage_as_json(umfrage: Umfrage):
+    # Convert Umfrage object to JSON
+    return {
+        "id": umfrage.id,
+        "admin_id": umfrage.admin_id,
+        "titel": umfrage.titel,
+        "beschreibung": umfrage.beschreibung,
+        "erstellungsdatum": str(umfrage.erstellungsdatum),
+        "archivierungsdatum": str(umfrage.archivierungsdatum) if umfrage.archivierungsdatum else None,
+        "status": umfrage.status,
+    }
+
 
 def deleteUmfrageById(event, context):
     session = Session()
@@ -54,9 +68,10 @@ def deleteUmfrageById(event, context):
 
     return response
 
+
 def uploadUmfrage(event, context):
     "accepts the json format in the request body and stores it in the database"
-    
+
     try:
         admin_id = event["pathParameters"]["admin_id"]
     except KeyError:
@@ -191,7 +206,7 @@ def createSession(event, context):
             "body": json.dumps({"message": "Bad Request: 'umfrageId' is required in pathParameters"}),
             "headers": {"Content-Type": "application/json"}
         }
-    
+
     with Session() as session:
         try:
             # Verify the Umfrage exists
@@ -239,6 +254,7 @@ def createSession(event, context):
 
     return response
 
+
 def deleteSession(event, context):
     try:
         sitzung_id = event['pathParameters']['sitzungId']
@@ -259,7 +275,7 @@ def deleteSession(event, context):
                     "body": json.dumps({"message": "Sitzung not found"}),
                     "headers": {"Content-Type": "application/json"}
                 }
-            
+
             session.delete(sitzung)
             session.commit()
 
@@ -279,6 +295,7 @@ def deleteSession(event, context):
             }
 
     return response
+
 
 def endSession(event, context):
     try:
@@ -300,7 +317,7 @@ def endSession(event, context):
                     "body": json.dumps({"message": "Sitzung not found"}),
                     "headers": {"Content-Type": "application/json"}
                 }
-            
+
             sitzung.aktiv = False
             session.commit()
 
@@ -335,15 +352,7 @@ def getAllUmfragenFromAdmin(event, context):
             # Konvertiere Umfragen in ein JSON Format
             umfragen_list = []
             for umfrage in umfragen:
-                umfrage_json = {
-                    "id": umfrage.id,
-                    "admin_id": umfrage.admin_id,
-                    "titel": umfrage.titel,
-                    "beschreibung": umfrage.beschreibung,
-                    "erstellungsdatum": str(umfrage.erstellungsdatum),
-                    "archivierungsdatum": str(umfrage.archivierungsdatum) if umfrage.archivierungsdatum else None,
-                    "status": umfrage.status,
-                }
+                umfrage_json = create_umfrage_as_json(umfrage)
                 umfragen_list.append(umfrage_json)
 
             # Response mit den Umfragen
@@ -423,7 +432,7 @@ def archiveUmfrage(event, context):
             if umfrage.archivierungsdatum:
                 # remove Archivierungsdatum
                 umfrage.archivierungsdatum = None
-                logger.info( f"Umfrage mit ID {umfrage_id} wurde erfolgreich aus dem Archiv entfernt")
+                logger.info(f"Umfrage mit ID {umfrage_id} wurde erfolgreich aus dem Archiv entfernt")
             else:
                 # Add Archivierungsdatum
                 umfrage.archivierungsdatum = datetime.now()
@@ -433,15 +442,7 @@ def archiveUmfrage(event, context):
             session.commit()
 
             # Convert Umfrage object to JSON
-            umfrage_json = {
-                "id": umfrage.id,
-                "admin_id": umfrage.admin_id,
-                "titel": umfrage.titel,
-                "beschreibung": umfrage.beschreibung,
-                "erstellungsdatum": str(umfrage.erstellungsdatum),
-                "archivierungsdatum": str(umfrage.archivierungsdatum) if umfrage.archivierungsdatum else None,
-                "status": umfrage.status,
-            }
+            umfrage_json = create_umfrage_as_json(umfrage)
 
             response = {
                 "statusCode": 200,
@@ -466,6 +467,7 @@ def archiveUmfrage(event, context):
 
     return response
 
+
 def getQuestionsWithOptions(event, context):
     """Get all Fragen with AntwortOptionen for a given Umfrage ID"""
     try:
@@ -475,7 +477,7 @@ def getQuestionsWithOptions(event, context):
             "statusCode": 400,
             "body": json.dumps({"message": "Bad Request: 'umfrageId' is required in pathParameters"})
         }
-    
+
     with Session() as session:
         try:
             umfrage = session.query(Umfrage).filter(Umfrage.id == umfrage_id).first()
@@ -486,7 +488,7 @@ def getQuestionsWithOptions(event, context):
                     "body": json.dumps({"message": "Umfrage not found"}),
                     "headers": {"Content-Type": "application/json"}
                 }
-            
+
             fragen = umfrage.fragen
             fragen_with_options = []
 
@@ -499,7 +501,7 @@ def getQuestionsWithOptions(event, context):
                     "antwort_optionen": [{"id": option.id, "text": option.text, "ist_richtig": option.ist_richtig} for option in frage.antwort_optionen]
                 }
                 fragen_with_options.append(frage_json)
-            
+
             response = {
                 "statusCode": 200,
                 "body": json.dumps({"fragen": fragen_with_options}),
@@ -516,7 +518,3 @@ def getQuestionsWithOptions(event, context):
             }
 
     return response
-
-
-
-
