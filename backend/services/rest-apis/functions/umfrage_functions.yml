@@ -46,3 +46,9 @@ getQuestionsWithOptions:
     - httpApi:
         path: /umfrage/{umfrageId}/fragen
         method: get
+saveTeilnehmerAntwort:
+  handler: handlers.umfrage_handler.reciveTeilnehmerAntwort
+  events:
+    - httpApi:
+        path: /sitzung/{sitzungId}/teilnehmerAntwort
+        method: post
