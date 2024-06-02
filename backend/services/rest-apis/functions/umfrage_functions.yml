@@ -26,13 +26,13 @@ uploadUmfrage:
   handler: handlers.umfrage_handler.uploadUmfrage
   events:
     - httpApi:
-        path: /umfrage/upload/{adminId}
+        path: /umfrage/upload
         method: post
 getAllUmfragenFromAdmin:
   handler: handlers.umfrage_handler.getAllUmfragenFromAdmin
   events:
     - httpApi:
-        path: /umfrage/getAll/{adminId}
+        path: /umfrage/getAll
         method: get
 archiveUmfrage:
   handler: handlers.umfrage_handler.archiveUmfrage
@@ -45,6 +45,12 @@ getQuestionsWithOptions:
   events:
     - httpApi:
         path: /umfrage/{umfrageId}/fragen
+        method: get
+getUmfrageResult:
+  handler: handlers.umfrage_handler.getUmfrageResults
+  events:
+    - httpApi:
+        path: /umfrage/{umfrageId}/result
         method: get
 saveTeilnehmerAntwort:
   handler: handlers.umfrage_handler.reciveTeilnehmerAntwort

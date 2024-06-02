@@ -17,7 +17,7 @@
   },
   "devDependencies": {
     "serverless-dotenv-plugin": "^6.0.0",
-    "serverless-offline": "^13.5.0",
+    "serverless-offline": "^13.6.0",
     "serverless-python-requirements": "^6.1.0"
   }
 }

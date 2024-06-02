@@ -1,11 +1,13 @@
+import os
 from datetime import datetime, timedelta
 import json
 import logging
 from jsonschema import SchemaError, ValidationError, validate
 from sqlalchemy.orm import sessionmaker
-
-from models.models import Administrator, AntwortOption, Sitzung, Umfrage, Frage
+import jwt
+from models.models import Administrator, AntwortOption, Sitzung, Umfrage, Frage, TeilnehmerAntwort
 from models.schemas import umfrage_schema
+from utils.utils import getDecodedTokenFromHeader
 from utils.database import create_local_engine
 
 engine = create_local_engine()
@@ -71,9 +73,14 @@ def deleteUmfrageById(event, context):
 
 def uploadUmfrage(event, context):
     "accepts the json format in the request body and stores it in the database"
-
+    decoded_token = getDecodedTokenFromHeader(event)
+    if decoded_token is None:
+        return {
+            "statusCode": 404,
+            "body": json.dumps({"message": "No Authorization Header"})
+        }
     try:
-        admin_id = event["pathParameters"]["admin_id"]
+        admin_id = decoded_token['admin_id']
     except KeyError:
         return {
             "statusCode": 400,
@@ -131,7 +138,8 @@ def uploadUmfrage(event, context):
                     frage.verneint = f_obj['kategorien']["verneint"]
 
                 valid_options = [AntwortOption(text=option, ist_richtig=True) for option in f_obj["richtige_antworten"]]
-                invalid_options = [AntwortOption(text=option, ist_richtig=False) for option in f_obj["falsche_antworten"]]
+                invalid_options = [AntwortOption(text=option, ist_richtig=False) for option in
+                                   f_obj["falsche_antworten"]]
                 frage.antwort_optionen = valid_options + invalid_options
 
                 fragen.append(frage)
@@ -341,9 +349,14 @@ def endSession(event, context):
 
 def getAllUmfragenFromAdmin(event, context):
     session = Session()
+    decoded_token = getDecodedTokenFromHeader(event)
+    if decoded_token is None:
+        return {
+            "statusCode": 404,
+            "body": json.dumps({"message": "No Authorization Header"})
+        }
     try:
-        # Extrahiere die ID aus der URL
-        admin_id = event['pathParameters']['adminId']
+        admin_id = decoded_token['admin_id']
 
         logger.info(f"Get all Umfragen from Admin with ID {admin_id}.")
         umfragen = session.query(Umfrage).filter_by(admin_id=admin_id)
@@ -498,7 +511,8 @@ def getQuestionsWithOptions(event, context):
                     "text": frage.text,
                     "typ_id": frage.typ_id,
                     "punktzahl": frage.punktzahl,
-                    "antwort_optionen": [{"id": option.id, "text": option.text, "ist_richtig": option.ist_richtig} for option in frage.antwort_optionen]
+                    "antwort_optionen": [{"id": option.id, "text": option.text, "ist_richtig": option.ist_richtig} for
+                                         option in frage.antwort_optionen]
                 }
                 fragen_with_options.append(frage_json)
 
@@ -523,3 +537,47 @@ def getQuestionsWithOptions(event, context):
 def saveTeilnehmerAntwort(event, context):
     # TODO
     return None
+
+
+def getUmfrageResults(event, context):
+    """Get the result for a single Umfrage"""
+    # TODO
+    try:
+        umfrage_id = event['pathParameters']['umfrageId']
+    except KeyError:
+        return {
+            "statusCode": 400,
+            "body": json.dumps({"message": "Bad Request: 'umfrageId' is required in pathParameters"})
+        }
+    with Session() as session:
+        try:
+            umfrage = session.query(Sitzung).filter(Sitzung.umfrage_id == umfrage_id)
+            print(umfrage)
+            umfrage = None
+            if not umfrage:
+                return {
+                    "statusCode": 404,
+                    "body": json.dumps({"message": "Umfrage not found"}),
+                    "headers": {"Content-Type": "application/json"}
+                }
+
+            fragen = umfrage.fragen
+            antworten = []
+            umfrage.sitzungen
+
+            response = {
+                "statusCode": 200,
+                "body": json.dumps({"fragen": antworten}),
+                "headers": {"Content-Type": "application/json"}
+            }
+
+        except Exception as e:
+            session.rollback()
+            logger.error("Error querying Umfrage: %s", str(e))
+            response = {
+                "statusCode": 500,
+                "body": json.dumps({"message": "Internal Server Error, contact Backend-Team for more Info"}),
+                "headers": {"Content-Type": "application/json"}
+            }
+
+    return response
