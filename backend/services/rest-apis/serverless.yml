@@ -1,0 +1,36 @@
+org: informatik
+app: umfragetool
+service: rest-api-umfrage
+frameworkVersion: '3'
+
+useDotenv: true
+
+provider:
+  name: aws
+  runtime: python3.9
+  stage: dev
+  region: eu-central-1
+  environment:
+    # Environment variables scripts can use with os.environ[]
+    DATABASE_URL: ${env:DATABASE_URL} # Only used for local development defined in .env file
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - secretsmanager:GetSecretValue
+      Resource: arn:aws:secretsmanager:us-east-1:123456789012:secret:prod/rds/db-credentials-abc123 # EXAMPLE REPLACE WITH ACTUAL VALUE
+
+functions:
+  - ${file(./functions/umfrage_functions.yml)}
+  - ${file(./functions/auth_functions.yml)}
+  - ${file(./functions/db_functions.yml)}
+
+
+  
+plugins:
+  - serverless-python-requirements # Plugin to handle python requirements
+  - serverless-dotenv-plugin # Plugin to load environment variables from .env file
+  - serverless-offline # Plugin to run serverless offline
+
+custom:
+  pythonRequirements:
+    dockerizePip: true

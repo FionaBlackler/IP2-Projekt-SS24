@@ -1,0 +1,13 @@
+createDatabase:
+  handler: handlers.db_handler.createDatabase
+  events:
+    - httpApi:
+        method: POST
+        path: /database/create
+
+addExampleData:
+  handler: handlers.db_handler.addExampleData
+  events:
+    - httpApi:
+        method: POST
+        path: /database/addExampleData

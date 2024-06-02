@@ -1,0 +1,60 @@
+deleteUmfrageById:
+  handler: handlers.umfrage_handler.deleteUmfrageById
+  events:
+    - httpApi:
+        path: /umfrage/delete/{umfrageId}
+        method: delete
+createSession:
+  handler: handlers.umfrage_handler.createSession
+  events:
+    - httpApi:
+        path: /umfrage/{umfrageId}/sitzung
+        method: post
+deleteSession:
+  handler: handlers.umfrage_handler.deleteSession
+  events:
+    - httpApi:
+        path: /sitzung/delete/{sitzungId}
+        method: delete
+endSession:
+  handler: handlers.umfrage_handler.endSession
+  events:
+    - httpApi:
+        path: /sitzung/end/{sitzungId}
+        method: post        
+uploadUmfrage:
+  handler: handlers.umfrage_handler.uploadUmfrage
+  events:
+    - httpApi:
+        path: /umfrage/upload
+        method: post
+getAllUmfragenFromAdmin:
+  handler: handlers.umfrage_handler.getAllUmfragenFromAdmin
+  events:
+    - httpApi:
+        path: /umfrage/getAll
+        method: get
+archiveUmfrage:
+  handler: handlers.umfrage_handler.archiveUmfrage
+  events:
+    - httpApi:
+        path: /umfrage/archive/{umfrageId}
+        method: get
+getQuestionsWithOptions:
+  handler: handlers.umfrage_handler.getQuestionsWithOptions
+  events:
+    - httpApi:
+        path: /umfrage/{umfrageId}/fragen
+        method: get
+getUmfrageResult:
+  handler: handlers.umfrage_handler.getUmfrageResults
+  events:
+    - httpApi:
+        path: /umfrage/{umfrageId}/result
+        method: get
+saveTeilnehmerAntwort:
+  handler: handlers.umfrage_handler.reciveTeilnehmerAntwort
+  events:
+    - httpApi:
+        path: /sitzung/{sitzungId}/teilnehmerAntwort
+        method: post
