@@ -32,31 +32,7 @@ export default function Umfrage() {
             .catch((error) => {
                 console.log('ERROR: ' + error)
             })
-        const jsonString = `{
-                "umfragen": [
-                    {
-                        "id": 35,
-                        "admin_id": 3,
-                        "titel": "Example Survey",
-                        "beschreibung": "This is an example survey.",
-                        "erstellungsdatum": "2023-05-16",
-                        "archivierungsdatum": null,
-                        "status": "active"
-                    },
-                    {
-                        "id": 47,
-                        "admin_id": 4,
-                        "titel": "Example Survey",
-                        "beschreibung": "This is an example survey.",
-                        "erstellungsdatum": "2023-05-16",
-                        "archivierungsdatum": "2023-05-19",
-                        "status": "active"
-                    }
-
-                ]
-            }`
-        setData(JSON.parse(jsonString))
-        console.log(data)
+       
     }
 
     const umfragenArchivieren = () => {
