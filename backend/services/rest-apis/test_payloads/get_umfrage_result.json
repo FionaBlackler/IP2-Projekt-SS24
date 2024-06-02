@@ -1,0 +1,6 @@
+{
+  "pathParameters": {
+    "umfrageId": 2
+  },
+  "httpMethod": "GET"
+}
