@@ -1,0 +1,31 @@
+$side-menu-width: 200px;
+$side-menu-bg-color: #f0f2f5;
+$main-content-bg-color: #fff;
+
+.admin-layout {
+  display: flex;
+  //height: 100vh;
+  flex-direction: column;
+
+  .SideMenu {
+    width: $side-menu-width;
+    background-color: $side-menu-bg-color;
+    height: 100%;
+    position: fixed;
+    overflow-y: auto;
+  }
+
+  &__content {
+    display: flex;
+    flex-grow: 1;
+  }
+
+  &__main-content {
+    margin-left: $side-menu-width;
+    padding: 20px;
+    flex-grow: 1;
+    background-color: $main-content-bg-color;
+    height: 100%;
+    overflow-y: auto;
+  }
+}
