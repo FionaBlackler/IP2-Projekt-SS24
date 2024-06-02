@@ -30,18 +30,18 @@ npx serverless login
 ```
 Note: Because serverless is not installed globally you need to execute it with `npx`
 
-### 4. Test the installation by executing a function locally
-```bash
-cd rest-api-example
-npx serverless invoke local --function example --data '{"queryStringParameters": {"input_param": "Hello"}}'
-```
-This should return the following output:
-```json
-{
-    "statusCode": 200,
-    "body": "{\"response\": \"Hello received, the setup was successful!\"}"
-}
-```
+
+### 4. Creating the database
+with `backend/services/rest-apis/`:
+
+1. Edit the .env file according to the template and the database name you created with mysql
+2. ```serverless invoke local -f createDatabase``` to create the database
+
+
+### 5. Starting all endpoints for testing with the frontend
+with `backend/services/rest-apis/`:
+
+Execute the command `serverless offline`. This should start all Endpoints and you should see a overview displayed in the Terminal.
 
 
 ## Ressources
