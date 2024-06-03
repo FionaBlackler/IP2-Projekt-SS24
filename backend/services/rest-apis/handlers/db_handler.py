@@ -91,14 +91,14 @@ def addExampleData(event, context):
         TeilnehmerAntwort(
             antwort_optionen=antwort1_1,
             sitzungen=sitzung,
-            anzahl_teilnehmer=1,
-            gewaehlte_antwort=True
+            anzahl_true=1,
+            anzahl_false=4
         ),
         TeilnehmerAntwort(
             antwort_optionen=antwort2_2,
             sitzungen=sitzung,
-            anzahl_teilnehmer=1,
-            gewaehlte_antwort=True
+            anzahl_true=0,
+            anzahl_false=0
         )
     ]
     
