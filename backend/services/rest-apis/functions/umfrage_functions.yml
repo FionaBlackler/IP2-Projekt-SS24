@@ -53,7 +53,7 @@ getUmfrageResult:
         path: /umfrage/{umfrageId}/result
         method: get
 saveTeilnehmerAntwort:
-  handler: handlers.umfrage_handler.reciveTeilnehmerAntwort
+  handler: handlers.umfrage_handler.saveTeilnehmerAntwort
   events:
     - httpApi:
         path: /sitzung/{sitzungId}/teilnehmerAntwort

@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 import json
 import jwt
 import bcrypt
+import logging
 from sqlalchemy.orm import Session, sessionmaker
 from pydantic import BaseModel, ValidationError
 from models.models import Administrator
@@ -16,6 +17,8 @@ SECRET_KEY = "umfragetool2024"
 # Database connection with aws secrets manager
 # engine, Session = create_database_connection()
 Session = sessionmaker(bind=engine)
+logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
+logger = logging.getLogger()
 
 class UserCreateLogin(BaseModel):
     email: str
@@ -77,6 +80,7 @@ def login(event, context):
                 "headers": {"Content-Type": "application/json"}
             }
         except Exception as e:
+            logger.error(str(e))
             return {
                 "statusCode": 500,
                 "body": json.dumps({"message": "Internal Server Error, contact Backend-Team for more Info"}),
@@ -123,6 +127,7 @@ def register(event, context):
             }
         
         except Exception as e:
+            logger.error(str(e))
             return {
                 "statusCode": 500,
                 "body": json.dumps({"message": "Internal Server Error, contact Backend-Team for more Info"}),
