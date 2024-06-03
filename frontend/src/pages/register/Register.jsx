@@ -53,6 +53,7 @@ const Register = () => {
                     }}
                     onFinish={handleSubmit}
                     className="space-y-6"
+                    layout="vertical"
                 >
                     <Form.Item
                         name="name"
@@ -63,6 +64,7 @@ const Register = () => {
                                 message: 'Please input your name!'
                             }
                         ]}
+                        className="w-full"
                     >
                         <Input
                             size="large"
@@ -82,6 +84,7 @@ const Register = () => {
                                 message: 'The input is not valid E-mail!'
                             }
                         ]}
+                        className="w-full"
                     >
                         <Input
                             type="email"
@@ -98,6 +101,7 @@ const Register = () => {
                                 message: 'Please input your password!'
                             }
                         ]}
+                        className="w-full"
                     >
                         <Input.Password
                             size="large"
@@ -122,13 +126,14 @@ const Register = () => {
                             })
                         ]}
                         hasFeedback
+                        className="w-full"
                     >
                         <Input.Password
                             size="large"
                             className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                         />
                     </Form.Item>
-                    <Form.Item>
+                    <Form.Item className="w-full">
                         <Button
                             type="primary"
                             htmlType="submit"

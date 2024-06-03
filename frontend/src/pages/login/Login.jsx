@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Alert, Button, Form, Input } from 'antd'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate, Link } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { login } from '../../redux/actions/authActions.js'
 
@@ -31,65 +31,81 @@ const Login = () => {
     }, [isAuthenticated, error, navigate, redirect])
 
     return (
-        <div className="login">
+        <div className="min-h-screen flex flex-col justify-center items-center bg-gray-100">
             {errorMessage ? (
-                <div style={{ marginBottom: '24px' }}>
+                <div className="mb-6 w-full max-w-md">
                     <Alert message={errorMessage} type="error" showIcon />
                 </div>
             ) : null}
-            <div className="container">
-                <h1>Login</h1>
+            <div className="container mx-auto p-8 bg-white shadow-md rounded-lg max-w-md w-full">
+                <h1 className="text-2xl font-semibold text-center mb-6">Login</h1>
                 <Form
                     name="normal_login"
-                    labelCol={{ span: 8 }}
-                    wrapperCol={{ span: 10 }}
                     initialValues={{
                         remember: true
                     }}
                     onFinish={handleSubmit}
+                    className="space-y-6"
+                    layout="vertical"
                 >
                     <Form.Item
-                        label="Email"
                         name="email"
+                        label="Email"
                         rules={[
                             {
-                                required: true
+                                required: true,
+                                message: 'Please input your email!'
                             },
                             {
                                 type: 'email',
-                                message: 'Bitte Email eingeben'
-                            }]}
+                                message: 'The input is not valid E-mail!'
+                            }
+                        ]}
+                        className="w-full"
                     >
                         <Input
+                            type="email"
                             placeholder="Email"
+                            size="large"
+                            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                         />
                     </Form.Item>
 
                     <Form.Item
-                        label="Password"
                         name="password"
+                        label="Password"
                         rules={[
                             {
                                 required: true,
                                 message: 'Please input your password!'
                             }
                         ]}
+                        className="w-full"
                     >
                         <Input.Password
                             placeholder="Password"
+                            size="large"
+                            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                         />
                     </Form.Item>
 
-                    <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
+                    <Form.Item className="w-full">
                         <Button
                             type="primary"
                             htmlType="submit"
+                            className="w-full py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                             size="large"
                         >
                             Einloggen
                         </Button>
                     </Form.Item>
                 </Form>
+                <div className="text-center mt-4">
+                    <span>Noch kein Account? </span>
+                    <Link to="/register" className="text-indigo-600 hover:text-indigo-800 font-medium">
+                        hier registrieren
+                    </Link>
+                </div>
             </div>
         </div>
     )
