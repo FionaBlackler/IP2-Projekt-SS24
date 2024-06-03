@@ -43,7 +43,8 @@ def addExampleData(event, context):
         beschreibung="This is an example survey.",
         erstellungsdatum=datetime(2023, 5, 16),
         status="active",
-        administrator=admin
+        administrator=admin,
+        json_text="Testing Json"
     )
     
     # Create Fragen
@@ -68,34 +69,35 @@ def addExampleData(event, context):
     )
     
     # Create AntwortOptionen
-    antwort1_1 = AntwortOption(text="Paris", ist_richtig=True, frage=frage1)
-    antwort1_2 = AntwortOption(text="London", ist_richtig=False, frage=frage1)
-    antwort1_3 = AntwortOption(text="Berlin", ist_richtig=False, frage=frage1)
+    antwort1_1 = AntwortOption(id=1, text="Paris", ist_richtig=True, frage=frage1)
+    antwort1_2 = AntwortOption(id=2, text="London", ist_richtig=False, frage=frage1)
+    antwort1_3 = AntwortOption(id=3, text="Berlin", ist_richtig=False, frage=frage1)
     
-    antwort2_1 = AntwortOption(text="3", ist_richtig=False, frage=frage2)
-    antwort2_2 = AntwortOption(text="4", ist_richtig=True, frage=frage2)
-    antwort2_3 = AntwortOption(text="5", ist_richtig=False, frage=frage2)
+    antwort2_1 = AntwortOption(id=4, text="3", ist_richtig=False, frage=frage2)
+    antwort2_2 = AntwortOption(id=5, text="4", ist_richtig=True, frage=frage2)
+    antwort2_3 = AntwortOption(id=6, text="5", ist_richtig=False, frage=frage2)
     
     # Create a Sitzung
     sitzung = Sitzung(
+        id=1,
         startzeit=datetime(2023, 5, 16, 9, 0, 0),
         endzeit=datetime(2023, 5, 16, 10, 0, 0),
         teilnehmerzahl=10,
         umfrage=umfrage
     )
-    
+
     # Create TeilnehmerAntworten
     teilnehmer_antworten = [
         TeilnehmerAntwort(
-            antwort_option=antwort1_1,
-            sitzung=sitzung,
-            teilnehmer_gewaehlt=1,
+            antwort_optionen=antwort1_1,
+            sitzungen=sitzung,
+            anzahl_teilnehmer=1,
             gewaehlte_antwort=True
         ),
         TeilnehmerAntwort(
-            antwort_option=antwort2_2,
-            sitzung=sitzung,
-            teilnehmer_gewaehlt=1,
+            antwort_optionen=antwort2_2,
+            sitzungen=sitzung,
+            anzahl_teilnehmer=1,
             gewaehlte_antwort=True
         )
     ]
