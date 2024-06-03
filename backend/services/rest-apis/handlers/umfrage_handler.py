@@ -51,18 +51,21 @@ def deleteUmfrageById(event, context):
             # Erstelle die Antwort
             response = {
                 "response_status": 200,
-                "body": json.dumps({"message": f"Umfrage mit ID {umfrage_id} wurde erfolgreich entfernt."})
+                "body": json.dumps({"message": f"Umfrage mit ID {umfrage_id} wurde erfolgreich entfernt."}),
+                "headers": {"Content-Type": "application/json"}
             }
         else:
             response = {
                 "response_status": 400,
-                "body": json.dumps({"message": f"Umfrage mit ID {umfrage_id} wurde nicht gefunden."})
+                "body": json.dumps({"message": f"Umfrage mit ID {umfrage_id} wurde nicht gefunden."}),
+                "headers": {"Content-Type": "application/json"}
             }
     except Exception as e:
         session.rollback()
         response = {
             "statusCode": 500,
-            "body": json.dumps({"message": "Internal Server Error, contact Backend-Team for more Info"})
+            "body": json.dumps({"message": "Internal Server Error, contact Backend-Team for more Info"}),
+            "headers": {"Content-Type": "application/json"}
         }
         logger.error(str(e))
     finally:
@@ -77,7 +80,8 @@ def uploadUmfrage(event, context):
     if decoded_token is None:
         return {
             "statusCode": 404,
-            "body": json.dumps({"message": "No Authorization Header"})
+            "body": json.dumps({"message": "No Authorization Header"}),
+            "headers": {"Content-Type": "application/json"}
         }
     try:
         admin_id = decoded_token['admin_id']
@@ -353,7 +357,8 @@ def getAllUmfragenFromAdmin(event, context):
     if decoded_token is None:
         return {
             "statusCode": 404,
-            "body": json.dumps({"message": "No Authorization Header"})
+            "body": json.dumps({"message": "No Authorization Header"}),
+            "headers": {"Content-Type": "application/json"}
         }
     try:
         admin_id = decoded_token['admin_id']
@@ -381,7 +386,8 @@ def getAllUmfragenFromAdmin(event, context):
         session.rollback()
         response = {
             "statusCode": 500,
-            "body": json.dumps({"message": "Internal Server Error, contact Backend-Team for more Info"})
+            "body": json.dumps({"message": "Internal Server Error, contact Backend-Team for more Info"}),
+            "headers": {"Content-Type": "application/json"}
         }
         logger.error(str(e))
     finally:
@@ -459,20 +465,23 @@ def archiveUmfrage(event, context):
 
             response = {
                 "statusCode": 200,
-                "body": json.dumps(umfrage_json)
+                "body": json.dumps(umfrage_json),
+                "headers": {"Content-Type": "application/json"}
             }
 
         else:
             response = {
                 "statusCode": 400,
-                "body": json.dumps({"message": f"Umfrage mit ID {umfrage_id} wurde nicht gefunden."})
+                "body": json.dumps({"message": f"Umfrage mit ID {umfrage_id} wurde nicht gefunden."}),
+                "headers": {"Content-Type": "application/json"}
             }
 
     except Exception as e:
         session.rollback()
         response = {
             "statusCode": 500,
-            "body": json.dumps({"message": "Internal Server Error, contact Backend-Team for more Info"})
+            "body": json.dumps({"message": "Internal Server Error, contact Backend-Team for more Info"}),
+            "headers": {"Content-Type": "application/json"}
         }
         logger.error(str(e))
     finally:
@@ -488,7 +497,8 @@ def getQuestionsWithOptions(event, context):
     except KeyError:
         return {
             "statusCode": 400,
-            "body": json.dumps({"message": "Bad Request: 'umfrageId' is required in pathParameters"})
+            "body": json.dumps({"message": "Bad Request: 'umfrageId' is required in pathParameters"}),
+            "headers": {"Content-Type": "application/json"}
         }
 
     with Session() as session:
