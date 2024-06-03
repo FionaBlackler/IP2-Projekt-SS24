@@ -587,21 +587,22 @@ def saveTeilnehmerAntwort(event, context):
                 # Überprüfe ob die Teilnehmer Antwort schon existiert
                 teilnehmer_antwort = session.query(TeilnehmerAntwort).filter(
                     TeilnehmerAntwort.sitzung_id == sitzung_id,
-                             TeilnehmerAntwort.antwort_id == antwort_id,
-                             TeilnehmerAntwort.gewaehlte_antwort == gewaehlteAntwort).first()
+                             TeilnehmerAntwort.antwort_id == antwort_id).first()
 
-                # Teilnehmer Antwort existiert, erhöhe den Counter der Teilnehmer die diese Antwort gewählt haben
-                if teilnehmer_antwort:
-                    teilnehmer_antwort.anzahl_teilnehmer += 1
+                # Teilnehmer Antwort existiert noch nicht, Erstelle eine neue TeilnehmerAntwort
+                if not teilnehmer_antwort:
 
-                else:
-                    # Teilnehmer Antwort existiert noch nicht, Erstelle eine neue TeilnehmerAntwort
                     teilnehmer_antwort = TeilnehmerAntwort(
                         sitzung_id=sitzung_id,
                         antwort_id=antwort_id,
-                        gewaehlte_antwort=gewaehlteAntwort,
-                        anzahl_teilnehmer=1
+                        anzahl_true=0,
+                        anzahl_false=0
                     )
+
+                if gewaehlteAntwort:
+                    teilnehmer_antwort.anzahl_true += 1
+                else:
+                    teilnehmer_antwort.anzahl_false += 1
 
                 session.add(teilnehmer_antwort)
             session.commit()
