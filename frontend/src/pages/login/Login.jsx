@@ -54,11 +54,11 @@ const Login = () => {
                         rules={[
                             {
                                 required: true,
-                                message: 'Please input your email!'
+                                message: 'Bitte geben sie eine E-Mail an!'
                             },
                             {
                                 type: 'email',
-                                message: 'The input is not valid E-mail!'
+                                message: 'Die Eingabe ist nicht eine gültige E-Mail!'
                             }
                         ]}
                         className="w-full"
@@ -73,17 +73,17 @@ const Login = () => {
 
                     <Form.Item
                         name="password"
-                        label="Password"
+                        label="Passwort"
                         rules={[
                             {
                                 required: true,
-                                message: 'Please input your password!'
+                                message: 'Bitte geben sie ein Passwort ein!'
                             }
                         ]}
                         className="w-full"
                     >
                         <Input.Password
-                            placeholder="Password"
+                            placeholder="Passwort"
                             size="large"
                             className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                         />
@@ -103,7 +103,7 @@ const Login = () => {
                 <div className="text-center mt-4">
                     <span>Noch kein Account? </span>
                     <Link to="/register" className="text-indigo-600 hover:text-indigo-800 font-medium">
-                        hier registrieren
+                        Hier registrieren
                     </Link>
                 </div>
             </div>
