@@ -70,8 +70,8 @@ class TeilnehmerAntwort(Base):
     __tablename__ = 'teilnehmer_antworten'
     sitzung_id = Column(Integer, ForeignKey('sitzungen.id', ondelete='CASCADE'), primary_key=True)
     antwort_id = Column(Integer, ForeignKey('antwort_optionen.id'), primary_key=True, nullable=False)
-    gewaehlte_antwort = Column(Boolean, primary_key=True, nullable=False)
-    anzahl_teilnehmer = Column(Integer, nullable=False)
+    anzahl_true = Column(Integer, nullable=False)
+    anzahl_false = Column(Integer, nullable=False)
 
     sitzungen = relationship("Sitzung", back_populates="teilnehmer_antworten")
     antwort_optionen = relationship("AntwortOption", back_populates="teilnehmer_antworten")
