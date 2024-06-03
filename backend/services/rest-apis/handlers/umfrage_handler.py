@@ -595,7 +595,7 @@ def saveTeilnehmerAntwort(event, context):
                     teilnehmer_antwort.anzahl_teilnehmer += 1
 
                 else:
-                # Teilnehmer Antwort existiert noch nicht, Erstelle eine neue TeilnehmerAntwort
+                    # Teilnehmer Antwort existiert noch nicht, Erstelle eine neue TeilnehmerAntwort
                     teilnehmer_antwort = TeilnehmerAntwort(
                         sitzung_id=sitzung_id,
                         antwort_id=antwort_id,
