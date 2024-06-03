@@ -38,70 +38,79 @@ const Register = () => {
     }, [success, redirect, navigate, error])
 
     return (
-        <div className="register">
+        <div className="min-h-screen flex flex-col justify-center items-center bg-gray-100">
             {errorMessage ? (
-                <div style={{ marginBottom: '24px' }}>
+                <div className="mb-6 w-full max-w-md">
                     <Alert message={errorMessage} type="error" showIcon />
                 </div>
             ) : null}
-            <div className="container">
-                <h1>Register</h1>
+            <div className="container mx-auto p-8 bg-white shadow-md rounded-lg max-w-md w-full">
+                <h1 className="text-2xl font-semibold text-center mb-6">Register</h1>
                 <Form
                     name="normal_register"
                     initialValues={{
                         remember: true
                     }}
                     onFinish={handleSubmit}
+                    className="space-y-6"
                 >
                     <Form.Item
                         name="name"
-                        label="name"
+                        label="Name"
                         rules={[
                             {
-                                required: true
+                                required: true,
+                                message: 'Please input your name!'
                             }
                         ]}
                     >
                         <Input
                             size="large"
+                            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                         />
                     </Form.Item>
                     <Form.Item
                         name="email"
-                        label="email"
+                        label="Email"
                         rules={[
                             {
-                                required: true
+                                required: true,
+                                message: 'Please input your email!'
                             },
                             {
-                                type: 'email'
+                                type: 'email',
+                                message: 'The input is not valid E-mail!'
                             }
                         ]}
                     >
                         <Input
                             type="email"
                             size="large"
+                            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                         />
                     </Form.Item>
                     <Form.Item
                         name="password"
-                        label="password"
+                        label="Password"
                         rules={[
                             {
-                                required: true
+                                required: true,
+                                message: 'Please input your password!'
                             }
                         ]}
                     >
                         <Input.Password
                             size="large"
+                            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                         />
                     </Form.Item>
                     <Form.Item
                         name="confirm_password"
-                        label="confirm_password"
+                        label="Confirm Password"
                         rules={[
                             {
-                                required: true
+                                required: true,
+                                message: 'Please confirm your password!'
                             },
                             ({ getFieldValue }) => ({
                                 validator(_, value) {
@@ -116,14 +125,14 @@ const Register = () => {
                     >
                         <Input.Password
                             size="large"
+                            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                         />
                     </Form.Item>
                     <Form.Item>
                         <Button
                             type="primary"
                             htmlType="submit"
-                            className="register-form-button"
-                            // loading={isLoading}
+                            className="w-full py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                             size="large"
                             disabled={loading}
                         >
