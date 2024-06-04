@@ -3,6 +3,8 @@ import { Form, Button, Alert, Input } from 'antd'
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { register } from '../../redux/actions/authActions.js'
+import { ArrowLeftOutlined } from '@ant-design/icons'
+import { Link } from 'react-router-dom'
 
 const Register = () => {
     const dispatch = useDispatch()
@@ -38,96 +40,114 @@ const Register = () => {
     }, [success, redirect, navigate, error])
 
     return (
-        <div className="register">
+        <div className="min-h-screen flex flex-col justify-center items-center bg-gray-100">
             {errorMessage ? (
-                <div style={{ marginBottom: '24px' }}>
+                <div className="mb-6 w-full max-w-md">
                     <Alert message={errorMessage} type="error" showIcon />
                 </div>
             ) : null}
-            <div className="container">
-                <h1>Register</h1>
+            <div className="container mx-auto p-8 bg-white shadow-md rounded-lg max-w-md w-full">
+                <h1 className="text-2xl font-semibold text-center mb-6">Register</h1>
                 <Form
                     name="normal_register"
                     initialValues={{
                         remember: true
                     }}
                     onFinish={handleSubmit}
+                    className="space-y-6"
+                    layout="vertical"
                 >
                     <Form.Item
                         name="name"
-                        label="name"
+                        label="Name"
                         rules={[
                             {
-                                required: true
+                                required: true,
+                                message: 'Bitte geben sie einen Namen ein!'
                             }
                         ]}
+                        className="w-full"
                     >
                         <Input
                             size="large"
+                            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                         />
                     </Form.Item>
                     <Form.Item
                         name="email"
-                        label="email"
+                        label="Email"
                         rules={[
                             {
-                                required: true
+                                required: true,
+                                message: 'Bitte geben sie eine E-Mail an!'
                             },
                             {
-                                type: 'email'
+                                type: 'email',
+                                message: 'Die Eingabe ist nicht eine gültige E-Mail!'
                             }
                         ]}
+                        className="w-full"
                     >
                         <Input
                             type="email"
                             size="large"
+                            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                         />
                     </Form.Item>
                     <Form.Item
                         name="password"
-                        label="password"
+                        label="Passwort"
                         rules={[
                             {
-                                required: true
+                                required: true,
+                                message: 'Bitte geben sie ein Passwort ein!'
                             }
                         ]}
+                        className="w-full"
                     >
                         <Input.Password
                             size="large"
+                            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                         />
                     </Form.Item>
                     <Form.Item
                         name="confirm_password"
-                        label="confirm_password"
+                        label="Passwort bestätigen"
                         rules={[
                             {
-                                required: true
+                                required: true,
+                                message: 'Bitte bestätigen sie das Passwort!'
                             },
                             ({ getFieldValue }) => ({
                                 validator(_, value) {
                                     if (!value || getFieldValue('password') === value) {
                                         return Promise.resolve()
                                     }
-                                    return Promise.reject(new Error('The two passwords that you entered do not match!'))
+                                    return Promise.reject(new Error('Die beiden Passwörter stimmen nicht überein!'))
                                 }
                             })
                         ]}
                         hasFeedback
+                        className="w-full"
                     >
                         <Input.Password
                             size="large"
+                            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                         />
                     </Form.Item>
-                    <Form.Item>
+                    <Form.Item className="w-full">
+                        <Link to="/login" className="flex items-center text-indigo-600 mb-4">
+                            <ArrowLeftOutlined className="mr-2" />
+                            Zurück zum Login
+                        </Link>
                         <Button
                             type="primary"
                             htmlType="submit"
-                            className="register-form-button"
-                            // loading={isLoading}
+                            className="w-full py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                             size="large"
                             disabled={loading}
                         >
-                            Register
+                            Registrieren
                         </Button>
                     </Form.Item>
                 </Form>
