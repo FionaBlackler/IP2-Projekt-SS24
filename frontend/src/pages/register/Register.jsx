@@ -3,6 +3,8 @@ import { Form, Button, Alert, Input } from 'antd'
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { register } from '../../redux/actions/authActions.js'
+import { ArrowLeftOutlined } from '@ant-design/icons'
+import { Link } from 'react-router-dom'
 
 const Register = () => {
     const dispatch = useDispatch()
@@ -61,7 +63,7 @@ const Register = () => {
                         rules={[
                             {
                                 required: true,
-                                message: 'Please input your name!'
+                                message: 'Bitte geben sie einen Namen ein!'
                             }
                         ]}
                         className="w-full"
@@ -77,11 +79,11 @@ const Register = () => {
                         rules={[
                             {
                                 required: true,
-                                message: 'Please input your email!'
+                                message: 'Bitte geben sie eine E-Mail an!'
                             },
                             {
                                 type: 'email',
-                                message: 'The input is not valid E-mail!'
+                                message: 'Die Eingabe ist nicht eine gültige E-Mail!'
                             }
                         ]}
                         className="w-full"
@@ -94,11 +96,11 @@ const Register = () => {
                     </Form.Item>
                     <Form.Item
                         name="password"
-                        label="Password"
+                        label="Passwort"
                         rules={[
                             {
                                 required: true,
-                                message: 'Please input your password!'
+                                message: 'Bitte geben sie ein Passwort ein!'
                             }
                         ]}
                         className="w-full"
@@ -110,18 +112,18 @@ const Register = () => {
                     </Form.Item>
                     <Form.Item
                         name="confirm_password"
-                        label="Confirm Password"
+                        label="Passwort bestätigen"
                         rules={[
                             {
                                 required: true,
-                                message: 'Please confirm your password!'
+                                message: 'Bitte bestätigen sie das Passwort!'
                             },
                             ({ getFieldValue }) => ({
                                 validator(_, value) {
                                     if (!value || getFieldValue('password') === value) {
                                         return Promise.resolve()
                                     }
-                                    return Promise.reject(new Error('The two passwords that you entered do not match!'))
+                                    return Promise.reject(new Error('Die beiden Passwörter stimmen nicht überein!'))
                                 }
                             })
                         ]}
@@ -134,6 +136,10 @@ const Register = () => {
                         />
                     </Form.Item>
                     <Form.Item className="w-full">
+                        <Link to="/login" className="flex items-center text-indigo-600 mb-4">
+                            <ArrowLeftOutlined className="mr-2" />
+                            Zurück zum Login
+                        </Link>
                         <Button
                             type="primary"
                             htmlType="submit"
@@ -141,7 +147,7 @@ const Register = () => {
                             size="large"
                             disabled={loading}
                         >
-                            Register
+                            Registrieren
                         </Button>
                     </Form.Item>
                 </Form>

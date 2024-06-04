@@ -75,7 +75,7 @@ const Login = () => {
 
                     <Form.Item
                         name="password"
-                        label="Password"
+                        label="Passwort"
                         rules={[
                             {
                                 required: true,
@@ -85,7 +85,7 @@ const Login = () => {
                         className="w-full"
                     >
                         <Input.Password
-                            placeholder="Password"
+                            placeholder="Passwort"
                             size="large"
                             className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                         />

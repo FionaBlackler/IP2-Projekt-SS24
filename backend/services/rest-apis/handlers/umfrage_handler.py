@@ -353,12 +353,6 @@ def endSession(event, context):
 
 def getAllUmfragenFromAdmin(event, context):
     decoded_token = getDecodedTokenFromHeader(event)
-    if decoded_token is None:
-        return {
-            "statusCode": 404,
-            "body": json.dumps({"message": "No Authorization Header"}),
-            "headers": {"Content-Type": "application/json"}
-        }
     with Session() as session:
         try:
             admin_id = decoded_token['admin_id']
