@@ -11,8 +11,7 @@ from utils.database import create_local_engine
 
 engine = create_local_engine()
 # IMPORTANT: This is a simple example and should not be used in production.
-# moved this into .env please configure it there.
-SECRET_KEY = "umfragetool2024"
+# moved this into .env please configure it there
 
 # Database connection with aws secrets manager
 # engine, Session = create_database_connection()
@@ -42,7 +41,7 @@ def create_token(user_id: int, email: str) -> str:
         "exp": datetime.utcnow() + timedelta(hours=2),  # Token expires in 2 hour
         "iat": datetime.utcnow()
     }
-    secret_key = SECRET_KEY
+    secret_key = os.environ["SECRET_KEY"]
     if not secret_key:
         print("SECRET_KEY not set, please add it to .env")
     token = jwt.encode(payload, secret_key, algorithm="HS256")
