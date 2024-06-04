@@ -1,3 +1,16 @@
+const   UserView =() => {
+    return(
+        <div>
+
+            <QuestionList/>
+
+
+
+
+
+        </div>
+    )
+}
 import './UserView.css'
 import { Header } from 'antd/es/layout/layout.js'
 import { Route } from 'react-router-dom'
