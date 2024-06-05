@@ -5,3 +5,5 @@ mysqlclient
 mysql-connector-python
 boto3
 bcrypt
+pydantic
+PyJWT

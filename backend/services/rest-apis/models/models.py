@@ -4,11 +4,6 @@ from sqlalchemy.orm import relationship, sessionmaker
 
 Base = declarative_base()
 
-teilnehmer_antwort_optionen = Table('teilnehmer_antwort_optionen', Base.metadata,
-    Column('teilnehmer_antwort_id', Integer, ForeignKey('teilnehmer_antworten.id', ondelete='CASCADE'), primary_key=True),
-    Column('antwort_option_id', Integer, ForeignKey('antwort_optionen.id', ondelete='CASCADE'), primary_key=True)
-)
-
 class Administrator(Base):
     __tablename__ = 'administratoren'
     id = Column(Integer, primary_key=True)
@@ -53,12 +48,10 @@ class AntwortOption(Base):
     text = Column(Text, nullable=False)
     ist_richtig = Column(Boolean, nullable=False)
     frage_id = Column(Integer, ForeignKey('fragen.id', ondelete='CASCADE'))
+
     frage = relationship("Frage", back_populates="antwort_optionen")
-    teilnehmer_antworten = relationship(
-        "TeilnehmerAntwort",
-        secondary=teilnehmer_antwort_optionen,
-        back_populates="antwort_optionen"
-    )
+    teilnehmer_antworten = relationship("TeilnehmerAntwort", back_populates="antwort_optionen")
+
 
 class Sitzung(Base):
     __tablename__ = 'sitzungen'
@@ -68,20 +61,18 @@ class Sitzung(Base):
     teilnehmerzahl = Column(Integer, nullable=False)
     aktiv = Column(Boolean, nullable=False, default=True)
     umfrage_id = Column(Integer, ForeignKey('umfragen.id', ondelete='CASCADE'))
+
     umfrage = relationship("Umfrage", back_populates="sitzungen")
-    teilnehmer_antworten = relationship("TeilnehmerAntwort", back_populates="sitzung", cascade="all, delete")
+    teilnehmer_antworten = relationship("TeilnehmerAntwort", back_populates="sitzungen", cascade="all, delete")
 
 
 class TeilnehmerAntwort(Base):
     __tablename__ = 'teilnehmer_antworten'
-    id = Column(Integer, primary_key=True)
-    antwort_id = Column(Integer, ForeignKey('antwort_optionen.id'), nullable=False)
-    sitzung_id = Column(Integer, ForeignKey('sitzungen.id', ondelete='CASCADE'), nullable=False)
-    sitzung = relationship("Sitzung", back_populates="teilnehmer_antworten")
-    ist_richtig = Column(Boolean, nullable=False)
-    antwort_optionen = relationship(
-        "AntwortOption",
-        secondary=teilnehmer_antwort_optionen,
-        back_populates="teilnehmer_antworten"
-    )
+    sitzung_id = Column(Integer, ForeignKey('sitzungen.id', ondelete='CASCADE'), primary_key=True)
+    antwort_id = Column(Integer, ForeignKey('antwort_optionen.id'), primary_key=True, nullable=False)
+    anzahl_true = Column(Integer, nullable=False)
+    anzahl_false = Column(Integer, nullable=False)
+
+    sitzungen = relationship("Sitzung", back_populates="teilnehmer_antworten")
+    antwort_optionen = relationship("AntwortOption", back_populates="teilnehmer_antworten")
 

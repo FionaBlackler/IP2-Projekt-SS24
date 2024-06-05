@@ -51,18 +51,21 @@ def deleteUmfrageById(event, context):
             # Erstelle die Antwort
             response = {
                 "response_status": 200,
-                "body": json.dumps({"message": f"Umfrage mit ID {umfrage_id} wurde erfolgreich entfernt."})
+                "body": json.dumps({"message": f"Umfrage mit ID {umfrage_id} wurde erfolgreich entfernt."}),
+                "headers": {"Content-Type": "application/json"}
             }
         else:
             response = {
                 "response_status": 400,
-                "body": json.dumps({"message": f"Umfrage mit ID {umfrage_id} wurde nicht gefunden."})
+                "body": json.dumps({"message": f"Umfrage mit ID {umfrage_id} wurde nicht gefunden."}),
+                "headers": {"Content-Type": "application/json"}
             }
     except Exception as e:
         session.rollback()
         response = {
             "statusCode": 500,
-            "body": json.dumps({"message": "Internal Server Error, contact Backend-Team for more Info"})
+            "body": json.dumps({"message": "Internal Server Error, contact Backend-Team for more Info"}),
+            "headers": {"Content-Type": "application/json"}
         }
         logger.error(str(e))
     finally:
@@ -77,7 +80,8 @@ def uploadUmfrage(event, context):
     if decoded_token is None:
         return {
             "statusCode": 404,
-            "body": json.dumps({"message": "No Authorization Header"})
+            "body": json.dumps({"message": "No Authorization Header"}),
+            "headers": {"Content-Type": "application/json"}
         }
     try:
         admin_id = decoded_token['admin_id']
@@ -348,44 +352,40 @@ def endSession(event, context):
 
 
 def getAllUmfragenFromAdmin(event, context):
-    session = Session()
     decoded_token = getDecodedTokenFromHeader(event)
-    if decoded_token is None:
-        return {
-            "statusCode": 404,
-            "body": json.dumps({"message": "No Authorization Header"})
-        }
-    try:
-        admin_id = decoded_token['admin_id']
+    with Session() as session:
+        try:
+            admin_id = decoded_token['admin_id']
 
-        logger.info(f"Get all Umfragen from Admin with ID {admin_id}.")
-        umfragen = session.query(Umfrage).filter_by(admin_id=admin_id)
+            logger.info(f"Get all Umfragen from Admin with ID {admin_id}.")
+            umfragen = session.query(Umfrage).filter_by(admin_id=admin_id)
 
-        if umfragen:
-            # Konvertiere Umfragen in ein JSON Format
-            umfragen_list = []
-            for umfrage in umfragen:
-                umfrage_json = create_umfrage_as_json(umfrage)
-                umfragen_list.append(umfrage_json)
+            if umfragen:
+                # Konvertiere Umfragen in ein JSON Format
+                umfragen_list = []
+                for umfrage in umfragen:
+                    umfrage_json = create_umfrage_as_json(umfrage)
+                    umfragen_list.append(umfrage_json)
 
-            # Response mit den Umfragen
+                # Response mit den Umfragen
+                response = {
+                    "statusCode": 200,
+                    "body": json.dumps({"umfragen": umfragen_list})
+                }
+            else:
+                response = {
+                    "response_status": 204
+                }
+        except Exception as e:
+            session.rollback()
             response = {
-                "statusCode": 200,
-                "body": json.dumps({"umfragen": umfragen_list})
+                "statusCode": 500,
+                "body": json.dumps({"message": "Internal Server Error, contact Backend-Team for more Info"}),
+                "headers": {"Content-Type": "application/json"}
             }
-        else:
-            response = {
-                "response_status": 204
-            }
-    except Exception as e:
-        session.rollback()
-        response = {
-            "statusCode": 500,
-            "body": json.dumps({"message": "Internal Server Error, contact Backend-Team for more Info"})
-        }
-        logger.error(str(e))
-    finally:
-        session.close()
+            logger.error(str(e))
+        finally:
+            session.close()
 
     return response
 
@@ -431,52 +431,55 @@ def getUmfrage(event, context):
 
 
 def archiveUmfrage(event, context):
-    session = Session()
-    try:
-        # Extrahiere die ID aus der URL
-        umfrage_id = event['pathParameters']['umfrageId']
+    with Session() as session:
+        try:
+            # Extrahiere die ID aus der URL
+            umfrage_id = event['pathParameters']['umfrageId']
 
-        logger.info(f"Archive Umfrage with ID {umfrage_id}.")
+            logger.info(f"Archive Umfrage with ID {umfrage_id}.")
 
-        # finde die Umfrage in der Datenbank
-        umfrage = session.query(Umfrage).filter_by(id=umfrage_id).first()
+            # finde die Umfrage in der Datenbank
+            umfrage = session.query(Umfrage).filter_by(id=umfrage_id).first()
 
-        if umfrage:
-            if umfrage.archivierungsdatum:
-                # remove Archivierungsdatum
-                umfrage.archivierungsdatum = None
-                logger.info(f"Umfrage mit ID {umfrage_id} wurde erfolgreich aus dem Archiv entfernt")
+            if umfrage:
+                if umfrage.archivierungsdatum:
+                    # remove Archivierungsdatum
+                    umfrage.archivierungsdatum = None
+                    logger.info(f"Umfrage mit ID {umfrage_id} wurde erfolgreich aus dem Archiv entfernt")
+                else:
+                    # Add Archivierungsdatum
+                    umfrage.archivierungsdatum = datetime.now()
+                    logger.info(f"Umfrage mit ID {umfrage_id} wurde erfolgreich archiviert")
+
+                session.add(umfrage)
+                session.commit()
+
+                # Convert Umfrage object to JSON
+                umfrage_json = create_umfrage_as_json(umfrage)
+
+                response = {
+                    "statusCode": 200,
+                    "body": json.dumps(umfrage_json),
+                    "headers": {"Content-Type": "application/json"}
+                }
+
             else:
-                # Add Archivierungsdatum
-                umfrage.archivierungsdatum = datetime.now()
-                logger.info(f"Umfrage mit ID {umfrage_id} wurde erfolgreich archiviert")
+                response = {
+                    "statusCode": 400,
+                    "body": json.dumps({"message": f"Umfrage mit ID {umfrage_id} wurde nicht gefunden."}),
+                    "headers": {"Content-Type": "application/json"}
+                }
 
-            session.add(umfrage)
-            session.commit()
-
-            # Convert Umfrage object to JSON
-            umfrage_json = create_umfrage_as_json(umfrage)
-
+        except Exception as e:
+            session.rollback()
             response = {
-                "statusCode": 200,
-                "body": json.dumps(umfrage_json)
+                "statusCode": 500,
+                "body": json.dumps({"message": "Internal Server Error, contact Backend-Team for more Info"}),
+                "headers": {"Content-Type": "application/json"}
             }
-
-        else:
-            response = {
-                "statusCode": 400,
-                "body": json.dumps({"message": f"Umfrage mit ID {umfrage_id} wurde nicht gefunden."})
-            }
-
-    except Exception as e:
-        session.rollback()
-        response = {
-            "statusCode": 500,
-            "body": json.dumps({"message": "Internal Server Error, contact Backend-Team for more Info"})
-        }
-        logger.error(str(e))
-    finally:
-        session.close()
+            logger.error(str(e))
+        finally:
+            session.close()
 
     return response
 
@@ -488,7 +491,8 @@ def getQuestionsWithOptions(event, context):
     except KeyError:
         return {
             "statusCode": 400,
-            "body": json.dumps({"message": "Bad Request: 'umfrageId' is required in pathParameters"})
+            "body": json.dumps({"message": "Bad Request: 'umfrageId' is required in pathParameters"}),
+            "headers": {"Content-Type": "application/json"}
         }
 
     with Session() as session:
@@ -535,8 +539,86 @@ def getQuestionsWithOptions(event, context):
 
 
 def saveTeilnehmerAntwort(event, context):
-    # TODO
-    return None
+    sitzung_id = event['pathParameters']['sitzungId']
+
+    # Extrahiere und validiere die Anfrageinformationen aus dem Body
+    try:
+        body = json.loads(event.get('body', '{}'))
+        antworten = body.get('antworten', [])
+    except (json.JSONDecodeError, KeyError):
+        return {
+            "statusCode": 400,
+            "body": json.dumps({"message": "Invalid request: Missing fields."}),
+            "headers": {"Content-Type": "application/json"}
+        }
+
+    if not antworten:
+        return {
+            "statusCode": 400,
+            "body": json.dumps({"message": "Invalid request: No answers provided."}),
+            "headers": {"Content-Type": "application/json"}
+        }
+
+
+
+    with Session() as session:
+        try:
+            for antwort in antworten:
+                antwort_id = antwort.get('antwort_id')
+                gewaehlteAntwort = antwort.get('gewaehlteAntwort')
+
+                # Überprüfe, ob die Sitzung und die AntwortOption existieren
+                sitzung = session.query(Sitzung).filter(Sitzung.id == sitzung_id).first()
+                antwort_option = session.query(AntwortOption).filter(AntwortOption.id == antwort_id).first()
+
+                if not sitzung or not antwort_option:
+                    return {
+                        "statusCode": 404,
+                        "body": json.dumps({"message": "Sitzung or AntwortOption not found."}),
+                        "headers": {"Content-Type": "application/json"}
+                    }
+
+                # Überprüfe ob die Teilnehmer Antwort schon existiert
+                teilnehmer_antwort = session.query(TeilnehmerAntwort).filter(
+                    TeilnehmerAntwort.sitzung_id == sitzung_id,
+                             TeilnehmerAntwort.antwort_id == antwort_id).first()
+
+                # Teilnehmer Antwort existiert noch nicht, Erstelle eine neue TeilnehmerAntwort
+                if not teilnehmer_antwort:
+
+                    teilnehmer_antwort = TeilnehmerAntwort(
+                        sitzung_id=sitzung_id,
+                        antwort_id=antwort_id,
+                        anzahl_true=0,
+                        anzahl_false=0
+                    )
+
+                if gewaehlteAntwort:
+                    teilnehmer_antwort.anzahl_true += 1
+                else:
+                    teilnehmer_antwort.anzahl_false += 1
+
+                session.add(teilnehmer_antwort)
+            session.commit()
+
+            response = {
+                "statusCode": 200,
+                "body": json.dumps({"message": "Die Teilnehmerantworten wurde erfolgreich hinzugefügt"}),
+                "headers": {"Content-Type": "application/json"}
+            }
+
+        except Exception as e:
+            session.rollback()
+            response = {
+                "statusCode": 500,
+                "body": json.dumps({"message": "Internal Server Error, contact Backend-Team for more Info"}),
+                "headers": {"Content-Type": "application/json"}
+            }
+            logger.error(str(e))
+        finally:
+            session.close()
+
+    return response
 
 
 def getUmfrageResults(event, context):
