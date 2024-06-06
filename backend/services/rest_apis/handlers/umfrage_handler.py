@@ -19,9 +19,16 @@ logger = logging.getLogger()
 Session = sessionmaker(bind=engine)
 
 
-# Helper Methode um Umfragen in Json umzuwandeln
 def create_umfrage_as_json(umfrage: Umfrage):
-    # Convert Umfrage object to JSON
+    """
+    Helper function to convert Umfrage objects into JSON format.
+
+    Parameters:
+    umfrage (Umfrage): An instance of the Umfrage class.
+
+    Returns:
+    dict: A dictionary representing the Umfrage object, with keys corresponding to the object's attributes.
+    """
     return {
         "id": umfrage.id,
         "admin_id": umfrage.admin_id,
@@ -34,6 +41,7 @@ def create_umfrage_as_json(umfrage: Umfrage):
 
 
 def deleteUmfrageById(event, context):
+    getDecodedTokenFromHeader(event)
     session = Session()
     try:
         # Extrahiere die ID aus der URL
@@ -77,20 +85,7 @@ def deleteUmfrageById(event, context):
 def uploadUmfrage(event, context):
     "accepts the json format in the request body and stores it in the database"
     decoded_token = getDecodedTokenFromHeader(event)
-    if decoded_token is None:
-        return {
-            "statusCode": 404,
-            "body": json.dumps({"message": "No Authorization Header"}),
-            "headers": {"Content-Type": "application/json"}
-        }
-    try:
-        admin_id = decoded_token['admin_id']
-    except KeyError:
-        return {
-            "statusCode": 400,
-            "body": json.dumps({"message": "Bad Request: 'admin_id' is required in pathParameters"}),
-            "headers": {"Content-Type": "application/json"}
-        }
+    admin_id = decoded_token['admin_id']
 
     with Session() as session:
         try:
@@ -210,101 +205,93 @@ def uploadUmfrage(event, context):
 
 
 def createSession(event, context):
+    getDecodedTokenFromHeader(event)
+
+    umfrage_id = event['pathParameters']['umfrageId']
+    session = Session()
     try:
-        umfrage_id = event['pathParameters']['umfrageId']
-    except KeyError:
-        return {
-            "statusCode": 400,
-            "body": json.dumps({"message": "Bad Request: 'umfrageId' is required in pathParameters"}),
+        # Verify the Umfrage exists
+        umfrage = session.query(Umfrage).filter(Umfrage.id == umfrage_id).first()
+        if not umfrage:
+            return {
+                "statusCode": 404,
+                "body": json.dumps({"message": "Umfrage not found"}),
+                "headers": {"Content-Type": "application/json"}
+            }
+
+        # Set session length (e.g., 15 minutes)
+        session_length_minutes = 15
+        start_time = datetime.now()
+        end_time = start_time + timedelta(minutes=session_length_minutes)
+
+        # Create a new Sitzung (Session)
+        sitzung = Sitzung(
+            startzeit=start_time,
+            endzeit=end_time,
+            teilnehmerzahl=0,
+            umfrage_id=umfrage.id
+        )
+        session.add(sitzung)
+        session.commit()
+
+        response = {
+            "statusCode": 201,
+            "body": json.dumps({
+                "message": "Sitzung created successfully",
+                "sitzung_id": sitzung.id,
+                "startzeit": start_time.isoformat(),
+                "endzeit": end_time.isoformat()
+            }),
             "headers": {"Content-Type": "application/json"}
         }
-
-    with Session() as session:
-        try:
-            # Verify the Umfrage exists
-            umfrage = session.query(Umfrage).filter(Umfrage.id == umfrage_id).first()
-            if not umfrage:
-                return {
-                    "statusCode": 404,
-                    "body": json.dumps({"message": "Umfrage not found"}),
-                    "headers": {"Content-Type": "application/json"}
-                }
-
-            # Set session length (e.g., 15 minutes)
-            session_length_minutes = 15
-            start_time = datetime.now()
-            end_time = start_time + timedelta(minutes=session_length_minutes)
-
-            # Create a new Sitzung (Session)
-            sitzung = Sitzung(
-                startzeit=start_time,
-                endzeit=end_time,
-                teilnehmerzahl=0,
-                umfrage_id=umfrage.id
-            )
-            session.add(sitzung)
-            session.commit()
-
-            response = {
-                "statusCode": 201,
-                "body": json.dumps({
-                    "message": "Sitzung created successfully",
-                    "sitzung_id": sitzung.id,
-                    "startzeit": start_time.isoformat(),
-                    "endzeit": end_time.isoformat()
-                }),
-                "headers": {"Content-Type": "application/json"}
-            }
-        except Exception as e:
-            session.rollback()
-            logger.error("Error creating Sitzung: %s", str(e))
-            response = {
-                "statusCode": 500,
-                "body": json.dumps({"message": "Internal Server Error, contact Backend-Team for more Info"}),
-                "headers": {"Content-Type": "application/json"}
-            }
+    except Exception as e:
+        session.rollback()
+        logger.error("Error creating Sitzung: %s", str(e))
+        response = {
+            "statusCode": 500,
+            "body": json.dumps({"message": "Internal Server Error, contact Backend-Team for more Info"}),
+            "headers": {"Content-Type": "application/json"}
+        }
+    finally:
+        session.close()
 
     return response
 
 
 def deleteSession(event, context):
+    getDecodedTokenFromHeader(event)
+    
+    sitzung_id = event['pathParameters']['sitzungId']
+    session = Session()
     try:
-        sitzung_id = event['pathParameters']['sitzungId']
-    except KeyError:
-        return {
-            "statusCode": 400,
-            "body": json.dumps({"message": "Bad Request: 'sitzungId' is required in pathParameters"}),
+        # Verify the Sitzung exists
+        sitzung = session.query(Sitzung).filter(Sitzung.id == sitzung_id).first()
+        if not sitzung:
+            return {
+                "statusCode": 404,
+                "body": json.dumps({"message": "Sitzung not found"}),
+                "headers": {"Content-Type": "application/json"}
+            }
+
+        session.delete(sitzung)
+        session.commit()
+
+        response = {
+            "statusCode": 200,
+            "body": json.dumps({"message": "Sitzung deleted successfully"}),
             "headers": {"Content-Type": "application/json"}
         }
 
-    with Session() as session:
-        try:
-            # Verify the Sitzung exists
-            sitzung = session.query(Sitzung).filter(Sitzung.id == sitzung_id).first()
-            if not sitzung:
-                return {
-                    "statusCode": 404,
-                    "body": json.dumps({"message": "Sitzung not found"}),
-                    "headers": {"Content-Type": "application/json"}
-                }
-
-            session.delete(sitzung)
-            session.commit()
-
-            response = {
-                "statusCode": 200,
-                "body": json.dumps({"message": "Sitzung deleted successfully"}),
-                "headers": {"Content-Type": "application/json"}
-            }
-
-        except Exception as e:
-            session.rollback()
-            logger.error("Error deleting Sitzung: %s", str(e))
-            response = {
-                "statusCode": 500,
-                "body": json.dumps({"message": "Internal Server Error, contact Backend-Team for more Info"}),
-                "headers": {"Content-Type": "application/json"}
-            }
+    except Exception as e:
+        session.rollback()
+        logger.error("Error deleting Sitzung: %s", str(e))
+        response = {
+            "statusCode": 500,
+            "body": json.dumps({"message": "Internal Server Error, contact Backend-Team for more Info"}),
+            "headers": {"Content-Type": "application/json"}
+        }
+    finally:
+        session.close()
 
     return response
 

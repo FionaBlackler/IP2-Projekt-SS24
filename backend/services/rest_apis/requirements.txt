@@ -7,3 +7,6 @@ boto3
 bcrypt
 pydantic
 PyJWT
+pytest
+pytest-mock
+python-dotenv
