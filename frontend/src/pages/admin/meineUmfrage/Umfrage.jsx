@@ -1,193 +1,104 @@
-import axios from 'axios'
-import { useEffect, useState } from 'react'
+import axios from 'axios';
+import { useEffect, useState } from 'react';
+import React from 'react';
+import UmfragenTable from './UmfragenTable';
+import ArchiveTable from './ArchiveTable';
+import UmfragePopup from '../uploadUmfragePage/UmfragePopup';
 
 export default function Umfrage() {
-    const accessToken = localStorage.getItem('accessToken')
-    console.log(accessToken)
-    const [data, setData] = useState({ umfragen: [] })
-    const [selectedIds, setSelectedIds] = useState([])
+    const [data, setData] = useState({ umfragen: [] });
+    const [filter, setFilter] = useState(true);
+    const [upload, setUpload] = useState(false);
 
-    const handleCheckboxChange = (event, id) => {
-        if (event.target.checked) {
-            setSelectedIds([...selectedIds, id])
-        } else {
-            setSelectedIds(selectedIds.filter((item) => item !== id))
-        }
-    }
+    const [loading, setLoading] = useState(true);
+    const accessToken = localStorage.getItem('accessToken');
 
     const umfragenLaden = () => {
+        console.log('umfragenLaden');
+        const jsonString = `{
+            "umfragen": [
+                {
+                    "id": 35,
+                    "admin_id": 3,
+                    "titel": "Example Survey",
+                    "beschreibung": "This is an example survey.",
+                    "erstellungsdatum": "2023-05-16",
+                    "archivierungsdatum": null,
+                    "status": "active"
+                },
+                {
+                    "id": 47,
+                    "admin_id": 4,
+                    "titel": "Example Survey",
+                    "beschreibung": "This is an example survey.",
+                    "erstellungsdatum": "2023-05-16",
+                    "archivierungsdatum": "2023-05-19",
+                    "status": "active"
+                }
+            ]
+        }`;
+        const parsedData = JSON.parse(jsonString);
+        setData(parsedData);
         axios
-            .post(`${window.location.origin}/umfrage/getAll`, { headers: {"Authorization" : `Bearer ${accessToken}`}})
+            .post(`${window.location.origin}/umfrage/getAll`, {}, {
+                headers: { Authorization: `Bearer ${accessToken}` },
+            })
             .then((r) => {
                 if (r.status === 200) {
-                    setStatus({ state: 'FINISHED' })
-                    setData(JSON.parse(r.data))
-                    console.log(data)
+                    const responseData = r.data; // Assuming the data is already in JSON format
+                    console.log('Data received from server:', responseData);
+                    setData(responseData);
                 } else if (r.status === 204) {
-                    console.log('Keine Einträge vorhanden')
+                    console.log('Keine Einträge vorhanden');
                 } else if (r.status === 500) {
-                    console.log(r.data)
+                    console.log(r.data);
                 }
             })
             .catch((error) => {
-                console.log('ERROR: ' + error)
+                console.log('ERROR: ' + error);
             })
-       
-    }
-
-    const umfragenArchivieren = () => {
-        selectedIds.forEach((id) => {
-            setData({
-                umfragen: data.umfragen.filter(
-                    (umfrage) => !selectedIds.includes(umfrage.id)
-                ),
-            })
-
-            // console.log(`${window.location.origin}/umfrage/archive/${id}`)
-            axios
-                .post(`${window.location.origin}/umfrage/archive/${id}`, { headers: {"Authorization" : `Bearer ${accessToken}`}})
-                .then((r) => {
-                    if (r.status === 200) {
-                        setStatus({ state: 'FINISHED' })
-                    }
-                })
-                .catch((error) => {
-                    console.log('ERROR: ' + error)
-                })
-        })
-        setSelectedIds([])
-    }
-
-    const umfragenLöschen = () => {
-        selectedIds.forEach((id) => {
-            setData({
-                umfragen: data.umfragen.filter(
-                    (umfrage) => !selectedIds.includes(umfrage.id)
-                ),
-            })
-            axios
-
-                .post(`${window.location.origin}/umfrage/delete/${id}`, { headers: {"Authorization" : `Bearer ${accessToken}`}})
-                .then((r) => {
-                    if (r.status === 200) {
-                        setStatus({ state: 'FINISHED' })
-                    }
-                })
-                .catch((error) => {
-                    console.log('ERROR: ' + error)
-                })
-        })
-
-        setSelectedIds([])
-    }
+            .finally(() => {
+                setLoading(false);
+            });
+    };
 
     useEffect(() => {
-        umfragenLaden()
-    }, [])
+        umfragenLaden();
+    }, [filter]);
+
+
+    if (loading) {
+        return <div>Loading...</div>; 
+    }
 
     return (
         <>
-            <div className="h-screen w-full p-4">
-                <div className=" w-full justify-between p-8 bg-[#AF8A74]">
-                    <div className="flex flex-wrap  justify-between p-8 ">
-                        <button className="mb-4 text-white hover:text-gray-200 hover:underline">
+            {upload ? (
+                <UmfragePopup setUpload={setUpload} />
+            ) : (
+                <div className="justify-between p-8 bg-[#AF8A74]">
+                    <div className="flex flex-wrap justify-between p-8">
+                        <button
+                            className="mb-4 text-white hover:text-gray-200 hover:underline"
+                            onClick={() => setUpload(!upload)}
+                        >
                             + Umfragen hochladen
                         </button>
-                        {selectedIds.length > 0 && (
-                            <div className="flex space-x-4">
-                                <button
-                                    className="mb-4 text-white hover:text-gray-200 hover:underline"
-                                    onClick={umfragenArchivieren}
-                                >
-                                    Archivieren
-                                </button>
-                                <button
-                                    className="mb-4 text-white hover:text-gray-200 hover:underline"
-                                    onClick={umfragenLöschen}
-                                >
-                                    Löschen
-                                </button>
-                            </div>
+                        <button
+                            className="mb-4 text-white hover:text-gray-200 hover:underline"
+                            onClick={() => setFilter(!filter)}
+                        >
+                            Archiviert {filter ? 'anzeigen' : 'verbergen'}
+                        </button>
+
+                        {filter ? (
+                            <UmfragenTable data={data} setData={setData} />
+                        ) : (
+                            <ArchiveTable data={data} setData={setData} />
                         )}
-                        <table className="w-full text-center">
-                            <thead>
-                                <tr>
-                                    <th className="text-lg">Name</th>
-                                    <th className="text-lg">ID</th>
-                                    <th className="text-lg">Admin ID</th>
-                                    <th className="text-lg">Beschreibung</th>
-                                    <th className="text-lg">
-                                        Erstellungsdatum
-                                    </th>
-                                    <th className="text-lg">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {data.umfragen.length !== 0 ? (
-                                    data.umfragen.map((umfrage) => (
-                                        <tr
-                                            className="text-lg even:bg-[#FAEEDB] odd:bg-[#210803] even:text-black  odd:text-white"
-                                            key={umfrage.id}
-                                        >
-                                            <td className="p-2">
-                                                <div className="flex items-center">
-                                                    <input
-                                                        type="checkbox"
-                                                        id={umfrage.id}
-                                                        className="mr-10"
-                                                        checked={selectedIds.includes(
-                                                            umfrage.id
-                                                        )}
-                                                        onChange={(event) =>
-                                                            handleCheckboxChange(
-                                                                event,
-                                                                umfrage.id
-                                                            )
-                                                        }
-                                                    />
-                                                    <label htmlFor={umfrage.id}>
-                                                        <h1>{umfrage.titel}</h1>
-                                                    </label>
-                                                </div>
-                                            </td>
-                                            <td className="p-2">
-                                                <h1>{umfrage.id}</h1>
-                                            </td>
-                                            <td className="p-2">
-                                                <h1>{umfrage.admin_id}</h1>
-                                            </td>
-                                            <td className="p-2">
-                                                <h1>{umfrage.beschreibung}</h1>
-                                            </td>
-                                            <td className="p-2">
-                                                <h1>
-                                                    {umfrage.erstellungsdatum}
-                                                </h1>
-                                            </td>
-                                            <td className="p-2">
-                                                <h1>{umfrage.status}</h1>
-                                            </td>
-                                            <td className=" p-2">
-                                                <button className="hover:underline">
-                                                    Starten
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    ))
-                                ) : (
-                                    <tr>
-                                        <td colSpan="5">
-                                            <p className="mt-16 text-xl">
-                                                Keine Umfragen vorhanden
-                                            </p>
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
                     </div>
                 </div>
-            </div>
+            )}
         </>
-    )
+    );
 }
