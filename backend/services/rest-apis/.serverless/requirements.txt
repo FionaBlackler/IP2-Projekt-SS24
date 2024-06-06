@@ -1,0 +1,9 @@
+PyJWT
+bcrypt
+boto3
+mysql
+mysql-connector-python
+mysqlclient
+pydantic
+pymysql
+sqlalchemy
