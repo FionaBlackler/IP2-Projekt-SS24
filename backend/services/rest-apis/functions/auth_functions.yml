@@ -12,32 +12,29 @@ login:
         path: /login
         method: post
 
-
-change_password:
-  handler: handlers.auth_handler.change_password
+changePassword:
+  handler: handlers.auth_handler.changePassword
   events:
     - http:
         path: /changePassword
         method: post
 
-
-forgot_password:
-  handler: handlers.auth_handler.forgot_password
+forgotPassword:
+  handler: handlers.auth_handler.forgotPassword
   events:
     - http:
         path: /forgotPassword
         method: post
 
-
-set_password:
-  handler: handlers.auth_handler.set_password
+setPassword:
+  handler: handlers.auth_handler.setPassword
   events:
     - http:
         path: /setPassword
         method: post
 
-delete_account:
-  handler: handlers.auth_handler.delete_account
+deleteAccount:
+  handler: handlers.auth_handler.deleteAccount
   events:
     - http:
         path: /deleteAccount
