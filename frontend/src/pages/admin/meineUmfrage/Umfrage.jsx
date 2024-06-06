@@ -14,40 +14,15 @@ export default function Umfrage() {
     const accessToken = localStorage.getItem('accessToken');
 
     const umfragenLaden = () => {
-        console.log('umfragenLaden');
-        const jsonString = `{
-            "umfragen": [
-                {
-                    "id": 35,
-                    "admin_id": 3,
-                    "titel": "Example Survey",
-                    "beschreibung": "This is an example survey.",
-                    "erstellungsdatum": "2023-05-16",
-                    "archivierungsdatum": null,
-                    "status": "active"
-                },
-                {
-                    "id": 47,
-                    "admin_id": 4,
-                    "titel": "Example Survey",
-                    "beschreibung": "This is an example survey.",
-                    "erstellungsdatum": "2023-05-16",
-                    "archivierungsdatum": "2023-05-19",
-                    "status": "active"
-                }
-            ]
-        }`;
-        const parsedData = JSON.parse(jsonString);
-        setData(parsedData);
         axios
             .post(`${window.location.origin}/umfrage/getAll`, {}, {
                 headers: { Authorization: `Bearer ${accessToken}` },
             })
             .then((r) => {
                 if (r.status === 200) {
-                    const responseData = r.data; // Assuming the data is already in JSON format
+                    const responseData = r.data; 
                     console.log('Data received from server:', responseData);
-                    setData(responseData);
+                    setData(JSON.parse(responseData));
                 } else if (r.status === 204) {
                     console.log('Keine Einträge vorhanden');
                 } else if (r.status === 500) {
