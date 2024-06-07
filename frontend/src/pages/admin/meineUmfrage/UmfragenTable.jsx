@@ -23,9 +23,9 @@ export default function UmfragenTable({ data, setData }) {
     }
 
     return (
-        <div className="h-screen w-full p-4">
+        <div className="h-full w-full p-4 overflow-auto">
             {selectedIds.length > 0 && (
-                <div className="flex space-x-4">
+                <div className="flex space-x-4 ">
                     <button
                         className="mb-4 text-white hover:text-gray-200 hover:underline"
                         onClick={() =>
