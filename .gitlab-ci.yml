@@ -22,13 +22,6 @@ test:
     - pip install -r backend/services/rest_apis/requirements.txt
     - pip install pytest
     - pytest backend/services/rest_apis/test_umfrage.py
-  artifacts:
-    when: always
-    reports:
-      junit: pytest.xml
-    paths:
-      - pytest.xml
-
 # Optional cache configuration to speed up the builds
 cache:
   paths:
