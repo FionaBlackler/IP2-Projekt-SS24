@@ -7,9 +7,9 @@ variables:
 
 before_script:
   # Install Python and pip
-  - apt-get update -y
-  - apt-get install python$PYTHON_VERSION -y
-  - apt-get install python$PYTHON_VERSION-distutils -y
+  - apt update -y
+  - apt install python$PYTHON_VERSION -y
+  - apt install python$PYTHON_VERSION-distutils -y
   - curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
   - python$PYTHON_VERSION get-pip.py
   - pip install virtualenv
