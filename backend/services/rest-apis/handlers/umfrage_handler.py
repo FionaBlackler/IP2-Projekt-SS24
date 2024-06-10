@@ -8,7 +8,7 @@ from sqlalchemy.orm import sessionmaker
 import jwt
 from  models.models import Administrator, AntwortOption, Sitzung, Umfrage, Frage, TeilnehmerAntwort
 from  models.schemas import umfrage_schema
-from  utils.utils import getDecodedTokenFromHeader, create_umfrage_as_json, create_frage_as_json
+from  utils.utils import getDecodedTokenFromHeader
 from utils.database import create_local_engine
 
 engine = create_local_engine()
@@ -349,10 +349,7 @@ def getAllUmfragenFromAdmin(event, context):
 
             if umfragen:
                 # Konvertiere Umfragen in ein JSON Format
-                umfragen_list = []
-                for umfrage in umfragen:
-                    umfrage_json = create_umfrage_as_json(umfrage)
-                    umfragen_list.append(umfrage_json)
+                umfragen_list = [umfrage.to_json() for umfrage in umfragen]
 
                 # Response mit den Umfragen
                 response = {
@@ -441,12 +438,9 @@ def archiveUmfrage(event, context):
                 session.add(umfrage)
                 session.commit()
 
-                # Convert Umfrage object to JSON
-                umfrage_json = create_umfrage_as_json(umfrage)
-
                 response = {
                     "statusCode": 200,
-                    "body": json.dumps(umfrage_json),
+                    "body": json.dumps(umfrage.to_json),
                     "headers": {"Content-Type": "application/json"}
                 }
 
@@ -502,8 +496,7 @@ def getQuestionsWithOptions(event, context):
                     "text": frage.text,
                     "typ_id": frage.typ_id,
                     "punktzahl": frage.punktzahl,
-                    "antwort_optionen": [{"id": option.id, "text": option.text, "ist_richtig": option.ist_richtig} for
-                                         option in frage.antwort_optionen]
+                    "antwort_optionen": [antwort_option.to_json() for antwort_option in frage.antwort_optionen]
                 }
                 fragen_with_options.append(frage_json)
 
@@ -675,13 +668,11 @@ def getUmfrageResult(umfrage_id=None, sitzung_id=None, only_active=False):
                 }
                     
 
-            fragen:List[Frage] = umfrage.fragen
-            umfrage_json =  create_umfrage_as_json(umfrage=umfrage)
+            fragen: List[Frage] = umfrage.fragen
+            umfrage_json = umfrage.to_json()
                 
-            result = []
-            for frage in fragen:
-                frage_json = create_frage_as_json(frage=frage, sitzung_id=sitzung_id, only_active=only_active )
-                result.append( frage_json)
+            result = [frage.to_json(sitzung_id=sitzung_id, only_active=only_active) for frage in fragen]
+            
             return {
                 "statusCode": 200,
                 "body": json.dumps({"result": {
