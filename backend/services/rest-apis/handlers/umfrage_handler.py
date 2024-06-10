@@ -312,191 +312,177 @@ def endSession(event, context):
 
 def getAllUmfragenFromAdmin(event, context):
     decoded_token = getDecodedTokenFromHeader(event)
-    with Session() as session:
-        try:
-            admin_id = decoded_token['admin_id']
-
-            logger.info(f"Get all Umfragen from Admin with ID {admin_id}.")
-            umfragen = session.query(Umfrage).filter_by(admin_id=admin_id).all()
-            print(f"umfragen: {umfragen}")
-
-            if umfragen:
-                # Konvertiere Umfragen in ein JSON Format
-                umfragen_list = []
-                for umfrage in umfragen:
-                    umfrage_json = umfrage.to_json()
-                    umfragen_list.append(umfrage_json)
-                    print(f"umfragen_list: {umfragen_list}")
-                # Response mit den Umfragen
-                response = {
-                    "statusCode": 200,
-                    "body": json.dumps({"umfragen": umfragen_list}),
-                    "headers": {"Content-Type": "application/json"}
-                }
-            else:
-                response = {
-                    "response_status": 204,
-                    "body": json.dumps({"message": "No Umfragen found for the admin"}),
-                    "headers": {"Content-Type": "application/json"}
-                }
-        except Exception as e:
-            session.rollback()
+    admin_id = decoded_token['admin_id']
+    session = Session()
+    try:
+        
+        logger.info(f"Get all Umfragen from Admin with ID {admin_id}.")
+        umfragen = session.query(Umfrage).filter_by(admin_id=admin_id).all()
+    
+        if umfragen:
+            # Konvertiere Umfragen in ein JSON Format
+            umfragen_list = []
+            for umfrage in umfragen:
+                umfrage_json = umfrage.to_json()
+                umfragen_list.append(umfrage_json)
+                print(f"umfragen_list: {umfragen_list}")
+            # Response mit den Umfragen
             response = {
-                "statusCode": 500,
-                "body": json.dumps({"message": "Internal Server Error, contact Backend-Team for more Info"}),
+                "statusCode": 200,
+                "body": json.dumps({"umfragen": umfragen_list}),
                 "headers": {"Content-Type": "application/json"}
             }
-            logger.error(str(e))
-        finally:
-            session.close()
+        else:
+            response = {
+                "response_status": 204,
+                "body": json.dumps({"message": "No Umfragen found for the admin"}),
+                "headers": {"Content-Type": "application/json"}
+            }
+    except Exception as e:
+        session.rollback()
+        response = {
+            "statusCode": 500,
+            "body": json.dumps({"message": "Internal Server Error, contact Backend-Team for more Info"}),
+            "headers": {"Content-Type": "application/json"}
+        }
+        logger.error(str(e))
+    finally:
+        session.close()
 
     return response
 
 
 def getUmfrage(event, context):
     """Get the full original JSON of a Umfrage by ID"""
+    umfrage_id = event['pathParameters']['umfrageId']
 
+    session = Session()
     try:
-        umfrage_id = event['pathParameters']['id']
-    except KeyError:
-        return {
-            "statusCode": 400,
-            "body": json.dumps({"message": "Bad Request: 'id' is required in pathParameters"}),
-            "headers": {"Content-Type": "application/json"}
-        }
+        umfrage = session.query(Umfrage).filter(Umfrage.id == umfrage_id).first()
 
-    with Session() as session:
-        try:
-            umfrage = session.query(Umfrage).filter(Umfrage.id == umfrage_id).first()
-
-            if umfrage:
-                response = {
-                    "statusCode": 200,
-                    "body": umfrage.json_text,
-                    "headers": {"Content-Type": "application/json"}
-                }
-            else:
-                response = {
-                    "statusCode": 404,
-                    "body": json.dumps({"message": "Umfrage not found"}),
-                    "headers": {"Content-Type": "application/json"}
-                }
-        except Exception as e:
-            session.rollback()
-            logger.error("Error querying Umfrage: %s", str(e))
+        if umfrage:
             response = {
-                "statusCode": 500,
-                "body": json.dumps({"message": "Internal Server Error, contact Backend-Team for more Info"}),
+                "statusCode": 200,
+                "body": umfrage.json_text,
                 "headers": {"Content-Type": "application/json"}
             }
+        else:
+            response = {
+                "statusCode": 404,
+                "body": json.dumps({"message": "Umfrage not found"}),
+                "headers": {"Content-Type": "application/json"}
+            }
+    except Exception as e:
+        session.rollback()
+        logger.error("Error querying Umfrage: %s", str(e))
+        response = {
+            "statusCode": 500,
+            "body": json.dumps({"message": "Internal Server Error, contact Backend-Team for more Info"}),
+            "headers": {"Content-Type": "application/json"}
+        }
+    finally:
+        session.close()
 
     return response
 
 
 def archiveUmfrage(event, context):
-    with Session() as session:
-        try:
-            # Extrahiere die ID aus der URL
-            umfrage_id = event['pathParameters']['umfrageId']
+    session = Session()
+    umfrage_id = event['pathParameters']['umfrageId']
+    try:
 
-            logger.info(f"Archive Umfrage with ID {umfrage_id}.")
+        logger.info(f"Archive Umfrage with ID {umfrage_id}.")
 
-            # finde die Umfrage in der Datenbank
-            umfrage = session.query(Umfrage).filter_by(id=umfrage_id).first()
+        # finde die Umfrage in der Datenbank
+        umfrage = session.query(Umfrage).filter_by(id=umfrage_id).first()
 
-            if umfrage:
-                if umfrage.archivierungsdatum:
-                    # remove Archivierungsdatum
-                    umfrage.archivierungsdatum = None
-                    logger.info(f"Umfrage mit ID {umfrage_id} wurde erfolgreich aus dem Archiv entfernt")
-                else:
-                    # Add Archivierungsdatum
-                    umfrage.archivierungsdatum = datetime.now()
-                    logger.info(f"Umfrage mit ID {umfrage_id} wurde erfolgreich archiviert")
-
-                session.add(umfrage)
-                session.commit()
-
-                # Convert Umfrage object to JSON
-                umfrage_json = umfrage.to_json()
-
-                response = {
-                    "statusCode": 200,
-                    "body": json.dumps(umfrage_json),
-                    "headers": {"Content-Type": "application/json"}
-                }
-
+        if umfrage:
+            if umfrage.archivierungsdatum:
+                # remove Archivierungsdatum
+                umfrage.archivierungsdatum = None
+                logger.info(f"Umfrage mit ID {umfrage_id} wurde erfolgreich aus dem Archiv entfernt")
             else:
-                response = {
-                    "statusCode": 400,
-                    "body": json.dumps({"message": f"Umfrage mit ID {umfrage_id} wurde nicht gefunden."}),
-                    "headers": {"Content-Type": "application/json"}
-                }
+                # Add Archivierungsdatum
+                umfrage.archivierungsdatum = datetime.now()
+                logger.info(f"Umfrage mit ID {umfrage_id} wurde erfolgreich archiviert")
 
-        except Exception as e:
-            session.rollback()
+            session.add(umfrage)
+            session.commit()
+
+            # Convert Umfrage object to JSON
+            umfrage_json = umfrage.to_json()
+
             response = {
-                "statusCode": 500,
-                "body": json.dumps({"message": "Internal Server Error, contact Backend-Team for more Info"}),
+                "statusCode": 200,
+                "body": json.dumps(umfrage_json),
                 "headers": {"Content-Type": "application/json"}
             }
-            logger.error(str(e))
-        finally:
-            session.close()
+
+        else:
+            response = {
+                "statusCode": 400,
+                "body": json.dumps({"message": f"Umfrage mit ID {umfrage_id} wurde nicht gefunden."}),
+                "headers": {"Content-Type": "application/json"}
+            }
+
+    except Exception as e:
+        session.rollback()
+        response = {
+            "statusCode": 500,
+            "body": json.dumps({"message": "Internal Server Error, contact Backend-Team for more Info"}),
+            "headers": {"Content-Type": "application/json"}
+        }
+        logger.error(str(e))
+    finally:
+        session.close()
 
     return response
 
 
 def getQuestionsWithOptions(event, context):
     """Get all Fragen with AntwortOptionen for a given Umfrage ID"""
+    umfrage_id = event['pathParameters']['umfrageId']
+    session = Session()
     try:
-        umfrage_id = event['pathParameters']['umfrageId']
-    except KeyError:
-        return {
-            "statusCode": 400,
-            "body": json.dumps({"message": "Bad Request: 'umfrageId' is required in pathParameters"}),
+        umfrage = session.query(Umfrage).filter(Umfrage.id == umfrage_id).first()
+
+        if not umfrage:
+            return {
+                "statusCode": 404,
+                "body": json.dumps({"message": "Umfrage not found"}),
+                "headers": {"Content-Type": "application/json"}
+            }
+
+        fragen = umfrage.fragen
+        fragen_with_options = []
+
+        for frage in fragen:
+            frage_json = {
+                "id": frage.id,
+                "text": frage.text,
+                "typ_id": frage.typ_id,
+                "punktzahl": frage.punktzahl,
+                "antwort_optionen": [{"id": option.id, "text": option.text, "ist_richtig": option.ist_richtig} for
+                                        option in frage.antwort_optionen]
+            }
+            fragen_with_options.append(frage_json)
+
+        response = {
+            "statusCode": 200,
+            "body": json.dumps({"fragen": fragen_with_options}),
             "headers": {"Content-Type": "application/json"}
         }
 
-    with Session() as session:
-        try:
-            umfrage = session.query(Umfrage).filter(Umfrage.id == umfrage_id).first()
-
-            if not umfrage:
-                return {
-                    "statusCode": 404,
-                    "body": json.dumps({"message": "Umfrage not found"}),
-                    "headers": {"Content-Type": "application/json"}
-                }
-
-            fragen = umfrage.fragen
-            fragen_with_options = []
-
-            for frage in fragen:
-                frage_json = {
-                    "id": frage.id,
-                    "text": frage.text,
-                    "typ_id": frage.typ_id,
-                    "punktzahl": frage.punktzahl,
-                    "antwort_optionen": [{"id": option.id, "text": option.text, "ist_richtig": option.ist_richtig} for
-                                         option in frage.antwort_optionen]
-                }
-                fragen_with_options.append(frage_json)
-
-            response = {
-                "statusCode": 200,
-                "body": json.dumps({"fragen": fragen_with_options}),
-                "headers": {"Content-Type": "application/json"}
-            }
-
-        except Exception as e:
-            session.rollback()
-            logger.error("Error querying Umfrage: %s", str(e))
-            response = {
-                "statusCode": 500,
-                "body": json.dumps({"message": "Internal Server Error, contact Backend-Team for more Info"}),
-                "headers": {"Content-Type": "application/json"}
-            }
+    except Exception as e:
+        session.rollback()
+        logger.error("Error querying Umfrage: %s", str(e))
+        response = {
+            "statusCode": 500,
+            "body": json.dumps({"message": "Internal Server Error, contact Backend-Team for more Info"}),
+            "headers": {"Content-Type": "application/json"}
+        }
+    finally:
+        session.close()
 
     return response
 
@@ -522,63 +508,61 @@ def saveTeilnehmerAntwort(event, context):
             "headers": {"Content-Type": "application/json"}
         }
 
+    session = Session()
+    try:
+        for antwort in antworten:
+            antwort_id = antwort.get('antwort_id')
+            gewaehlteAntwort = antwort.get('gewaehlteAntwort')
 
-    with Session() as session:
-        try:
-            for antwort in antworten:
-                antwort_id = antwort.get('antwort_id')
-                gewaehlteAntwort = antwort.get('gewaehlteAntwort')
+            # Überprüfe, ob die Sitzung und die AntwortOption existieren
+            sitzung = session.query(Sitzung).filter(Sitzung.id == sitzung_id).first()
+            antwort_option = session.query(AntwortOption).filter(AntwortOption.id == antwort_id).first()
 
-                # Überprüfe, ob die Sitzung und die AntwortOption existieren
-                sitzung = session.query(Sitzung).filter(Sitzung.id == sitzung_id).first()
-                antwort_option = session.query(AntwortOption).filter(AntwortOption.id == antwort_id).first()
+            if not sitzung or not antwort_option:
+                return {
+                    "statusCode": 404,
+                    "body": json.dumps({"message": "Sitzung or AntwortOption not found."}),
+                    "headers": {"Content-Type": "application/json"}
+                }
 
-                if not sitzung or not antwort_option:
-                    return {
-                        "statusCode": 404,
-                        "body": json.dumps({"message": "Sitzung or AntwortOption not found."}),
-                        "headers": {"Content-Type": "application/json"}
-                    }
+            # Überprüfe ob die Teilnehmer Antwort schon existiert
+            teilnehmer_antwort = session.query(TeilnehmerAntwort).filter(
+                TeilnehmerAntwort.sitzung_id == sitzung_id,
+                            TeilnehmerAntwort.antwort_id == antwort_id).first()
 
-                # Überprüfe ob die Teilnehmer Antwort schon existiert
-                teilnehmer_antwort = session.query(TeilnehmerAntwort).filter(
-                    TeilnehmerAntwort.sitzung_id == sitzung_id,
-                             TeilnehmerAntwort.antwort_id == antwort_id).first()
+            # Teilnehmer Antwort existiert noch nicht, Erstelle eine neue TeilnehmerAntwort
+            if not teilnehmer_antwort:
 
-                # Teilnehmer Antwort existiert noch nicht, Erstelle eine neue TeilnehmerAntwort
-                if not teilnehmer_antwort:
+                teilnehmer_antwort = TeilnehmerAntwort(
+                    sitzung_id=sitzung_id,
+                    antwort_id=antwort_id,
+                    anzahl_true=0,
+                    anzahl_false=0
+                )
 
-                    teilnehmer_antwort = TeilnehmerAntwort(
-                        sitzung_id=sitzung_id,
-                        antwort_id=antwort_id,
-                        anzahl_true=0,
-                        anzahl_false=0
-                    )
+            if gewaehlteAntwort:
+                teilnehmer_antwort.anzahl_true += 1
+            else:
+                teilnehmer_antwort.anzahl_false += 1
 
-                if gewaehlteAntwort:
-                    teilnehmer_antwort.anzahl_true += 1
-                else:
-                    teilnehmer_antwort.anzahl_false += 1
+            session.add(teilnehmer_antwort)
+        session.commit()
+        response = {
+            "statusCode": 200,
+            "body": json.dumps({"message": "Die Teilnehmerantworten wurde erfolgreich hinzugefügt"}),
+            "headers": {"Content-Type": "application/json"}
+        }
 
-                session.add(teilnehmer_antwort)
-            session.commit()
-
-            response = {
-                "statusCode": 200,
-                "body": json.dumps({"message": "Die Teilnehmerantworten wurde erfolgreich hinzugefügt"}),
-                "headers": {"Content-Type": "application/json"}
-            }
-
-        except Exception as e:
-            session.rollback()
-            response = {
-                "statusCode": 500,
-                "body": json.dumps({"message": "Internal Server Error, contact Backend-Team for more Info"}),
-                "headers": {"Content-Type": "application/json"}
-            }
-            logger.error(str(e))
-        finally:
-            session.close()
+    except Exception as e:
+        session.rollback()
+        response = {
+            "statusCode": 500,
+            "body": json.dumps({"message": "Internal Server Error, contact Backend-Team for more Info"}),
+            "headers": {"Content-Type": "application/json"}
+        }
+        logger.error(str(e))
+    finally:
+        session.close()
 
     return response
 

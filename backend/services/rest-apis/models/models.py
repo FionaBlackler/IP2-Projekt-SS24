@@ -32,8 +32,8 @@ class Umfrage(Base):
             "admin_id": self.admin_id,
             "titel": self.titel,
             "beschreibung": self.beschreibung,
-            "erstellungsdatum": str(self.erstellungsdatum),
-            "archivierungsdatum": str(self.archivierungsdatum) if self.archivierungsdatum else None,
+            "erstellungsdatum": self.erstellungsdatum.strftime('%Y-%m-%d %H:%M:%S.%f'),
+            "archivierungsdatum": self.archivierungsdatum.strftime('%Y-%m-%d %H:%M:%S.%f') if self.archivierungsdatum else None,
             "status": self.status,
             "json_text": self.json_text
         }
