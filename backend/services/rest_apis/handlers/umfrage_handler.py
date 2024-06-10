@@ -18,28 +18,6 @@ logger = logging.getLogger()
 # engine, Session = create_database_connection()
 Session = sessionmaker(bind=engine)
 
-
-def create_umfrage_as_json(umfrage: Umfrage):
-    """
-    Helper function to convert Umfrage objects into JSON format.
-
-    Parameters:
-    umfrage (Umfrage): An instance of the Umfrage class.
-
-    Returns:
-    dict: A dictionary representing the Umfrage object, with keys corresponding to the object's attributes.
-    """
-    return {
-        "id": umfrage.id,
-        "admin_id": umfrage.admin_id,
-        "titel": umfrage.titel,
-        "beschreibung": umfrage.beschreibung,
-        "erstellungsdatum": str(umfrage.erstellungsdatum),
-        "archivierungsdatum": str(umfrage.archivierungsdatum) if umfrage.archivierungsdatum else None,
-        "status": umfrage.status,
-    }
-
-
 def deleteUmfrageById(event, context):
     getDecodedTokenFromHeader(event)
     session = Session()
@@ -297,43 +275,37 @@ def deleteSession(event, context):
 
 
 def endSession(event, context):
+    getDecodedTokenFromHeader(event)
+    sitzung_id = event['pathParameters']['sitzungId']
+    session = Session()
     try:
-        sitzung_id = event['pathParameters']['sitzungId']
-    except KeyError:
-        return {
-            "statusCode": 400,
-            "body": json.dumps({"message": "Bad Request: 'sitzungId' is required in pathParameters"}),
+        # Verify the Sitzung exists
+        sitzung = session.query(Sitzung).filter(Sitzung.id == sitzung_id).first()
+        if not sitzung:
+            return {
+                "statusCode": 404,
+                "body": json.dumps({"message": "Sitzung not found"}),
+                "headers": {"Content-Type": "application/json"}
+            }
+
+        sitzung.aktiv = False
+        session.commit()
+
+        response = {
+            "statusCode": 200,
+            "body": json.dumps({"message": "Sitzung ended successfully"}),
             "headers": {"Content-Type": "application/json"}
         }
-
-    with Session() as session:
-        try:
-            # Verify the Sitzung exists
-            sitzung = session.query(Sitzung).filter(Sitzung.id == sitzung_id).first()
-            if not sitzung:
-                return {
-                    "statusCode": 404,
-                    "body": json.dumps({"message": "Sitzung not found"}),
-                    "headers": {"Content-Type": "application/json"}
-                }
-
-            sitzung.aktiv = False
-            session.commit()
-
-            response = {
-                "statusCode": 200,
-                "body": json.dumps({"message": "Sitzung ended successfully"}),
-                "headers": {"Content-Type": "application/json"}
-            }
-
-        except Exception as e:
-            session.rollback()
-            logger.error("Error ending Sitzung: %s", str(e))
-            response = {
-                "statusCode": 500,
-                "body": json.dumps({"message": "Internal Server Error, contact Backend-Team for more Info"}),
-                "headers": {"Content-Type": "application/json"}
-            }
+    except Exception as e:
+        session.rollback()
+        logger.error("Error ending Sitzung: %s", str(e))
+        response = {
+            "statusCode": 500,
+            "body": json.dumps({"message": "Internal Server Error, contact Backend-Team for more Info"}),
+            "headers": {"Content-Type": "application/json"}
+        }
+    finally:
+        session.close()
 
     return response
 
@@ -345,23 +317,27 @@ def getAllUmfragenFromAdmin(event, context):
             admin_id = decoded_token['admin_id']
 
             logger.info(f"Get all Umfragen from Admin with ID {admin_id}.")
-            umfragen = session.query(Umfrage).filter_by(admin_id=admin_id)
+            umfragen = session.query(Umfrage).filter_by(admin_id=admin_id).all()
+            print(f"umfragen: {umfragen}")
 
             if umfragen:
                 # Konvertiere Umfragen in ein JSON Format
                 umfragen_list = []
                 for umfrage in umfragen:
-                    umfrage_json = create_umfrage_as_json(umfrage)
+                    umfrage_json = umfrage.to_json()
                     umfragen_list.append(umfrage_json)
-
+                    print(f"umfragen_list: {umfragen_list}")
                 # Response mit den Umfragen
                 response = {
                     "statusCode": 200,
-                    "body": json.dumps({"umfragen": umfragen_list})
+                    "body": json.dumps({"umfragen": umfragen_list}),
+                    "headers": {"Content-Type": "application/json"}
                 }
             else:
                 response = {
-                    "response_status": 204
+                    "response_status": 204,
+                    "body": json.dumps({"message": "No Umfragen found for the admin"}),
+                    "headers": {"Content-Type": "application/json"}
                 }
         except Exception as e:
             session.rollback()
@@ -442,7 +418,7 @@ def archiveUmfrage(event, context):
                 session.commit()
 
                 # Convert Umfrage object to JSON
-                umfrage_json = create_umfrage_as_json(umfrage)
+                umfrage_json = umfrage.to_json()
 
                 response = {
                     "statusCode": 200,
@@ -545,7 +521,6 @@ def saveTeilnehmerAntwort(event, context):
             "body": json.dumps({"message": "Invalid request: No answers provided."}),
             "headers": {"Content-Type": "application/json"}
         }
-
 
 
     with Session() as session:

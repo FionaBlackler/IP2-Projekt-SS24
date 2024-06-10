@@ -26,6 +26,18 @@ class Umfrage(Base):
     fragen = relationship("Frage", back_populates="umfrage", cascade="all, delete")
     sitzungen = relationship("Sitzung", back_populates="umfrage", cascade="all, delete")
 
+    def to_json(self):
+        return {
+            "id": self.id,
+            "admin_id": self.admin_id,
+            "titel": self.titel,
+            "beschreibung": self.beschreibung,
+            "erstellungsdatum": str(self.erstellungsdatum),
+            "archivierungsdatum": str(self.archivierungsdatum) if self.archivierungsdatum else None,
+            "status": self.status,
+            "json_text": self.json_text
+        }
+
 
 class Frage(Base):
     __tablename__ = 'fragen'
