@@ -569,43 +569,36 @@ def saveTeilnehmerAntwort(event, context):
 
 def getUmfrageResults(event, context):
     """Get the result for a single Umfrage"""
-    # TODO
+    umfrage_id = event['pathParameters']['umfrageId']
+    session = Session()
     try:
-        umfrage_id = event['pathParameters']['umfrageId']
-    except KeyError:
-        return {
-            "statusCode": 400,
-            "body": json.dumps({"message": "Bad Request: 'umfrageId' is required in pathParameters"})
+        umfrage = session.query(Sitzung).filter(Sitzung.umfrage_id == umfrage_id)
+        print(umfrage)
+        umfrage = None
+        if not umfrage:
+            return {
+                "statusCode": 404,
+                "body": json.dumps({"message": "Umfrage not found"}),
+                "headers": {"Content-Type": "application/json"}
+            }
+
+        fragen = umfrage.fragen
+        antworten = []
+        umfrage.sitzungen
+
+        response = {
+            "statusCode": 200,
+            "body": json.dumps({"fragen": antworten}),
+            "headers": {"Content-Type": "application/json"}
         }
-    with Session() as session:
-        try:
-            umfrage = session.query(Sitzung).filter(Sitzung.umfrage_id == umfrage_id)
-            print(umfrage)
-            umfrage = None
-            if not umfrage:
-                return {
-                    "statusCode": 404,
-                    "body": json.dumps({"message": "Umfrage not found"}),
-                    "headers": {"Content-Type": "application/json"}
-                }
 
-            fragen = umfrage.fragen
-            antworten = []
-            umfrage.sitzungen
-
-            response = {
-                "statusCode": 200,
-                "body": json.dumps({"fragen": antworten}),
-                "headers": {"Content-Type": "application/json"}
-            }
-
-        except Exception as e:
-            session.rollback()
-            logger.error("Error querying Umfrage: %s", str(e))
-            response = {
-                "statusCode": 500,
-                "body": json.dumps({"message": "Internal Server Error, contact Backend-Team for more Info"}),
-                "headers": {"Content-Type": "application/json"}
-            }
+    except Exception as e:
+        session.rollback()
+        logger.error("Error querying Umfrage: %s", str(e))
+        response = {
+            "statusCode": 500,
+            "body": json.dumps({"message": "Internal Server Error, contact Backend-Team for more Info"}),
+            "headers": {"Content-Type": "application/json"}
+        }
 
     return response

@@ -5,7 +5,7 @@ import os
 from datetime import datetime, timedelta
 from unittest.mock import patch, MagicMock
 from models.models import AntwortOption, Frage, Sitzung, TeilnehmerAntwort, Umfrage
-from handlers.umfrage_handler import archiveUmfrage, createSession, deleteSession, deleteUmfrageById, endSession, getAllUmfragenFromAdmin, getQuestionsWithOptions, getUmfrage, saveTeilnehmerAntwort
+from handlers.umfrage_handler import archiveUmfrage, createSession, deleteSession, deleteUmfrageById, endSession, getAllUmfragenFromAdmin, getQuestionsWithOptions, getUmfrage, getUmfrageResults, saveTeilnehmerAntwort
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -412,20 +412,16 @@ def test_saveTeilnehmerAntwort(mock_getDecodedTokenFromHeader, mock_session, com
     mock_session_instance = MagicMock()
     mock_session.return_value = mock_session_instance
 
-    if sitzung_exists:
-        mock_session_instance.query.return_value.filter.return_value.first.side_effect = [
-            Sitzung(id=sitzung_id) if sitzung_exists else None,
-            AntwortOption(id=antworten[0]["antwort_id"]) if antwort_option_exists else None
-        ]
-    else:
-        mock_session_instance.query.return_value.filter.return_value.first.side_effect = [None, None]
-
-    if teilnehmer_antwort_exists:
-        mock_session_instance.query.return_value.filter.return_value.first.return_value = TeilnehmerAntwort(
+    # Side effects for Sitzungen and AntwortOptionen
+    sitzung = Sitzung(id=sitzung_id) if sitzung_exists else None
+    if antworten:
+        antwort_option = AntwortOption(id=antworten[0]["antwort_id"]) if antwort_option_exists else None
+        teilnehmer_antwort = TeilnehmerAntwort(
             sitzung_id=sitzung_id, antwort_id=antworten[0]["antwort_id"], anzahl_true=0, anzahl_false=0
-        )
-    else:
-        mock_session_instance.query.return_value.filter.return_value.first.return_value = None
+        ) if teilnehmer_antwort_exists else None
+
+        # Mock query results
+        mock_session_instance.query.return_value.filter.return_value.first.side_effect = [sitzung, antwort_option, teilnehmer_antwort]
 
     event = common_event({"sitzungId": sitzung_id}, body={"antworten": antworten})
 
@@ -441,5 +437,45 @@ def test_saveTeilnehmerAntwort(mock_getDecodedTokenFromHeader, mock_session, com
 
     if expected_status == 500:
         mock_session_instance.rollback.assert_called_once()
+
+    if expected_status != 400:
+        mock_session_instance.close.assert_called_once()
+
+
+@pytest.mark.parametrize("umfrage_id, sitzung_exists, exception, expected_status, expected_body", [
+    ("1", True, None, 200, {"fragen": []}),
+    ("2", False, None, 404, {"message": "Umfrage not found"}),
+    ("3", True, Exception("Database Error"), 500, {"message": "Internal Server Error, contact Backend-Team for more Info"}),
+])
+def test_getUmfrageResults(mock_getDecodedTokenFromHeader, mock_session, common_event, umfrage_id, sitzung_exists, exception, expected_status, expected_body):
+    mock_getDecodedTokenFromHeader.return_value = {
+        "admin_id": "1",
+    }
+
+    mock_session_instance = MagicMock()
+    mock_session.return_value = mock_session_instance
+
+    # Mock the query result and exception
+    if exception:
+        mock_session_instance.query.return_value.filter.return_value.first.side_effect = exception
+    elif sitzung_exists:
+        sitzung_mock = MagicMock()
+        sitzung_mock.fragen = []
+        sitzung_mock.sitzungen = []
+        mock_session_instance.query.return_value.filter.return_value.first.return_value = sitzung_mock
+    else:
+        mock_session_instance.query.return_value.filter.return_value.first.return_value = None
+
+    event = common_event({"umfrageId": umfrage_id})
+
+    response = getUmfrageResults(event, None)
+
+    assert response.get('statusCode') == expected_status
+    assert json.loads(response['body']) == expected_body
+
+    if expected_status == 500:
+        mock_session_instance.rollback.assert_called_once()
+    else:
+        mock_session_instance.rollback.assert_not_called()
 
     mock_session_instance.close.assert_called_once()

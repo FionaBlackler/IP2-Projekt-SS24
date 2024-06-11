@@ -1,7 +1,7 @@
 # Client
 - ✅ Fragen bekommen (Live ausfüllen)
-- ❌ Ergebnis senden nach ausfüllen (nach Frage, nach gesamter?)
-- ❌ Save TeilnehmerAntwort nach jeder Frage die er ausgefüllt hat
+- ✅ Ergebnis senden nach ausfüllen (nach Frage, nach gesamter?)
+- ✅ Save TeilnehmerAntwort nach jeder Frage die er ausgefüllt hat
 
 # Umfragen
 - ✅ Alle Umfragen für Admin Interface holen
@@ -17,5 +17,5 @@
 # Admin
 - ✅ Login / Logout
 - ✅ Registrieren
-- ❌ Selber löschen (und alles in Verbindung)
-- ❌ Passwort vergessen / ändern
+- ✅ Selber löschen (und alles in Verbindung)
+- ✅ Passwort vergessen / ändern
