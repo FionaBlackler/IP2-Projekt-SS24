@@ -1,11 +1,8 @@
 stages:
   - test
-
 test:
   image: python:3.9
   stage: test
-  before_script:
-    - cd backend/services/rest-apis
-    - pip install -r requirements.txt
+  before_script: 
   script:
-    - pytest
+     - cd backend/services/rest-apis && pip install -r requirements.txt && pytest
