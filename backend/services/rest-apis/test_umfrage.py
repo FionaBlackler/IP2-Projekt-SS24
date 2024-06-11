@@ -37,8 +37,12 @@ def mock_getDecodedTokenFromHeader():
         yield mock_getDecodedTokenFromHeader
 
 
+# Fixed datetime for consistency
+fixed_datetime = datetime(2024, 6, 10, 23, 5, 55, 415831)
+
+
 @pytest.mark.parametrize("umfrage_id, query_result, expected_status, expected_message", [
-    ("1", Umfrage(id=1, admin_id=1, titel="Test Umfrage", beschreibung="Eine Testbeschreibung", erstellungsdatum=datetime.now(), status="aktiv", json_text=""), 200, "Umfrage mit ID 1 wurde erfolgreich entfernt."),
+    ("1", Umfrage(id=1, admin_id=1, titel="Test Umfrage", beschreibung="Eine Testbeschreibung", erstellungsdatum=fixed_datetime, status="aktiv", json_text=""), 200, "Umfrage mit ID 1 wurde erfolgreich entfernt."),
     ("2", None, 400, "Umfrage mit ID 2 wurde nicht gefunden."),
     ("3", Exception("Database Error"), 500, "Internal Server Error, contact Backend-Team for more Info"),
 ])
@@ -141,7 +145,7 @@ def test_uploadUmfrage(mock_getDecodedTokenFromHeader, mock_session, mock_valida
 
 
 @pytest.mark.parametrize("umfrage_id, query_result, expected_status, expected_message", [
-    ("1", Umfrage(id=1, admin_id=1, titel="Test Umfrage", beschreibung="Eine Testbeschreibung", erstellungsdatum=datetime.now(), status="aktiv", json_text=""), 201, "Sitzung created successfully"),
+    ("1", Umfrage(id=1, admin_id=1, titel="Test Umfrage", beschreibung="Eine Testbeschreibung", erstellungsdatum=fixed_datetime, status="aktiv", json_text=""), 201, "Sitzung created successfully"),
     ("2", None, 404, "Umfrage not found"),
     ("3", Exception("Database Error"), 500, "Internal Server Error, contact Backend-Team for more Info"),
 ])
@@ -180,7 +184,7 @@ def test_createSession(mock_getDecodedTokenFromHeader, mock_session, common_even
 
 
 @pytest.mark.parametrize("sitzung_id, query_result, expected_status, expected_message", [
-    ("1", Sitzung(id=1, startzeit=datetime.now(), endzeit=datetime.now() + timedelta(minutes=2), teilnehmerzahl=10, aktiv=True, umfrage_id=1), 200, "Sitzung deleted successfully"),
+    ("1", Sitzung(id=1, startzeit=fixed_datetime, endzeit=fixed_datetime + timedelta(minutes=2), teilnehmerzahl=10, aktiv=True, umfrage_id=1), 200, "Sitzung deleted successfully"),
     ("2", None, 404, "Sitzung not found"),
     ("3", Exception("Database Error"), 500, "Internal Server Error, contact Backend-Team for more Info"),
 ])
@@ -214,7 +218,7 @@ def test_deleteSession(mock_session, common_event, sitzung_id, query_result, exp
 
 
 @pytest.mark.parametrize("sitzung_id, query_result, expected_status, expected_message", [
-    ("1",  Sitzung(id=1, startzeit=datetime.now(), endzeit=datetime.now() + timedelta(minutes=2), teilnehmerzahl=10, aktiv=True, umfrage_id=1), 200, "Sitzung ended successfully"),
+    ("1",  Sitzung(id=1, startzeit=fixed_datetime, endzeit=fixed_datetime + timedelta(minutes=2), teilnehmerzahl=10, aktiv=True, umfrage_id=1), 200, "Sitzung ended successfully"),
     ("2", None, 404, "Sitzung not found"),
     ("3", Exception("Database Error"), 500, "Internal Server Error, contact Backend-Team for more Info"),
 ])
@@ -299,7 +303,7 @@ def test_getAllUmfragenFromAdmin(mock_getDecodedTokenFromHeader, mock_session, c
 
 
 @pytest.mark.parametrize("umfrage_id, query_result, expected_status, expected_body", [
-    ("1", Umfrage(id=1, admin_id=1, titel="Test Umfrage", beschreibung="Eine Testbeschreibung", erstellungsdatum=datetime.now(), archivierungsdatum=None, status="aktiv", json_text='{"message": "Test"}'), 200, '{"message": "Test"}'),
+    ("1", Umfrage(id=1, admin_id=1, titel="Test Umfrage", beschreibung="Eine Testbeschreibung", erstellungsdatum=fixed_datetime, archivierungsdatum=None, status="aktiv", json_text='{"message": "Test"}'), 200, '{"message": "Test"}'),
     ("2", None, 404, json.dumps({"message": "Umfrage not found"})),
     ("3", Exception("Database Error"), 500, json.dumps({"message": "Internal Server Error, contact Backend-Team for more Info"})),
 ])
@@ -330,8 +334,8 @@ def test_getUmfrage(mock_getDecodedTokenFromHeader, mock_session, common_event, 
 
 
 @pytest.mark.parametrize("umfrage_id, query_result, expected_status, expected_body, archivierungsdatum_initial, archivierungsdatum_final", [
-    ("1", Umfrage(id=1, admin_id=1, titel="Test Umfrage", beschreibung="Eine Testbeschreibung", erstellungsdatum=datetime.now(), archivierungsdatum=None, status="aktiv", json_text='{"message": "Test"}'), 200, {"id": 1, "admin_id": 1, "titel": "Test Umfrage", "beschreibung": "Eine Testbeschreibung", "erstellungsdatum": datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'), "archivierungsdatum": datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'), "status": "aktiv", "json_text": '{"message": "Test"}'}, None, True),
-    ("2", Umfrage(id=2, admin_id=2, titel="Archived Umfrage", beschreibung="Eine archivierte Testbeschreibung", erstellungsdatum=datetime.now(), archivierungsdatum=datetime.now(), status="archiviert", json_text='{"message": "Test"}'), 200, {"id": 2, "admin_id": 2, "titel": "Archived Umfrage", "beschreibung": "Eine archivierte Testbeschreibung", "erstellungsdatum": datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'), "archivierungsdatum": None, "status": "archiviert", "json_text": '{"message": "Test"}'}, True, None),
+    ("1", Umfrage(id=1, admin_id=1, titel="Test Umfrage", beschreibung="Eine Testbeschreibung", erstellungsdatum=fixed_datetime, archivierungsdatum=None, status="aktiv", json_text='{"message": "Test"}'), 200, {"id": 1, "admin_id": 1, "titel": "Test Umfrage", "beschreibung": "Eine Testbeschreibung", "erstellungsdatum": fixed_datetime.strftime('%Y-%m-%d %H:%M:%S.%f'), "archivierungsdatum": fixed_datetime.strftime('%Y-%m-%d %H:%M:%S.%f'), "status": "aktiv", "json_text": '{"message": "Test"}'}, None, True),
+    ("2", Umfrage(id=2, admin_id=2, titel="Archived Umfrage", beschreibung="Eine archivierte Testbeschreibung", erstellungsdatum=fixed_datetime, archivierungsdatum=fixed_datetime, status="archiviert", json_text='{"message": "Test"}'), 200, {"id": 2, "admin_id": 2, "titel": "Archived Umfrage", "beschreibung": "Eine archivierte Testbeschreibung", "erstellungsdatum": fixed_datetime.strftime('%Y-%m-%d %H:%M:%S.%f'), "archivierungsdatum": None, "status": "archiviert", "json_text": '{"message": "Test"}'}, True, None),
     ("3", None, 400, json.dumps({"message": "Umfrage mit ID 3 wurde nicht gefunden."}), None, None),
     ("4", Exception("Database Error"), 500, json.dumps({"message": "Internal Server Error, contact Backend-Team for more Info"}), None, None),
 ])
@@ -385,7 +389,7 @@ def test_archiveUmfrage(mock_getDecodedTokenFromHeader, mock_session, common_eve
         admin_id=1, 
         titel="Test Umfrage", 
         beschreibung="Eine Testbeschreibung", 
-        erstellungsdatum=datetime.now(), 
+        erstellungsdatum=fixed_datetime, 
         archivierungsdatum=None, 
         status="aktiv", 
         json_text='{"message": "Test"}', 
@@ -553,11 +557,11 @@ def mock_is_one_active():
         yield mock_is_one_active
 
 @pytest.mark.parametrize("umfrage_id, sitzung_id, umfrage_result, sitzung_result, only_active, is_active, expected_status, expected_message", [
-    (1, None, Umfrage(id=1, titel="Test Umfrage", beschreibung="Eine Testbeschreibung", erstellungsdatum=datetime.now(), status="aktiv", json_text=""), None, False, True, 200, None),
-    (None, 2, None, Sitzung(id=2, umfrage=Umfrage(id=1, titel="Test Umfrage", beschreibung="Eine Testbeschreibung", erstellungsdatum=datetime.now(), status="aktiv", json_text="")), False, True, 200, None),
+    (1, None, Umfrage(id=1, titel="Test Umfrage", beschreibung="Eine Testbeschreibung", erstellungsdatum=fixed_datetime, status="aktiv", json_text=""), None, False, True, 200, None),
+    (None, 2, None, Sitzung(id=2, umfrage=Umfrage(id=1, titel="Test Umfrage", beschreibung="Eine Testbeschreibung", erstellungsdatum=fixed_datetime, status="aktiv", json_text="")), False, True, 200, None),
     (1, None, None, None, False, True, 404, "Could not find Umfrage with id: 1."),
     (None, 2, None, None, False, True, 404, "Could not find umfrage with a associated sitzung with id: 2."),
-    (1, None, Umfrage(id=1, titel="Test Umfrage", beschreibung="Eine Testbeschreibung", erstellungsdatum=datetime.now(), status="inaktiv", json_text=""), None, True, False, 404, "No Active Sitzung for Umfrage 1"),
+    (1, None, Umfrage(id=1, titel="Test Umfrage", beschreibung="Eine Testbeschreibung", erstellungsdatum=fixed_datetime, status="inaktiv", json_text=""), None, True, False, 404, "No Active Sitzung for Umfrage 1"),
 ])
 def test_getUmfrageResult(mock_is_one_active, mock_session, common_event, umfrage_id, sitzung_id, umfrage_result, sitzung_result, only_active, is_active, expected_status, expected_message):
     mock_is_one_active.return_value = is_active
