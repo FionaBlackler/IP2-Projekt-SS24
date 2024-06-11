@@ -6,6 +6,9 @@ import ForgotPassword from '../pages/password/forgotPassword/ForgotPassword.jsx'
 import SetPassword from '../pages/password/forgotPassword/SetPassword.jsx'
 import Register from '../pages/register/Register.jsx'
 import Umfrage from '../pages/admin/meineUmfrage/Umfrage.jsx'
+import ProtectedRoute from './protected.route.jsx'
+import Homepage from '../pages/home/Homepage.jsx'
+import MeineUmfragen from '../pages/admin/meineUmfrage/MeineUmfragen.jsx'
 
 function RootRoutes() {
     return (
@@ -13,15 +16,35 @@ function RootRoutes() {
             <Routes>
                 <Route
                     path="/"
-                    element={<Umfrage />}
+                    element={<ProtectedRoute component={Homepage} />}
                 />
-               {/*<Route path="/Dashboard/:id" element={<Dashboard/>} />*/} 
+                <Route
+                    path="/meineUmfragen"
+                    element={<ProtectedRoute component={MeineUmfragen} />}
+                />
+                {/*<Route path="/Dashboard/:id" element={<Dashboard/>} />*/}
                 <Route exact={true} path="/login" element={<Login />} />
                 <Route exact={true} path="/register" element={<Register />} />
-                <Route exact={true} path="/changePassword" element={<ChangePassword />} />
-                <Route exact={true} path="/forgotPassword" element={<ForgotPassword />} />
-                <Route exact={true} path="/setPassword" element={<SetPassword />} />
-                <Route exact={true} path="/deleteAccount" element={<DeleteAccount />} />
+                <Route
+                    exact={true}
+                    path="/changePassword"
+                    element={<ChangePassword />}
+                />
+                <Route
+                    exact={true}
+                    path="/forgotPassword"
+                    element={<ForgotPassword />}
+                />
+                <Route
+                    exact={true}
+                    path="/setPassword"
+                    element={<SetPassword />}
+                />
+                <Route
+                    exact={true}
+                    path="/deleteAccount"
+                    element={<DeleteAccount />}
+                />
             </Routes>
         </BrowserRouter>
     )
