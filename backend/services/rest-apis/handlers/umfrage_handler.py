@@ -526,19 +526,19 @@ def saveTeilnehmerAntwort(event, context):
                     "headers": {"Content-Type": "application/json"}
                 }
 
-                # Überprüfe ob die Teilnehmer Antwort schon existiert
-                teilnehmer_antwort = session.query(TeilnehmerAntwort).filter(
-                    TeilnehmerAntwort.sitzung_id == sitzung_id,
-                    TeilnehmerAntwort.antwort_id == antwort_id).first()
+            # Überprüfe ob die Teilnehmer Antwort schon existiert
+            teilnehmer_antwort = session.query(TeilnehmerAntwort).filter(
+                TeilnehmerAntwort.sitzung_id == sitzung_id,
+                TeilnehmerAntwort.antwort_id == antwort_id).first()
 
-                # Teilnehmer Antwort existiert noch nicht, Erstelle eine neue TeilnehmerAntwort
-                if not teilnehmer_antwort:
-                    teilnehmer_antwort = TeilnehmerAntwort(
-                        sitzung_id=sitzung_id,
-                        antwort_id=antwort_id,
-                        anzahl_true=0,
-                        anzahl_false=0
-                    )
+            # Teilnehmer Antwort existiert noch nicht, Erstelle eine neue TeilnehmerAntwort
+            if not teilnehmer_antwort:
+                teilnehmer_antwort = TeilnehmerAntwort(
+                    sitzung_id=sitzung_id,
+                    antwort_id=antwort_id,
+                    anzahl_true=0,
+                    anzahl_false=0
+                )
 
             if gewaehlteAntwort:
                 teilnehmer_antwort.anzahl_true += 1
@@ -569,36 +569,23 @@ def saveTeilnehmerAntwort(event, context):
 
 def getActiveUmfrageResults(event, context):
     """Get the result for the active Umfragen"""
-    try:
-        umfrage_id = event['pathParameters']['umfrageId']
-    except KeyError:
-        return {
-            "statusCode": 400,
-            "body": json.dumps({"message": "Bad Request: 'umfrageId' is required in pathParameters"})
-        }
+    umfrage_id = event['pathParameters']['umfrageId']
     return getUmfrageResult(umfrage_id=umfrage_id,only_active=True)
 
 
 def getSessionResults(event, context):
     """Get the result for the active Umfragen"""
-    try:
-        sitzung_id = event['pathParameters']['sitzungId']
-    except KeyError:
-        return {
-            "statusCode": 400,
-            "body": json.dumps({"message": "Bad Request: 'umfrageId' is required in pathParameters"})
-        }
+    sitzung_id = event['pathParameters']['sitzungId']
     return getUmfrageResult(sitzung_id=sitzung_id)
 
 
 def getUmfrageResults(event, context):
     """Get the result for a single Umfrage"""
+    
     umfrage_id = event['pathParameters']['umfrageId']
     session = Session()
     try:
-        umfrage = session.query(Sitzung).filter(Sitzung.umfrage_id == umfrage_id)
-        print(umfrage)
-        umfrage = None
+        umfrage = session.query(Sitzung).filter(Sitzung.umfrage_id == umfrage_id).first()
         if not umfrage:
             return {
                 "statusCode": 404,
@@ -607,7 +594,7 @@ def getUmfrageResults(event, context):
             }
 
         fragen = umfrage.fragen
-        antworten = []
+        antworten = [frage.antworten for frage in fragen]
         umfrage.sitzungen
 
         response = {
@@ -615,30 +602,35 @@ def getUmfrageResults(event, context):
             "body": json.dumps({"fragen": antworten}),
             "headers": {"Content-Type": "application/json"}
         }
-    try:
-        umfrage_id = event['pathParameters']['umfrageId']
-    except KeyError:
+        return response
+    except Exception as e:
+        session.rollback()
         return {
-            "statusCode": 400,
-            "body": json.dumps({"message": "Bad Request: 'umfrageId' is required in pathParameters"})
+            "statusCode": 500,
+            "body": json.dumps({"message": "Internal Server Error, contact Backend-Team for more Info"}),
+            "headers": {"Content-Type": "application/json"}
         }
-    return getUmfrageResult(umfrage_id=umfrage_id)
-
+    finally:
+        session.close()
    
 def getUmfrageResult(umfrage_id=None, sitzung_id=None, only_active=False):
+    # Start a new session
     with Session() as session:
         try:
             umfrage = None
             sitzung = None
-            if umfrage_id != None:
+            # If umfrage_id is provided, get the Umfrage with that id
+            if umfrage_id is not None:
                 umfrage = session.query(Umfrage).filter(Umfrage.id == umfrage_id).first()
-            elif sitzung_id != None:
-                sitzung:Sitzung = session.query(Sitzung).filter(Sitzung.id == sitzung_id).first()
+            # If sitzung_id is provided, get the Sitzung with that id and its associated Umfrage
+            elif sitzung_id is not None:
+                sitzung: Sitzung = session.query(Sitzung).filter(Sitzung.id == sitzung_id).first()
                 if sitzung:
                     umfrage = sitzung.umfrage
     
             fragen = []
             
+            # If no Umfrage is found, return a 404 error with an appropriate message
             if not umfrage:
                 message = None
                 if sitzung_id:
@@ -652,20 +644,23 @@ def getUmfrageResult(umfrage_id=None, sitzung_id=None, only_active=False):
                     "body": json.dumps({"message": message })
                 }
             
+            # If only_active is True and there is no active Sitzung for the Umfrage, return a 404 error
             if only_active and not is_one_active(umfrage=umfrage) :
                 return {
                     "statusCode": 404,
                     "body": json.dumps({"message": "No Active Sitzung for Umfrage "+ str(umfrage.id) })
                 }
                     
-
-            fragen:List[Frage] = umfrage.fragen
+            # Get all Fragen for the Umfrage
+            fragen: List[Frage] = umfrage.fragen
             umfrage_json =  create_umfrage_as_json(umfrage=umfrage)
                 
             result = []
+            # For each Frage, create a JSON representation and add it to the result list
             for frage in fragen:
                 frage_json = create_frage_as_json(frage=frage, sitzung_id=sitzung_id, only_active=only_active )
                 result.append( frage_json)
+            # Return a 200 status with the Umfrage and Fragen in the body
             return {
                 "statusCode": 200,
                 "body": json.dumps({"result": {
@@ -676,6 +671,7 @@ def getUmfrageResult(umfrage_id=None, sitzung_id=None, only_active=False):
                 "headers": {"Content-Type": "application/json"}
             }
 
+        # If an exception occurs, log the error and return a 500 status
         except Exception as e:
             logger.error("Error getting Results: %s", str(e))
             return {
@@ -686,7 +682,7 @@ def getUmfrageResult(umfrage_id=None, sitzung_id=None, only_active=False):
         
 
 def is_one_active(umfrage:Umfrage):
-    sitzungen:List[Sitzung] = umfrage.sitzungen
+    sitzungen: List[Sitzung] = umfrage.sitzungen
     for sitzung in sitzungen:
         if sitzung.aktiv:
             return True 
