@@ -53,16 +53,50 @@ class Frage(Base):
     antwort_optionen = relationship("AntwortOption", back_populates="frage", cascade="all, delete")
 
 
+    def to_json(self):
+        antwort_optionen_json = []
+        for antwort_option in self.antwort_optionen:
+            antwort_optionen_json.append(antwort_option.to_json())
+        return {
+            "id": self.id,
+            "local_id": self.local_id,
+            "umfrage_id": self.umfrage_id,
+            "text": self.text,
+            "typ_id": self.typ_id,
+            "punktzahl": self.punktzahl,
+            "bestaetigt": self.bestaetigt,
+            "verneint": self.verneint,
+        }
+
 class AntwortOption(Base):
     __tablename__ = 'antwort_optionen'
     id = Column(Integer, primary_key=True)
     text = Column(Text, nullable=False)
     ist_richtig = Column(Boolean, nullable=False)
     frage_id = Column(Integer, ForeignKey('fragen.id', ondelete='CASCADE'))
-
     frage = relationship("Frage", back_populates="antwort_optionen")
     teilnehmer_antworten = relationship("TeilnehmerAntwort", back_populates="antwort_optionen")
 
+    def to_json(self, sitzung_id=None, only_active=False):
+        def filter_antworten(antwort):
+            if sitzung_id and antwort.sitzung_id != sitzung_id:
+                return False
+            if only_active and not antwort.sitzungen.aktiv:
+                return False
+            return True
+
+        filtered_antworten = [antwort for antwort in self.teilnehmer_antworten if filter_antworten(antwort)]
+
+        antwortenTrue = sum(antwort.anzahl_true for antwort in filtered_antworten)
+        antwortenFalse = sum(antwort.anzahl_false for antwort in filtered_antworten)
+
+        return {
+            "id": self.id,
+            "text": self.text,
+            "ist_richtig": self.ist_richtig,
+            "antwortenTrue": antwortenTrue,
+            "antwortenFalse": antwortenFalse
+        }
 
 class Sitzung(Base):
     __tablename__ = 'sitzungen'
@@ -72,7 +106,6 @@ class Sitzung(Base):
     teilnehmerzahl = Column(Integer, nullable=False)
     aktiv = Column(Boolean, nullable=False, default=True)
     umfrage_id = Column(Integer, ForeignKey('umfragen.id', ondelete='CASCADE'))
-
     umfrage = relationship("Umfrage", back_populates="sitzungen")
     teilnehmer_antworten = relationship("TeilnehmerAntwort", back_populates="sitzungen", cascade="all, delete")
 
@@ -87,3 +120,4 @@ class TeilnehmerAntwort(Base):
     sitzungen = relationship("Sitzung", back_populates="teilnehmer_antworten")
     antwort_optionen = relationship("AntwortOption", back_populates="teilnehmer_antworten")
 
+    

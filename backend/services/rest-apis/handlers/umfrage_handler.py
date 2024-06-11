@@ -8,7 +8,7 @@ from sqlalchemy.orm import sessionmaker
 import jwt
 from  models.models import Administrator, AntwortOption, Sitzung, Umfrage, Frage, TeilnehmerAntwort
 from  models.schemas import umfrage_schema
-from  utils.utils import getDecodedTokenFromHeader, create_umfrage_as_json, create_frage_as_json
+from  utils.utils import getDecodedTokenFromHeader
 from utils.database import create_local_engine
 
 engine = create_local_engine()
@@ -457,16 +457,15 @@ def getQuestionsWithOptions(event, context):
         fragen = umfrage.fragen
         fragen_with_options = []
 
-        for frage in fragen:
-            frage_json = {
-                "id": frage.id,
-                "text": frage.text,
-                "typ_id": frage.typ_id,
-                "punktzahl": frage.punktzahl,
-                "antwort_optionen": [{"id": option.id, "text": option.text, "ist_richtig": option.ist_richtig} for
-                                        option in frage.antwort_optionen]
-            }
-            fragen_with_options.append(frage_json)
+            for frage in fragen:
+                frage_json = {
+                    "id": frage.id,
+                    "text": frage.text,
+                    "typ_id": frage.typ_id,
+                    "punktzahl": frage.punktzahl,
+                    "antwort_optionen": [antwort_option.to_json() for antwort_option in frage.antwort_optionen]
+                }
+                fragen_with_options.append(frage_json)
 
         response = {
             "statusCode": 200,
@@ -651,16 +650,12 @@ def getUmfrageResult(umfrage_id=None, sitzung_id=None, only_active=False):
                     "body": json.dumps({"message": "No Active Sitzung for Umfrage "+ str(umfrage.id) })
                 }
                     
-            # Get all Fragen for the Umfrage
+
             fragen: List[Frage] = umfrage.fragen
-            umfrage_json =  create_umfrage_as_json(umfrage=umfrage)
+            umfrage_json = umfrage.to_json()
                 
-            result = []
-            # For each Frage, create a JSON representation and add it to the result list
-            for frage in fragen:
-                frage_json = create_frage_as_json(frage=frage, sitzung_id=sitzung_id, only_active=only_active )
-                result.append( frage_json)
-            # Return a 200 status with the Umfrage and Fragen in the body
+            result = [frage.to_json(sitzung_id=sitzung_id, only_active=only_active) for frage in fragen]
+            
             return {
                 "statusCode": 200,
                 "body": json.dumps({"result": {

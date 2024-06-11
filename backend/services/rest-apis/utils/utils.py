@@ -36,7 +36,7 @@ def create_umfrage_as_json(umfrage: Umfrage):
 
 # Helper Methode um Fragen in Json umzuwandeln
 def create_antwort_option_as_json(antwort_option: AntwortOption, sitzung_id = None, only_active=False):
-    antworten:List[TeilnehmerAntwort] = antwort_option.teilnehmer_antworten
+    antworten: List[TeilnehmerAntwort] = antwort_option.teilnehmer_antworten
     if sitzung_id:
         antworten = [antwort for antwort in antworten if antwort.sitzung_id == sitzung_id]
     if only_active:
@@ -52,10 +52,6 @@ def create_antwort_option_as_json(antwort_option: AntwortOption, sitzung_id = No
         "antwortenTrue": antwortenTrue, 
         "antwortenFalse": antwortenFalse
     }
-
-
-
-    teilnehmer_antworten = relationship("TeilnehmerAntwort", back_populates="antwort_optionen")
 
 
 # Helper Methode um Fragen in Json umzuwandeln
