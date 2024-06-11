@@ -1,38 +1,40 @@
-import {it, expect, describe, beforeAll} from "vitest";
-import {render, RenderResult, cleanup, within} from "@testing-library/react";
-import "@testing-library/jest-dom/vitest";
-import userEvent from '@testing-library/user-event';
-import UploadUmfrage from '../UploadUmfrage.jsx'
-import '@testing-library/jest-dom';
-import React from "react";
+import React from 'react';
+import {render, fireEvent, screen, cleanup} from '@testing-library/react';
+import { describe, it, expect, beforeAll } from 'vitest';
+import UmfragePopup from "../UmfragePopup.jsx";
 
-
-describe("Check dropbox basics", () => {
+describe('DropzoneComponent', () => {
     let renderedComp;
-    beforeAll( () => {
+    beforeAll(() => {
         cleanup();
-        renderedComp = render(<UploadUmfrage/>);
+        renderedComp = render(<UmfragePopup />);
     });
-    it("Is dropbox visible", () => {
-        const dropzone = renderedComp.getByText("Ziehen Sie Ihre konfigurierte Umfrage herein oder klicken Sie in den Bereich.")
-        expect(dropzone).toBeInTheDocument()
-    });
-    it("Upload not working simple JSON", async () => {
-        const mockJsonContent = '{"umfrage": {"titel": "Test Umfrage", "beschreibung": "Test Beschreibung"}}';
-
-        // Render the component
-        render(<UploadUmfrage />);
-
-        // Find the dropzone element
-        const dropzone = screen.getByText('Ziehen Sie Ihre konfigurierte Umfrage herein oder klicken Sie in den Bereich.');
-
-        // Trigger file upload
-        await userEvent.upload(dropzone, new File([mockJsonContent], 'test.json', {type: 'application/json'}));
-
-        // Wait for validation result
-        await waitFor(() => {
-            expect(screen.getByText('JSON enthält fehler')).toBeInTheDocument();
+    it('Test if file is uploading', async () => {
+        // Mock-Datei erstellen
+        const file = new File([JSON.stringify({ ping: true })], 'ping.json', {
+            type: 'application/json',
         });
-    })
+        const data = mockData([file]);
+        const dropzone = renderedComp.getByTestId('dropzone');
+        fireEvent.dragEnter(dropzone, data);
+        fireEvent.drop(dropzone, data);
 
+        const element = await screen.findByText('ping.json');
+        expect(element).toBeTruthy()
+    });
+
+
+    function mockData(files) {
+        return {
+            dataTransfer: {
+                files,
+                items: files.map((file) => ({
+                    kind: 'file',
+                    type: file.type,
+                    getAsFile: () => file,
+                })),
+                types: ['Files'],
+            },
+        };
+    }
 });
