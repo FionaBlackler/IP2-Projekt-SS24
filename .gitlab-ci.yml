@@ -5,4 +5,4 @@ test:
   stage: test
   before_script: 
   script:
-     - export DATABASE_URL="doesnotmatter" && cd backend/services/rest-apis && pip install -r requirements.txt && pytest
+     - export DATABASE_URL=mysql://root:password@localhost:3306/mydatabase && cd backend/services/rest-apis && pip install -r requirements.txt && pytest
