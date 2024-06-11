@@ -11,3 +11,31 @@ login:
     - http:
         path: /login
         method: post
+
+changePassword:
+  handler: handlers.auth_handler.changePassword
+  events:
+    - http:
+        path: /changePassword
+        method: post
+
+forgotPassword:
+  handler: handlers.auth_handler.forgotPassword
+  events:
+    - http:
+        path: /forgotPassword
+        method: post
+
+setPassword:
+  handler: handlers.auth_handler.setPassword
+  events:
+    - http:
+        path: /setPassword
+        method: post
+
+deleteAccount:
+  handler: handlers.auth_handler.deleteAccount
+  events:
+    - http:
+        path: /deleteAccount
+        method: post
