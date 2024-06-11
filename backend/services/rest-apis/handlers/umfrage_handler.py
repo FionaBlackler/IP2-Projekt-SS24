@@ -19,9 +19,28 @@ logger = logging.getLogger()
 # engine, Session = create_database_connection()
 Session = sessionmaker(bind=engine)
 
+def auth_error(message: str):
+    return {
+        "statusCode": 404,
+        "body": json.dumps({"message": message}),
+        "headers": {"Content-Type": "application/json"}
+    }
+
+err_admin_not_found = {
+    "statusCode": 404,
+    "body": json.dumps({"message": "Administrator not found"}),
+    "headers": {"Content-Type": "application/json"}
+}
+
 def deleteUmfrageById(event, context):
-    getDecodedTokenFromHeader(event)
+    try:
+        decoded_token = getDecodedTokenFromHeader(event)
+    except ValueError as e:
+        logger.error(str(e))
+        return auth_error(str(e))
+
     session = Session()
+
     try:
         # Extrahiere die ID aus der URL
         umfrage_id = event['pathParameters']['umfrageId']
@@ -63,8 +82,14 @@ def deleteUmfrageById(event, context):
 
 def uploadUmfrage(event, context):
     "accepts the json format in the request body and stores it in the database"
-    decoded_token = getDecodedTokenFromHeader(event)
+    try:
+        decoded_token = getDecodedTokenFromHeader(event)
+    except ValueError as e:
+        logger.error(str(e))
+        return auth_error(str(e))
+
     admin_id = decoded_token['admin_id']
+
 
     session = Session()
     try:
@@ -136,7 +161,7 @@ def uploadUmfrage(event, context):
         # add the new Umfrage to the session
         session.add(umfrage)
         session.commit()
-       
+
 
         return {
             "statusCode": 201,
@@ -177,10 +202,15 @@ def uploadUmfrage(event, context):
 
 
 def createSession(event, context):
-    getDecodedTokenFromHeader(event)
+    try:
+        decoded_token = getDecodedTokenFromHeader(event)
+    except ValueError as e:
+        logger.error(str(e))
+        return auth_error(str(e))
 
     umfrage_id = event['pathParameters']['umfrageId']
     session = Session()
+
     try:
         # Verify the Umfrage exists
         umfrage = session.query(Umfrage).filter(Umfrage.id == umfrage_id).first()
@@ -231,10 +261,16 @@ def createSession(event, context):
 
 
 def deleteSession(event, context):
-    getDecodedTokenFromHeader(event)
-    
+    try:
+        decoded_token = getDecodedTokenFromHeader(event)
+    except ValueError as e:
+        logger.error(str(e))
+        return auth_error(str(e))
+
     sitzung_id = event['pathParameters']['sitzungId']
     session = Session()
+
+
     try:
         # Verify the Sitzung exists
         sitzung = session.query(Sitzung).filter(Sitzung.id == sitzung_id).first()
@@ -269,9 +305,16 @@ def deleteSession(event, context):
 
 
 def endSession(event, context):
-    getDecodedTokenFromHeader(event)
+    try:
+        decoded_token = getDecodedTokenFromHeader(event)
+    except ValueError as e:
+        logger.error(str(e))
+        return auth_error(str(e))
+
     sitzung_id = event['pathParameters']['sitzungId']
     session = Session()
+
+
     try:
         # Verify the Sitzung exists
         sitzung = session.query(Sitzung).filter(Sitzung.id == sitzung_id).first()
@@ -305,14 +348,19 @@ def endSession(event, context):
 
 
 def getAllUmfragenFromAdmin(event, context):
-    decoded_token = getDecodedTokenFromHeader(event)
+    try:
+        decoded_token = getDecodedTokenFromHeader(event)
+    except ValueError as e:
+        logger.error(str(e))
+        return auth_error(str(e))
+
     admin_id = decoded_token['admin_id']
     session = Session()
+
     try:
-        
         logger.info(f"Get all Umfragen from Admin with ID {admin_id}.")
         umfragen = session.query(Umfrage).filter_by(admin_id=admin_id).all()
-    
+
         if umfragen:
             # Konvertiere Umfragen in ein JSON Format
             umfragen_list = []
@@ -348,6 +396,12 @@ def getAllUmfragenFromAdmin(event, context):
 
 def getUmfrage(event, context):
     """Get the full original JSON of a Umfrage by ID"""
+    try:
+        decoded_token = getDecodedTokenFromHeader(event)
+    except ValueError as e:
+        logger.error(str(e))
+        return auth_error(str(e))
+
     umfrage_id = event['pathParameters']['umfrageId']
 
     session = Session()
@@ -381,10 +435,16 @@ def getUmfrage(event, context):
 
 
 def archiveUmfrage(event, context):
+    try:
+        decoded_token = getDecodedTokenFromHeader(event)
+    except ValueError as e:
+        logger.error(str(e))
+        return auth_error(str(e))
+
     session = Session()
     umfrage_id = event['pathParameters']['umfrageId']
-    try:
 
+    try:
         logger.info(f"Archive Umfrage with ID {umfrage_id}.")
 
         # finde die Umfrage in der Datenbank
@@ -435,8 +495,15 @@ def archiveUmfrage(event, context):
 
 def getQuestionsWithOptions(event, context):
     """Get all Fragen with AntwortOptionen for a given Umfrage ID"""
+    try:
+        decoded_token = getDecodedTokenFromHeader(event)
+    except ValueError as e:
+        logger.error(str(e))
+        return auth_error(str(e))
+
     umfrage_id = event['pathParameters']['umfrageId']
     session = Session()
+
     try:
         umfrage = session.query(Umfrage).filter(Umfrage.id == umfrage_id).first()
 
@@ -481,6 +548,12 @@ def getQuestionsWithOptions(event, context):
 
 
 def saveTeilnehmerAntwort(event, context):
+    try:
+        decoded_token = getDecodedTokenFromHeader(event)
+    except ValueError as e:
+        logger.error(str(e))
+        return auth_error(str(e))
+
     sitzung_id = event['pathParameters']['sitzungId']
 
     # Extrahiere und validiere die Anfrageinformationen aus dem Body
@@ -573,7 +646,7 @@ def getSessionResults(event, context):
 
 def getUmfrageResults(event, context):
     """Get the result for a single Umfrage"""
-    
+
     umfrage_id = event['pathParameters']['umfrageId']
     session = Session()
     try:
@@ -604,7 +677,7 @@ def getUmfrageResults(event, context):
         }
     finally:
         session.close()
-   
+
 def getUmfrageResult(umfrage_id=None, sitzung_id=None, only_active=False):
     # Start a new session
     session = Session()
@@ -621,7 +694,7 @@ def getUmfrageResult(umfrage_id=None, sitzung_id=None, only_active=False):
                 umfrage = sitzung.umfrage
 
         fragen = []
-        
+
         # If no Umfrage is found, return a 404 error with an appropriate message
         if not umfrage:
             message = None
@@ -635,20 +708,20 @@ def getUmfrageResult(umfrage_id=None, sitzung_id=None, only_active=False):
                 "statusCode": 404,
                 "body": json.dumps({"message": message })
             }
-        
+
         # If only_active is True and there is no active Sitzung for the Umfrage, return a 404 error
         if only_active and not is_one_active(umfrage=umfrage) :
             return {
                 "statusCode": 404,
                 "body": json.dumps({"message": "No Active Sitzung for Umfrage "+ str(umfrage.id) })
             }
-                
+
 
         fragen: List[Frage] = umfrage.fragen
         umfrage_json = umfrage.to_json()
-            
+
         result = [frage.to_json(sitzung_id=sitzung_id, only_active=only_active) for frage in fragen]
-        
+
         return {
             "statusCode": 200,
             "body": json.dumps({"result": {
