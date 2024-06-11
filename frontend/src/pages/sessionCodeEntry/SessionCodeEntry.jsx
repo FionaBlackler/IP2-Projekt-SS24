@@ -1,7 +1,7 @@
 const SessionCodeEntry = () => {
     return (
         <div className="min-h-screen flex flex-col justify-center items-center bg-gray-100">
-            <div className="container w-3/4 mx-auto bg-primary-color shadow-md rounded-[20px]">
+            <div className="container w-2/4 mx-auto bg-primary-color shadow-md rounded-[20px]">
                 <div className="bg-secondary-color rounded-t-[20px] w-full h-[86.89px] flex items-center justify-center outline-[6px] outline-offset-[-4px] outline overflow-auto outline-secondary-color mb-5">
                     <span className="align-middle text-[#FEF2DE] text-4xl font-normal font-['Inter']">
                         Umfrage
