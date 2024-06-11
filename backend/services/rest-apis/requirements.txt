@@ -10,3 +10,4 @@ PyJWT
 pytest
 pytest-mock
 python-dotenv
+jsonschema
