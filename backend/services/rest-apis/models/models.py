@@ -77,7 +77,7 @@ class AntwortOption(Base):
     frage = relationship("Frage", back_populates="antwort_optionen")
     teilnehmer_antworten = relationship("TeilnehmerAntwort", back_populates="antwort_optionen")
 
-    def to_json(self, sitzung_id=None, only_active=False):
+    def to_json_with_count(self, sitzung_id=None, only_active=False):
         def filter_antworten(antwort):
             if sitzung_id and antwort.sitzung_id != sitzung_id:
                 return False
@@ -97,6 +97,14 @@ class AntwortOption(Base):
             "antwortenTrue": antwortenTrue,
             "antwortenFalse": antwortenFalse
         }
+    
+    def to_json(self):
+        return {
+            "id": self.id,
+            "text": self.text,
+            "ist_richtig": self.ist_richtig
+        }
+
 
 class Sitzung(Base):
     __tablename__ = 'sitzungen'

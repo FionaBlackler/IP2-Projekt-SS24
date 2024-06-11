@@ -66,121 +66,114 @@ def uploadUmfrage(event, context):
     decoded_token = getDecodedTokenFromHeader(event)
     admin_id = decoded_token['admin_id']
 
-    with Session() as session:
+    session = Session()
+    try:
+        admin = session.query(Administrator).filter(Administrator.id == admin_id).first()
+        if not admin:
+            return {
+                "statusCode": 404,
+                "body": json.dumps({"message": "Administrator not found"}),
+                "headers": {"Content-Type": "application/json"}
+            }
+
+        if isinstance(event["body"], str):
+            body = json.loads(event['body'])
+        else:
+            # body is already a dict (e.g., when testing locally)
+            body = event['body']
+
+        # Validate JSON against schema
         try:
-            admin = session.query(Administrator).filter(Administrator.id == admin_id).first()
-            if not admin:
-                return {
-                    "statusCode": 404,
-                    "body": json.dumps({"message": "Administrator not found"}),
-                    "headers": {"Content-Type": "application/json"}
-                }
-
-            if isinstance(event["body"], str):
-                body = json.loads(event['body'])
-            else:
-                # body is already a dict (e.g., when testing locally)
-                body = event['body']
-
-            # Validate JSON against schema
-            try:
-                validate(instance=body, schema=umfrage_schema)
-            except ValidationError as e:
-                return {
-                    "statusCode": 400,
-                    "body": json.dumps({"message": f"JSON validation error: {e.message}"}),
-                    "headers": {"Content-Type": "application/json"}
-                }
-            except SchemaError as e:
-                return {
-                    "statusCode": 500,
-                    "body": json.dumps({"message": f"JSON schema error: {e.message}"}),
-                    "headers": {"Content-Type": "application/json"}
-                }
-
-            # JSON is valid, map to datamodel
-            json_fragen = body["fragen"]
-            fragen = []
-
-            for index, f_obj in enumerate(json_fragen):
-                frage = Frage(
-                    local_id=index,
-                    text=f_obj['frage_text'],
-                    typ_id=f_obj['art'],
-                    punktzahl=f_obj['punktzahl']
-                )
-
-                # K Questions need special handling
-                if f_obj['art'] == 'K':
-                    frage.bestaetigt = f_obj['kategorien']["bestaetigt"]
-                    frage.verneint = f_obj['kategorien']["verneint"]
-
-                valid_options = [AntwortOption(text=option, ist_richtig=True) for option in f_obj["richtige_antworten"]]
-                invalid_options = [AntwortOption(text=option, ist_richtig=False) for option in
-                                   f_obj["falsche_antworten"]]
-                frage.antwort_optionen = valid_options + invalid_options
-
-                fragen.append(frage)
-
-            # create new Umfrage object
-            umfrage = Umfrage(
-                admin_id=admin.id,
-                titel=body['titel'],
-                beschreibung=body['beschreibung'],
-                erstellungsdatum=datetime.now(),
-                status='aktiv',
-                fragen=fragen,
-                json_text=json.dumps(body)
-            )
-
-            # add the new Umfrage to the session
-            session.add(umfrage)
-
-            try:
-                session.commit()
-            except Exception as e:
-                session.rollback()
-                logger.error("Database commit error: %s", str(e))
-                return {
-                    "statusCode": 500,
-                    "body": json.dumps({"message": f"Database commit error: {str(e)}"}),
-                    "headers": {"Content-Type": "application/json"}
-                }
-
-            return {
-                "statusCode": 201,
-                "body": json.dumps({
-                    "message": "Umfrage created successfully",
-                    "umfrage_id": umfrage.id
-                }),
-                "headers": {"Content-Type": "application/json"}
-            }
-
-        except json.JSONDecodeError as e:
+            validate(instance=body, schema=umfrage_schema)
+        except ValidationError as e:
             return {
                 "statusCode": 400,
-                "body": json.dumps({
-                    "message": "Invalid JSON format",
-                    "line": e.lineno,
-                    "column": e.colno
-                }),
+                "body": json.dumps({"message": f"JSON validation error: {e.message}"}),
                 "headers": {"Content-Type": "application/json"}
             }
-        except KeyError as e:
-            return {
-                "statusCode": 400,
-                "body": json.dumps({
-                    "message": f"Missing key in JSON: {str(e)}"
-                }),
-                "headers": {"Content-Type": "application/json"}
-            }
-        except Exception as e:
-            logger.error("Internal server error: %s", str(e))
+        except SchemaError as e:
             return {
                 "statusCode": 500,
-                "body": json.dumps({"message": f"Internal server error: {str(e)}"}),
+                "body": json.dumps({"message": f"JSON schema error: {e.message}"}),
                 "headers": {"Content-Type": "application/json"}
             }
+
+        # JSON is valid, map to datamodel
+        json_fragen = body["fragen"]
+        fragen = []
+
+        for index, f_obj in enumerate(json_fragen):
+            frage = Frage(
+                local_id=index,
+                text=f_obj['frage_text'],
+                typ_id=f_obj['art'],
+                punktzahl=f_obj['punktzahl']
+            )
+
+            # K Questions need special handling
+            if f_obj['art'] == 'K':
+                frage.bestaetigt = f_obj['kategorien']["bestaetigt"]
+                frage.verneint = f_obj['kategorien']["verneint"]
+
+            valid_options = [AntwortOption(text=option, ist_richtig=True) for option in f_obj["richtige_antworten"]]
+            invalid_options = [AntwortOption(text=option, ist_richtig=False) for option in
+                                f_obj["falsche_antworten"]]
+            frage.antwort_optionen = valid_options + invalid_options
+
+            fragen.append(frage)
+
+        # create new Umfrage object
+        umfrage = Umfrage(
+            admin_id=admin.id,
+            titel=body['titel'],
+            beschreibung=body['beschreibung'],
+            erstellungsdatum=datetime.now(),
+            status='aktiv',
+            fragen=fragen,
+            json_text=json.dumps(body)
+        )
+
+        # add the new Umfrage to the session
+        session.add(umfrage)
+        session.commit()
+       
+
+        return {
+            "statusCode": 201,
+            "body": json.dumps({
+                "message": "Umfrage created successfully",
+                "umfrage_id": umfrage.id
+            }),
+            "headers": {"Content-Type": "application/json"}
+        }
+
+    except json.JSONDecodeError as e:
+        return {
+            "statusCode": 400,
+            "body": json.dumps({
+                "message": "Invalid JSON format",
+                "line": e.lineno,
+                "column": e.colno
+            }),
+            "headers": {"Content-Type": "application/json"}
+        }
+    except KeyError as e:
+        return {
+            "statusCode": 400,
+            "body": json.dumps({
+                "message": f"Missing key in JSON: {str(e)}"
+            }),
+            "headers": {"Content-Type": "application/json"}
+        }
+    except Exception as e:
+        logger.error("Internal server error: %s", str(e))
+        return {
+            "statusCode": 500,
+            "body": json.dumps({"message": f"Internal server error: {str(e)}"}),
+            "headers": {"Content-Type": "application/json"}
+        }
+    finally:
+        session.close()
 
 
 def createSession(event, context):
@@ -457,15 +450,15 @@ def getQuestionsWithOptions(event, context):
         fragen = umfrage.fragen
         fragen_with_options = []
 
-            for frage in fragen:
-                frage_json = {
-                    "id": frage.id,
-                    "text": frage.text,
-                    "typ_id": frage.typ_id,
-                    "punktzahl": frage.punktzahl,
-                    "antwort_optionen": [antwort_option.to_json() for antwort_option in frage.antwort_optionen]
-                }
-                fragen_with_options.append(frage_json)
+        for frage in fragen:
+            frage_json = {
+                "id": frage.id,
+                "text": frage.text,
+                "typ_id": frage.typ_id,
+                "punktzahl": frage.punktzahl,
+                "antwort_optionen": [antwort_option.to_json() for antwort_option in frage.antwort_optionen]
+            }
+            fragen_with_options.append(frage_json)
 
         response = {
             "statusCode": 200,
@@ -614,66 +607,68 @@ def getUmfrageResults(event, context):
    
 def getUmfrageResult(umfrage_id=None, sitzung_id=None, only_active=False):
     # Start a new session
-    with Session() as session:
-        try:
-            umfrage = None
-            sitzung = None
-            # If umfrage_id is provided, get the Umfrage with that id
-            if umfrage_id is not None:
-                umfrage = session.query(Umfrage).filter(Umfrage.id == umfrage_id).first()
-            # If sitzung_id is provided, get the Sitzung with that id and its associated Umfrage
-            elif sitzung_id is not None:
-                sitzung: Sitzung = session.query(Sitzung).filter(Sitzung.id == sitzung_id).first()
-                if sitzung:
-                    umfrage = sitzung.umfrage
-    
-            fragen = []
-            
-            # If no Umfrage is found, return a 404 error with an appropriate message
-            if not umfrage:
-                message = None
-                if sitzung_id:
-                    message = "Could not find umfrage with a associated sitzung with id: " + str(sitzung_id) + "."
-                elif umfrage_id:
-                    message = "Could not find Umfrage with id: " +  str(umfrage_id) +"."
-                else:
-                    message = "No umfrage_id nor sitzung id"
-                return {
-                    "statusCode": 404,
-                    "body": json.dumps({"message": message })
-                }
-            
-            # If only_active is True and there is no active Sitzung for the Umfrage, return a 404 error
-            if only_active and not is_one_active(umfrage=umfrage) :
-                return {
-                    "statusCode": 404,
-                    "body": json.dumps({"message": "No Active Sitzung for Umfrage "+ str(umfrage.id) })
-                }
-                    
+    session = Session()
+    try:
+        umfrage = None
+        sitzung = None
+        # If umfrage_id is provided, get the Umfrage with that id
+        if umfrage_id is not None:
+            umfrage = session.query(Umfrage).filter(Umfrage.id == umfrage_id).first()
+        # If sitzung_id is provided, get the Sitzung with that id and its associated Umfrage
+        elif sitzung_id is not None:
+            sitzung: Sitzung = session.query(Sitzung).filter(Sitzung.id == sitzung_id).first()
+            if sitzung:
+                umfrage = sitzung.umfrage
 
-            fragen: List[Frage] = umfrage.fragen
-            umfrage_json = umfrage.to_json()
+        fragen = []
+        
+        # If no Umfrage is found, return a 404 error with an appropriate message
+        if not umfrage:
+            message = None
+            if sitzung_id:
+                message = "Could not find umfrage with a associated sitzung with id: " + str(sitzung_id) + "."
+            elif umfrage_id:
+                message = "Could not find Umfrage with id: " +  str(umfrage_id) +"."
+            else:
+                message = "No umfrage_id nor sitzung id"
+            return {
+                "statusCode": 404,
+                "body": json.dumps({"message": message })
+            }
+        
+        # If only_active is True and there is no active Sitzung for the Umfrage, return a 404 error
+        if only_active and not is_one_active(umfrage=umfrage) :
+            return {
+                "statusCode": 404,
+                "body": json.dumps({"message": "No Active Sitzung for Umfrage "+ str(umfrage.id) })
+            }
                 
-            result = [frage.to_json(sitzung_id=sitzung_id, only_active=only_active) for frage in fragen]
-            
-            return {
-                "statusCode": 200,
-                "body": json.dumps({"result": {
-                    "umfrage" :umfrage_json,
-                    "fragen" : result
-                    }
-            }),
-                "headers": {"Content-Type": "application/json"}
-            }
 
-        # If an exception occurs, log the error and return a 500 status
-        except Exception as e:
-            logger.error("Error getting Results: %s", str(e))
-            return {
-                "statusCode": 500,
-                "body": json.dumps({"message": "Internal Server Error, contact Backend-Team for more Info"}),
-                "headers": {"Content-Type": "application/json"}
-            }
+        fragen: List[Frage] = umfrage.fragen
+        umfrage_json = umfrage.to_json()
+            
+        result = [frage.to_json(sitzung_id=sitzung_id, only_active=only_active) for frage in fragen]
+        
+        return {
+            "statusCode": 200,
+            "body": json.dumps({"result": {
+                "umfrage" :umfrage_json,
+                "fragen" : result
+                }
+        }),
+            "headers": {"Content-Type": "application/json"}
+        }
+
+    # If an exception occurs, log the error and return a 500 status
+    except Exception as e:
+        logger.error("Error getting Results: %s", str(e))
+        return {
+            "statusCode": 500,
+            "body": json.dumps({"message": "Internal Server Error, contact Backend-Team for more Info"}),
+            "headers": {"Content-Type": "application/json"}
+        }
+    finally:
+        session.close()
         
 
 def is_one_active(umfrage:Umfrage):

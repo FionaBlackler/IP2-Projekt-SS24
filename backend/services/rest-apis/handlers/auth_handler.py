@@ -4,7 +4,7 @@ import json
 import jwt
 import bcrypt
 import logging
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.orm import sessionmaker
 from pydantic import BaseModel, ValidationError
 from models.models import Administrator
 from utils.database import create_local_engine
@@ -55,90 +55,97 @@ def create_token(user_id: int, email: str) -> str:
     return token
 
 def login(event, context):
+    session = Session()
+    try:
+        # Parse the input
+        if isinstance(event["body"], str):
+            data = json.loads(event["body"])
+        else:
+            data = event['body']
+        
+        user_data = UserCreateLogin(**data)
 
-    with Session() as session:
-        try:
-            if isinstance(event["body"], str):
-                data = json.loads(event["body"])
-            else:
-                # body is already a dict (e.g., when testing locally)
-                data  = event['body']
+        # Query the database
+        admin = session.query(Administrator).filter(Administrator.email == user_data.email).first()
+        if not admin or not verify_password(user_data.password, admin.password):
+            return {
+                "statusCode": 401,
+                "body": json.dumps({"message": "Invalid credentials"}),
+                "headers": {"Content-Type": "application/json"}
+            }
 
-            user_data = UserCreateLogin(**data)
-        except (json.JSONDecodeError, ValidationError) as e:
-            return {
-                "statusCode": 400,
-                "body": json.dumps({"message": "Invalid input format"}),
-                "headers": {"Content-Type": "application/json"}
-            }
-        try:
-            admin = session.query(Administrator).filter(Administrator.email == user_data.email).first()
-            if not admin or not verify_password(user_data.password, admin.password):
-                return {
-                    "statusCode": 401,
-                    "body": json.dumps({"message": "Invalid credentials"}),
-                    "headers": {"Content-Type": "application/json"}
-                }
-            token = create_token(admin.id, admin.email)
-            return {
-                "statusCode": 200,
-                "body": json.dumps({"jwt_token": token}),
-                "headers": {"Content-Type": "application/json"}
-            }
-        except Exception as e:
-            logger.error(str(e))
-            return {
-                "statusCode": 500,
-                "body": json.dumps({"message": "Internal Server Error, contact Backend-Team for more Info"}),
-                "headers": {"Content-Type": "application/json"}
-            }
+        token = create_token(admin.id, admin.email)
+        return {
+            "statusCode": 200,
+            "body": json.dumps({"jwt_token": token}),
+            "headers": {"Content-Type": "application/json"}
+        }
+    
+    except (json.JSONDecodeError, ValidationError):
+        return {
+            "statusCode": 400,
+            "body": json.dumps({"message": "Invalid input format"}),
+            "headers": {"Content-Type": "application/json"}
+        }
+    except Exception as e:
+        logger.error(str(e))
+        return {
+            "statusCode": 500,
+            "body": json.dumps({"message": "Internal Server Error, contact Backend-Team for more Info"}),
+            "headers": {"Content-Type": "application/json"}
+        }
+    finally:
+        session.close()
+
 
 def register(event, context):
+    session = Session()
+    try:
+        # Parse the input
+        if isinstance(event["body"], str):
+            data = json.loads(event["body"])
+        else:
+            data = event['body']
 
-    with Session() as session:
-        try:
-            if isinstance(event["body"], str):
-                data = json.loads(event["body"])
-            else:
-                # body is already a dict (e.g., when testing locally)
-                data  = event['body']
-                
-            user_data = UserCreateRegister(**data)
-        except (json.JSONDecodeError, ValidationError) as e:
+        user_data = UserCreateRegister(**data)
+        
+        # Check if user already exists
+        admin = session.query(Administrator).filter(Administrator.email == user_data.email).first()
+        if admin:
             return {
                 "statusCode": 400,
-                "body": json.dumps({"message": "Invalid input"}),
+                "body": json.dumps({"message": "User already exists"}),
                 "headers": {"Content-Type": "application/json"}
             }
         
-        try:
-            # check if user already exists
-            admin = session.query(Administrator).filter(Administrator.email == user_data.email).first()
-            if admin:
-                return {
-                    "statusCode": 400,
-                    "body": json.dumps({"message": "User already exists"}),
-                    "headers": {"Content-Type": "application/json"}
-                }
-            
-            hashed_password = hash_password(user_data.password)
-            admin = Administrator(name=user_data.name, email=user_data.email, password=hashed_password)
-            session.add(admin)
-            session.commit()
+        # Create new user
+        hashed_password = hash_password(user_data.password)
+        admin = Administrator(name=user_data.name, email=user_data.email, password=hashed_password)
+        session.add(admin)
+        session.commit()
 
-            return {
-                "statusCode": 201,
-                "body": json.dumps({"message": "User created successfully"}),
-                "headers": {"Content-Type": "application/json"}
-            }
-        
-        except Exception as e:
-            logger.error(str(e))
-            return {
-                "statusCode": 500,
-                "body": json.dumps({"message": "Internal Server Error, contact Backend-Team for more Info"}),
-                "headers": {"Content-Type": "application/json"}
-            }
+        return {
+            "statusCode": 201,
+            "body": json.dumps({"message": "User created successfully"}),
+            "headers": {"Content-Type": "application/json"}
+        }
+    
+    except (json.JSONDecodeError, ValidationError):
+        return {
+            "statusCode": 400,
+            "body": json.dumps({"message": "Invalid input"}),
+            "headers": {"Content-Type": "application/json"}
+        }
+    except Exception as e:
+        logger.error(str(e))
+        return {
+            "statusCode": 500,
+            "body": json.dumps({"message": "Internal Server Error, contact Backend-Team for more Info"}),
+            "headers": {"Content-Type": "application/json"}
+        }
+    finally:
+        session.close()
+
 
 def change_password(event, context):
     with Session() as session:
