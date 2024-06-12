@@ -1,0 +1,31 @@
+{
+    "statusCode": 200,
+    "body": {
+        "sitzungen": [
+            {
+                "id": 1,
+                "startzeit": "2023-06-10 10:00:00.000000",
+                "endzeit": "2023-06-10 12:00:00.000000",
+                "teilnehmerzahl": 15,
+                "aktiv": false
+            },
+            {
+                "id": 2,
+                "startzeit": "2023-06-9 10:00:00.000000",
+                "endzeit": "2023-06-9 12:00:00.000000",
+                "teilnehmerzahl": 10,
+                "aktiv": false
+            },
+            {
+                "id": 3,
+                "startzeit": "2023-06-17 14:00:00.000000",
+                "endzeit": "2023-06-17 16:00:00.000000",
+                "teilnehmerzahl": 20,
+                "aktiv": true
+            }
+        ]
+    },
+    "headers": {
+        "Content-Type": "application/json"
+    }
+}

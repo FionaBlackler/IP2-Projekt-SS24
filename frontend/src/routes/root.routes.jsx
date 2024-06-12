@@ -9,6 +9,8 @@ import Register from '../pages/register/Register.jsx'
 import ProtectedRoute from './protected.route.jsx'
 import Umfrage from '../pages/admin/meineUmfrage/Umfrage.jsx'
 import UmfragePopup from '../pages/admin/uploadUmfragePage/UmfragePopup.jsx'
+import UmfrageSitzungen from '../pages/admin/umfrageSitzungen/UmfrageSizungen.jsx'
+import StaticUmfrageSitzungen from '../pages/admin/staticUmfrageSitzungen/StaticUmfrageSitzungen.jsx'
 
 function RootRoutes() {
     return (
@@ -19,6 +21,8 @@ function RootRoutes() {
                     element={<Umfrage />}
                 />
                {/*<Route path="/Dashboard/:id" element={<Dashboard/>} />*/} 
+                <Route exact={true} path="/dashboard/static/:umfrageId" element={<StaticUmfrageSitzungen />} />  {/* statistische daten zum testen */}
+                <Route exact={true} path="/dashboard/:umfrageId" element={<UmfrageSitzungen />} />
                 <Route exact={true} path="/login" element={<Login />} />
                 <Route exact={true} path="/register" element={<Register />} />
                 <Route exact={true} path="/changePassword" element={<ChangePassword />} />
