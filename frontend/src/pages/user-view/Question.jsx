@@ -4,7 +4,7 @@ import QuestionHeader from './QuestionHeader';
 import QuestionOptions from './QuestionOptions';
 import './QuestionStyle.css';
 
-const Question = () => {
+const StandardQuestion = () => {
     const { questionId } = useParams();
     const [number, setNumber] = useState(1);
     const [text, setText] = useState('Lorem ipsum dolor sit amet, consectetur sadipscing elitr.');
@@ -12,7 +12,6 @@ const Question = () => {
     const [score, setScore] = useState(1);
 
     useEffect(() => {
-        // Hier kannst du die Daten von deinem Endpoint holen
         const fetchData = async () => {
             try {
                 const response = await fetch(`http://localhost:3000/umfrage/${questionId}/fragen`);
@@ -37,4 +36,4 @@ const Question = () => {
     );
 };
 
-export default Question;
+export default StandardQuestion;
