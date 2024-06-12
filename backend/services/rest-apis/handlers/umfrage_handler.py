@@ -346,7 +346,7 @@ def endSession(event, context):
 
     return response
 
-def getAllSitzungenForUmfrage(event, context):
+def getAllSitzungenFromUmfrage(event, context):
     try:
         decoded_token = getDecodedTokenFromHeader(event)
     except ValueError as e:
