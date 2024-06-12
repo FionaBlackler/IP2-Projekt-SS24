@@ -1,0 +1,50 @@
+.binary-question-container {
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    margin: 20px 0;
+    background-color: #f9f9f9;
+}
+
+.binary-question-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.binary-options-container {
+    display: flex;
+    flex-direction: column;
+}
+
+.binary-option-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #fff;
+}
+
+.binary-option-text {
+    flex: 1;
+    margin-right: 20px;
+}
+
+.binary-option-checkboxes {
+    display: flex;
+    justify-content: space-between;
+}
+
+.binary-option-checkboxes label {
+    display: flex;
+    align-items: center;
+    margin-left: 10px;
+}
+
+.binary-option-checkboxes input[type="checkbox"] {
+    margin-right: 5px;
+}
