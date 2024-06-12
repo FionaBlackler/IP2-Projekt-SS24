@@ -6,7 +6,7 @@ import os
 from datetime import datetime, timedelta
 from unittest.mock import patch, MagicMock
 from models.models import AntwortOption, Frage, Sitzung, TeilnehmerAntwort, Umfrage
-from handlers.umfrage_handler import archiveUmfrage, createSession, deleteSession, deleteUmfrageById, endSession, getAllUmfragenFromAdmin, getQuestionsWithOptions, getUmfrage, getUmfrageResult, getUmfrageResults, saveTeilnehmerAntwort, uploadUmfrage
+from handlers.umfrage_handler import archiveUmfrage, createSession, deleteSession, deleteUmfrageById, endSession, getAllSitzungenForUmfrage, getAllUmfragenFromAdmin, getQuestionsWithOptions, getUmfrage, getUmfrageResult, getUmfrageResults, saveTeilnehmerAntwort, uploadUmfrage
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -253,8 +253,46 @@ def test_endSession(mock_getDecodedTokenFromHeader, mock_session, common_event, 
 
     mock_session_instance.close.assert_called_once()
 
-# Fixed datetime for consistency
-fixed_datetime = datetime(2024, 6, 10, 23, 5, 55, 415831)
+@pytest.mark.parametrize("umfrage_id, query_result, expected_status, expected_message", [
+    ("1", Umfrage(id=1, admin_id=1, titel="Test Umfrage", beschreibung="Eine Testbeschreibung", erstellungsdatum=fixed_datetime, status="aktiv", json_text="",
+                  sitzungen=[Sitzung(id=1, startzeit=fixed_datetime, endzeit=fixed_datetime + timedelta(minutes=2), teilnehmerzahl=10, aktiv=True, umfrage_id=1),
+                             Sitzung(id=2, startzeit=fixed_datetime + timedelta(minutes=2), endzeit=fixed_datetime + timedelta(minutes=4), teilnehmerzahl=10, aktiv=True, umfrage_id=1)]), 200,
+                  {"sitzungen": [
+                      {"id": 1, "startzeit": fixed_datetime.strftime('%Y-%m-%d %H:%M:%S.%f'), "endzeit": (fixed_datetime + timedelta(minutes=2)).strftime('%Y-%m-%d %H:%M:%S.%f'), "teilnehmerzahl": 10, "aktiv": True},
+                      {"id": 2, "startzeit": (fixed_datetime + timedelta(minutes=2)).strftime('%Y-%m-%d %H:%M:%S.%f'), "endzeit": (fixed_datetime + timedelta(minutes=4)).strftime('%Y-%m-%d %H:%M:%S.%f'), "teilnehmerzahl": 10, "aktiv": True}
+                  ]}),
+    ("2", None, 404, {"message": "Umfrage not found"}),
+    ("3", Exception("Database Error"), 500, {"message": "Internal Server Error, contact Backend-Team for more Info"}),
+])
+def test_getAllSitzungenForUmfrage(mock_getDecodedTokenFromHeader, mock_session, common_event, umfrage_id, query_result, expected_status, expected_message):
+    mock_getDecodedTokenFromHeader.return_value = {
+        "admin_id": "1",
+    }
+
+    mock_session_instance = MagicMock()
+    mock_session.return_value = mock_session_instance
+
+    if isinstance(query_result, Exception):
+        mock_session_instance.query.return_value.filter_by.side_effect = query_result
+    else:
+        mock_session_instance.query.return_value.filter_by.return_value.first.return_value = query_result
+
+    event = common_event({"umfrageId": umfrage_id})
+
+    response = getAllSitzungenForUmfrage(event, None)
+
+    assert response['statusCode'] == expected_status
+    if expected_status == 200:
+        assert json.loads(response['body']) == expected_message
+    else:
+        assert json.loads(response['body'])['message'] == expected_message['message']
+
+    if expected_status == 500:
+        mock_session_instance.rollback.assert_called_once()
+    else:
+        mock_session_instance.rollback.assert_not_called()
+
+        
 
 @pytest.mark.parametrize("admin_id, query_result, expected_status, expected_body", [
     ("1", [Umfrage(id=1, admin_id=1, titel="Test Umfrage 1", beschreibung="Eine Testbeschreibung 1", erstellungsdatum=fixed_datetime, status="aktiv", json_text=""),
