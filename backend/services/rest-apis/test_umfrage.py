@@ -6,7 +6,7 @@ import os
 from datetime import datetime, timedelta
 from unittest.mock import patch, MagicMock
 from models.models import AntwortOption, Frage, Sitzung, TeilnehmerAntwort, Umfrage
-from handlers.umfrage_handler import archiveUmfrage, createSession, deleteSession, deleteUmfrageById, endSession, getAllSitzungenForUmfrage, getAllUmfragenFromAdmin, getQuestionsWithOptions, getUmfrage, getUmfrageResult, getUmfrageResults, saveTeilnehmerAntwort, uploadUmfrage
+from handlers.umfrage_handler import archiveUmfrage, createSession, deleteSession, deleteUmfrageById, endSession, getAllSitzungenFromUmfrage, getAllUmfragenFromAdmin, getQuestionsWithOptions, getUmfrage, getUmfrageResult, getUmfrageResults, saveTeilnehmerAntwort, uploadUmfrage
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -279,7 +279,7 @@ def test_getAllSitzungenForUmfrage(mock_getDecodedTokenFromHeader, mock_session,
 
     event = common_event({"umfrageId": umfrage_id})
 
-    response = getAllSitzungenForUmfrage(event, None)
+    response = getAllSitzungenFromUmfrage(event, None)
 
     assert response['statusCode'] == expected_status
     if expected_status == 200:
@@ -292,7 +292,7 @@ def test_getAllSitzungenForUmfrage(mock_getDecodedTokenFromHeader, mock_session,
     else:
         mock_session_instance.rollback.assert_not_called()
 
-        
+
 
 @pytest.mark.parametrize("admin_id, query_result, expected_status, expected_body", [
     ("1", [Umfrage(id=1, admin_id=1, titel="Test Umfrage 1", beschreibung="Eine Testbeschreibung 1", erstellungsdatum=fixed_datetime, status="aktiv", json_text=""),
