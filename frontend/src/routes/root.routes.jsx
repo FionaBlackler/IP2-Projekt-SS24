@@ -4,8 +4,8 @@ import Register from '../pages/register/Register.jsx';
 import ProtectedRoute from './protected.route.jsx';
 import Homepage from '../pages/home/Homepage.jsx';
 import Survey from "../pages/survey/Survey.jsx";
-import Question from "../pages/user-view/Question.jsx";
-import BinaryQuestion from "../pages/user-view/BinaryQuestion.jsx";  // Neue Komponente importieren
+import BinaryQuestion from "../pages/user-view/BinaryQuestion.jsx";
+import Question from "../components/question/Question.jsx";
 
 function RootRoutes() {
     return (

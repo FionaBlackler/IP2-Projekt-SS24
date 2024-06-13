@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import BinaryQuestionHeader from './QuestionHeader';
+import BinaryQuestionHeader from '../../components/questionHeader/QuestionHeader.jsx';
 import './BinaryQuestionStyle.css';
 
 const BinaryQuestion = () => {

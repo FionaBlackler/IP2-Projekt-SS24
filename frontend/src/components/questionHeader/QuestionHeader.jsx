@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import './QuestionHeader.css';
 
 const QuestionHeader = ({ number, score, text }) => {
@@ -11,12 +10,6 @@ const QuestionHeader = ({ number, score, text }) => {
             <div className="question-text">{text}</div>
         </div>
     );
-};
-
-QuestionHeader.propTypes = {
-    number: PropTypes.number.isRequired,
-    score: PropTypes.number.isRequired,
-    text: PropTypes.string.isRequired,
 };
 
 export default QuestionHeader;

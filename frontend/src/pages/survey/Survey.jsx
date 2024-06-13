@@ -3,11 +3,12 @@ import {toast} from "react-toastify";
 import {useNavigate} from "react-router-dom";
 import "./survey.scss"
 import {useDispatch, useSelector} from "react-redux";
-import {fetchSurveyData, submitSurveyAnswers} from "../../redux/actions/surveyActions.js";
+import {fetchSurveyData, saveSurveyAnswers, submitSurveyAnswers} from "../../redux/actions/surveyActions.js";
 import {EyeInvisibleOutlined, EyeOutlined, LeftOutlined} from '@ant-design/icons';
-import Question from "../user-view/Question.jsx";
+import Question from "../../components/question/Question.jsx";
 
 const umfrageId = "1"; // For TESTING purposes
+const sitzungId = "1"; // For TESTING purposes
 
 const Survey = () => {
     const [selections, setSelections] = useState({});
@@ -17,14 +18,6 @@ const Survey = () => {
     const dispatch = useDispatch();
 
     const { data, isLoading } = useSelector((state) => state.surveyDetails);
-
-    console.log("data: ", data)
-
-    const fragen = data?.fragen || [];
-
-    console.log("fragen: ", fragen)
-
-    console.log("selections: ", selections)
 
     useEffect(() => {
         console.log("Fetching survey data...");
@@ -39,10 +32,41 @@ const Survey = () => {
         return <div>Error: Failed to fetch survey data</div>;
     }
 
-    const handleAnswerSelection = (questionId, selectedAnswer) => {
+    const handleAnswerSelection = (questionId, selectedAnswer, questionType, points) => {
+        let updatedSelections = selections[questionId] ? { ...selections[questionId] } : { points: 0 };
+
+        switch (questionType) {
+            case 'A':
+                updatedSelections = {
+                    selectedAnswer,
+                    points: points,
+                };
+                break;
+            case 'P':
+                const selectedOption = updatedSelections.selectedAnswer ? updatedSelections.selectedAnswer.find(option => option.text === selectedAnswer.text) : null;
+
+                if (selectedOption) {
+                    selectedOption.isSelected = !selectedOption.isSelected;
+                } else {
+                    if (!updatedSelections.selectedAnswer) updatedSelections.selectedAnswer = [];
+                    updatedSelections.selectedAnswer.push({ ...selectedAnswer, isSelected: true });
+                }
+
+                updatedSelections.points = points;
+                break;
+            case 'K':
+                updatedSelections = {
+                    selectedAnswer,
+                    points: points,
+                };
+                break;
+            default:
+                break;
+        }
+
         setSelections({
             ...selections,
-            [questionId]: selectedAnswer
+            [questionId]: updatedSelections,
         });
 
         if (isScreenReaderMode) {
@@ -54,18 +78,18 @@ const Survey = () => {
 
     const submitSurvey = () => {
         if (Object.keys(selections).length !== data.fragen.length) {
-            toast.error("Bitte beantworten Sie alle Fragen.");
+            toast.error('Bitte beantworten Sie alle Fragen.');
             return;
         }
 
-        const antworten = Object.entries(selections).map(([questionId, selectedAnswer]) => ({
-            antwort_id: parseInt(questionId, 10),
-            gewaehlteAntwort: selectedAnswer
+        const antworten = Object.entries(selections).map(([questionId, selection]) => ({
+            antwort_id: questionId,
+            ist_richtig: selection.points > 0, // Check if the answer has any points
         }));
 
-        dispatch(submitSurveyAnswers(umfrageId, antworten));
-        toast.success("☑ Survey submitted successfully!");
-        navigate("/ok");
+        dispatch(saveSurveyAnswers(sitzungId, antworten));
+        toast.success('☑ Umfrage erfolgreich abgeschickt!');
+        navigate('/ok');
     };
 
     const totalQuestions = data.fragen.length;
@@ -98,14 +122,20 @@ const Survey = () => {
                             key={frage.id}
                             number={frage.id}
                             text={frage.text}
-                            options={frage.antwort_optionen.map(option => option.text)}
+                            options={frage.antwort_optionen}
                             score={frage.punktzahl}
                             questionType={frage.typ_id}
-                            onAnswerSelect={handleAnswerSelection}
+                            onAnswerSelect={(selectedAnswer, points) => {
+                                console.log("selectedAnswer:", selectedAnswer);
+                                console.log("points:", points);
+                                handleAnswerSelection(frage.id, selectedAnswer, frage.typ_id, points);
+                            }}
                             isScreenReaderMode={isScreenReaderMode}
                             index={index}
+                            currentQuestionIndex={currentQuestionIndex}
                         />
                     ))}
+
                 </div>
 
                 <div className="survey-footer">
