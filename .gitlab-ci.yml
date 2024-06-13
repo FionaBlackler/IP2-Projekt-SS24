@@ -6,3 +6,68 @@ test:
   before_script: 
   script:
      - export DATABASE_URL=mysql://root:password@localhost:3306/mydatabase && export SECRET_KEY="umfragetool2024" && cd backend/services/rest-apis && pip install -r requirements.txt && pytest
+
+# Define the stages
+stages:
+  - format
+  - lint
+  - test
+  - deploy
+
+# Formatting Stage
+format:backend:
+  stage: format
+  image: python:3.8
+  script:
+    - python -m venv venv
+    - . venv/bin/activate
+    - pip install black
+    - black --check .
+
+# Linting Stage
+lint:backend:
+  stage: lint
+  image: python:3.8
+  script:
+    - python -m venv venv
+    - . venv/bin/activate
+    - pip install flake8
+    - flake8 .
+
+# Testing Stage
+test:backend:
+  stage: test
+  image: python:3.8
+  script:
+    - python -m venv venv
+    - . venv/bin/activate
+    - cd backend/
+    - pip install -r requirements.txt
+    - cd backend/services/rest-apis
+    - pip install -r requirements.txt
+    - export DATABASE_URL=mysql://root:password@localhost:3306/mydatabase && export SECRET_KEY="umfragetool2024" && pytest
+  artifacts:
+    paths:
+      - test-reports/
+  dependencies:
+    - lint:backend
+
+# Deployment Stage
+#deploy:backend:
+#  stage: deploy
+#  image: node:14
+#  script:
+#    - npm install -g serverless
+#    - python -m venv venv
+#    - . venv/bin/activate
+#    - pip install -r requirements.txt
+#    - serverless deploy --stage dev
+#  only:
+#    - develop
+#  environment:
+#    name: development
+#  before_script:
+#    - export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+#    - export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+#  dependencies:
+#    - test:backend

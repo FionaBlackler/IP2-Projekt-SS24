@@ -3,6 +3,7 @@ import json
 from sqlalchemy.orm import sessionmaker
 from models.models import AntwortOption, Base, Administrator, Frage, Sitzung, TeilnehmerAntwort, Umfrage
 from utils.database import create_local_engine
+from auth_handler import hash_password
 
 engine = create_local_engine()
 
