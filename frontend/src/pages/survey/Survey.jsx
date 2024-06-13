@@ -46,7 +46,6 @@ const Survey = () => {
         });
 
         if (isScreenReaderMode) {
-            // Move to the next question if not on the last question
             if (currentQuestionIndex < data.fragen.length - 1) {
                 setCurrentQuestionIndex(currentQuestionIndex + 1);
             }
@@ -76,7 +75,7 @@ const Survey = () => {
 
     const toggleMode = () => {
         setIsScreenReaderMode(!isScreenReaderMode);
-        if (!isScreenReaderMode) setCurrentQuestionIndex(0); // Reset to the first question in screen reader mode
+        if (!isScreenReaderMode) setCurrentQuestionIndex(0);
     };
 
     return (
@@ -95,23 +94,6 @@ const Survey = () => {
             <div className="survey-content">
                 <div className="survey-questions">
                     {data.fragen.map((frage, index) => (
-                        // <div
-                        //     key={frage.id}
-                        //     className={`survey-question ${isScreenReaderMode && index !== currentQuestionIndex ? 'blurred' : ''}`}
-                        // >
-                        //     <h2>{frage.text}</h2>
-                        //     {frage.antwort_optionen.map((antwort) => (
-                        //         <div key={antwort.id}>
-                        //             <input
-                        //                 type="radio"
-                        //                 value={antwort.text}
-                        //                 checked={selections[frage.id] === antwort.text}
-                        //                 onChange={() => handleAnswerSelection(frage.id, antwort.text)}
-                        //             />
-                        //             <label>{antwort.text}</label>
-                        //         </div>
-                        //     ))}
-                        // </div>
                         <Question
                             key={frage.id}
                             number={frage.id}
@@ -119,7 +101,9 @@ const Survey = () => {
                             options={frage.antwort_optionen.map(option => option.text)}
                             score={frage.punktzahl}
                             questionType={frage.typ_id}
-                            className={`survey-question ${isScreenReaderMode && index !== currentQuestionIndex ? 'blurred' : ''}`}
+                            onAnswerSelect={handleAnswerSelection}
+                            isScreenReaderMode={isScreenReaderMode}
+                            index={index}
                         />
                     ))}
                 </div>
