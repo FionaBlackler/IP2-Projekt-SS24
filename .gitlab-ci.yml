@@ -14,16 +14,21 @@ stages:
   - test
   - deploy
 
-# Formatting Stage
+# Formatting Check for Backend
 format:backend:
   stage: format
   image: python:3.8
-  script:
+  before_script:
     - python -m venv venv
     - . venv/bin/activate
     - pip install black
-    - black --check .
-
+  script:
+    - echo "Listing files in the repository:"
+    - ls -R
+    - echo "Running black --check:"
+    - black --check backend/
+  only:
+    - develop
 # Linting Stage
 lint:backend:
   stage: lint
