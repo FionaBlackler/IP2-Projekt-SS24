@@ -12,11 +12,9 @@ format:backend:
   before_script:
     - python -m venv venv
     - . venv/bin/activate
-    - pip install black
+    - pip install click
+    - pip install black==22.3
   script:
-    - echo "Listing files in the repository:"
-    - ls -R
-    - echo "Running black --check:"
     - black --check .
 
 # Linting Stage
