@@ -346,6 +346,42 @@ def endSession(event, context):
 
     return response
 
+def getAllSitzungenFromUmfrage(event, context):
+    try:
+        decoded_token = getDecodedTokenFromHeader(event)
+    except ValueError as e:
+        logger.error(str(e))
+        return auth_error(str(e))
+    
+    umfrage_id = event['pathParameters']['umfrageId']
+    session = Session()
+    try:
+        umfrage = session.query(Umfrage).filter_by(id=umfrage_id).first()
+        if not umfrage:
+            return {
+                "statusCode": 404,
+                "body": json.dumps({"message": "Umfrage not found"}),
+                "headers": {"Content-Type": "application/json"}
+            }
+        
+        else:
+            sitzungen_json = [sitzung.to_json() for sitzung in umfrage.sitzungen]
+            return {
+                "statusCode": 200,
+                "body": json.dumps({"sitzungen": sitzungen_json}),
+                "headers": {"Content-Type": "application/json"}
+            }
+            
+    except Exception as e:
+        session.rollback()
+        logger.error(str(e))
+        return {
+            "statusCode": 500,
+            "body": json.dumps({"message": "Internal Server Error, contact Backend-Team for more Info"}),
+            "headers": {"Content-Type": "application/json"}
+        }
+    finally:
+        session.close()
 
 def getAllUmfragenFromAdmin(event, context):
     try:

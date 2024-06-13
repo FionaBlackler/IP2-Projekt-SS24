@@ -117,6 +117,15 @@ class Sitzung(Base):
     umfrage = relationship("Umfrage", back_populates="sitzungen")
     teilnehmer_antworten = relationship("TeilnehmerAntwort", back_populates="sitzungen", cascade="all, delete")
 
+    def to_json(self):
+        return {
+            "id": self.id,
+            "startzeit": self.startzeit.strftime('%Y-%m-%d %H:%M:%S.%f'),
+            "endzeit": self.endzeit.strftime('%Y-%m-%d %H:%M:%S.%f'),
+            "teilnehmerzahl": self.teilnehmerzahl,
+            "aktiv": self.aktiv
+        }
+
 
 class TeilnehmerAntwort(Base):
     __tablename__ = 'teilnehmer_antworten'

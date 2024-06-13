@@ -1,5 +1,4 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
-import Homepage from '../pages/home/Homepage.jsx'
 import Login from '../pages/login/Login.jsx'
 import ChangePassword from '../pages/password/changePassword/ChangePassword.jsx'
 import DeleteAccount from '../pages/admin/DeleteAccount.jsx'

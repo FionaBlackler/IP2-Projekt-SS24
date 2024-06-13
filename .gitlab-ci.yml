@@ -1,29 +1,8 @@
 stages:
   - test
-
-variables:
-  # Define the Python version to be used
-  PYTHON_VERSION: "3.9"
-
-before_script:
-  # Install Python and pip
-  - apt update -y
-  - apt install python$PYTHON_VERSION -y
-  - apt install python$PYTHON_VERSION-distutils -y
-  - curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-  - python$PYTHON_VERSION get-pip.py
-  - pip install virtualenv
-
 test:
+  image: python:3.9
   stage: test
+  before_script: 
   script:
-    - virtualenv venv
-    - source venv/bin/activate
-    - pip install -r backend/services/rest_apis/requirements.txt
-    - pip install pytest
-    - pytest backend/services/rest_apis/test_umfrage.py
-# Optional cache configuration to speed up the builds
-cache:
-  paths:
-    - venv/
-    - .pip_cache/
+     - export DATABASE_URL=mysql://root:password@localhost:3306/mydatabase && export SECRET_KEY="umfragetool2024" && cd backend/services/rest-apis && pip install -r requirements.txt && pytest
