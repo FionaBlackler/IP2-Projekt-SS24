@@ -4,7 +4,7 @@ import Register from '../pages/register/Register.jsx';
 import ProtectedRoute from './protected.route.jsx';
 import Homepage from '../pages/home/Homepage.jsx';
 import SurveyList from "../pages/user-view/SurveyList.jsx";
-import Umfrage from "../pages/umfrage/index.jsx";
+import Umfrage from "../pages/survey/Survey.jsx";
 import QuestionList from "../pages/user-view/QuestionList.jsx";
 import Question from "../pages/user-view/Question.jsx";
 import BinaryQuestion from "../pages/user-view/BinaryQuestion.jsx";  // Neue Komponente importieren
