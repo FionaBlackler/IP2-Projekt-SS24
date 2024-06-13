@@ -1,0 +1,14 @@
+repos:
+  - repo: https://github.com/psf/black
+    rev: 22.1.0  # Specify the black version
+    hooks:
+      - id: black
+        additional_dependencies: [click==8.0.4]  # Add the compatible click version
+        language_version: python3
+        files: ^backend/
+  - repo: https://github.com/pycqa/flake8
+    rev: 3.9.2
+    hooks:
+      - id: flake8
+        language_version: python3
+        files: ^backend/

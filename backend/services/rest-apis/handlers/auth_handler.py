@@ -213,11 +213,12 @@ def change_password(event, context):
             }
 
         except Exception as e:
+            logger.error(str(e))
             return {
                 "statusCode": 500,
                 "body": json.dumps(
                     {
-                        "message": "Internal Server Error, contact Backend-Team for more Info"
+                        "message": "Internal Server Error, contact Backend-Team for more Info",
                     }
                 ),
                 "headers": {"Content-Type": "application/json"},
@@ -356,6 +357,7 @@ def set_password(event, context):
             }
 
         except Exception as e:
+            logger.error(str(e))
             return {
                 "statusCode": 500,
                 "body": json.dumps(
