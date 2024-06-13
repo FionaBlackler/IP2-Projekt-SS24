@@ -17,9 +17,7 @@ format:backend:
     - echo "Listing files in the repository:"
     - ls -R
     - echo "Running black --check:"
-    - black --check backend/
-  only:
-    - develop
+    - black --check .
 
 # Linting Stage
 lint:backend:
