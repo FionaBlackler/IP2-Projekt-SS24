@@ -40,7 +40,6 @@ export const submitSurveyAnswers = (sitzungId, antworten) => {
                 payload: data
             });
 
-            // Display success message
             toast.success("☑ Survey submitted successfully!");
 
         } catch (error) {
@@ -53,7 +52,6 @@ export const submitSurveyAnswers = (sitzungId, antworten) => {
                 payload: errorMessage
             });
 
-            // Display error message
             toast.error("❌ Failed to submit survey: " + errorMessage);
         }
     };
