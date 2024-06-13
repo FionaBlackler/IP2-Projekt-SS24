@@ -1,0 +1,174 @@
+.survey-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 10px;
+
+  .survey-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: #fff;
+    padding: 10px 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    z-index: 999;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .back-button,
+    .toggle-mode-button {
+      padding: 8px 16px;
+      font-size: 0.9em;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      display: flex;
+      align-items: center;
+
+      &:hover {
+        background-color: #0056b3;
+      }
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .anticon {
+        margin-right: 5px;
+      }
+    }
+
+    h1 {
+      font-size: 1.5em;
+      margin: 0;
+    }
+  }
+
+  .survey-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 150px; // Adjusted for fixed header height
+    width: 100%;
+
+    .survey-questions {
+      width: 100%;
+      margin-top: 20px;
+      padding: 0 20px; // Added padding for better spacing
+
+      .survey-question {
+        margin-bottom: 20px;
+        padding: 15px;
+        background-color: #fff;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+
+        &.blurred {
+          filter: blur(3px); // Less intense blur for partial visibility
+          opacity: 0.7; // Slight opacity for a better blur effect
+          pointer-events: none; // Prevent interaction with blurred questions
+        }
+
+        h2 {
+          font-size: 1.2em;
+          margin-bottom: 10px;
+        }
+
+        div {
+          margin-bottom: 10px;
+
+          input[type="radio"] {
+            margin-right: 10px;
+          }
+
+          label {
+            font-size: 1em;
+          }
+        }
+
+        button {
+          padding: 8px 16px;
+          font-size: 0.9em;
+          background-color: #007bff;
+          color: #fff;
+          border: none;
+          border-radius: 5px;
+          cursor: pointer;
+          transition: background-color 0.3s ease;
+
+          &:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+          }
+
+          &:hover:not(:disabled) {
+            background-color: #0056b3;
+          }
+        }
+      }
+    }
+  }
+
+  .survey-footer {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+
+    button {
+      padding: 10px 20px;
+      font-size: 1em;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+
+      &:hover {
+        background-color: #0056b3;
+      }
+    }
+
+    h2 {
+      font-size: 1.5em;
+      margin-top: 20px;
+    }
+
+    img {
+      max-width: 100%;
+      margin-top: 20px;
+    }
+  }
+
+  .progress-bar-container {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: #f0f0f0;
+    padding: 5px 0;
+    z-index: 999; // Ensure it stays above other content
+  }
+
+  .progress-bar {
+    height: 5px;
+    background-color: #007bff;
+    transition: width 0.3s ease;
+  }
+
+  .progress-text {
+    text-align: center;
+    font-size: 14px;
+    margin-top: 5px;
+  }
+}

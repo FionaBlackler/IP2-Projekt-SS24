@@ -29,3 +29,16 @@ export const surveyDetails = (state = initialSurveyState, action) => {
             return state;
     }
 };
+
+export const surveyResponse = (state = {}, action) => {
+    switch (action.type) {
+        case actionTypes.SUBMIT_SURVEY_REQUEST:
+            return { ...state, isLoading: true, success: false, error: null };
+        case actionTypes.SUBMIT_SURVEY_SUCCESS:
+            return { ...state, isLoading: false, success: true, error: null };
+        case actionTypes.SUBMIT_SURVEY_FAILURE:
+            return { ...state, isLoading: false, success: false, error: action.payload };
+        default:
+            return state;
+    }
+};
