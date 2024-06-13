@@ -29,6 +29,7 @@ format:backend:
     - black --check backend/
   only:
     - develop
+    
 # Linting Stage
 lint:backend:
   stage: lint
