@@ -1,12 +1,3 @@
-stages:
-  - test
-test:
-  image: python:3.9
-  stage: test
-  before_script: 
-  script:
-     - export DATABASE_URL=mysql://root:password@localhost:3306/mydatabase && export SECRET_KEY="umfragetool2024" && cd backend/services/rest-apis && pip install -r requirements.txt && pytest
-
 # Define the stages
 stages:
   - format
@@ -29,7 +20,7 @@ format:backend:
     - black --check backend/
   only:
     - develop
-    
+
 # Linting Stage
 lint:backend:
   stage: lint
@@ -40,24 +31,21 @@ lint:backend:
     - pip install flake8
     - flake8 .
 
-# Testing Stage
+# Testing Stage for Backend
 test:backend:
   stage: test
   image: python:3.8
-  script:
+  before_script:
     - python -m venv venv
     - . venv/bin/activate
-    - cd backend/
-    - pip install -r requirements.txt
-    - cd backend/services/rest-apis
-    - pip install -r requirements.txt
-    - export DATABASE_URL=mysql://root:password@localhost:3306/mydatabase && export SECRET_KEY="umfragetool2024" && pytest
-  artifacts:
-    paths:
-      - test-reports/
+    - pip install -r backend/requirements.txt
+    - pip install -r backend/services/rest-apis/requirements.txt
+  script:
+    - export DATABASE_URL=mysql://root:password@localhost:3306/mydatabase
+    - export SECRET_KEY="umfragetool2024"
+    - pytest backend/services/rest-apis
   dependencies:
     - lint:backend
-
 # Deployment Stage
 #deploy:backend:
 #  stage: deploy
