@@ -61,7 +61,7 @@ codecov:backend:
     - python -m venv venv
     - . venv/bin/activate
     - pip install codecov
-    - codecov -f coverage.xml -F unittests -X gcov -y coverage_html_report/coverage.xml
+    - codecov -f coverage.xml -F unittests -X gcov
   dependencies:
     - test:backend
   only:
