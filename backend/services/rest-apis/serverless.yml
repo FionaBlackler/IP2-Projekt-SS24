@@ -19,13 +19,12 @@ provider:
         - secretsmanager:GetSecretValue
       Resource: arn:aws:secretsmanager:us-east-1:123456789012:secret:prod/rds/db-credentials-abc123 # EXAMPLE REPLACE WITH ACTUAL VALUE
 
+
 functions:
   - ${file(./functions/umfrage_functions.yml)}
   - ${file(./functions/auth_functions.yml)}
   - ${file(./functions/db_functions.yml)}
 
-
-  
 plugins:
   - serverless-python-requirements # Plugin to handle python requirements
   - serverless-dotenv-plugin # Plugin to load environment variables from .env file

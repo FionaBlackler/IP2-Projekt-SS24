@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+
 def get_secret(secret_name, region_name="eu-central-1"):
     """Retrieve a secret from AWS Secrets Manager"""
     session = boto3.session.Session()
@@ -44,6 +45,6 @@ def create_database_connection():
 
 def create_local_engine():
     # Database connection with local database
-    DATABASE_URL = os.environ['DATABASE_URL']
+    DATABASE_URL = os.environ["DATABASE_URL"]
     engine = create_engine(DATABASE_URL, echo=False)
     return engine

@@ -9,7 +9,7 @@ export const umfragenArchivieren = (selectedIds, setSelectedIds, getData, setDat
 
     selectedIds.forEach((id) => {
         axios
-            .post(`${window.location.origin}/umfrage/archive/${id}`, {}, {
+            .get(`${import.meta.env.VITE_BACKEND_URL}/umfrage/archive/${id}`, {
                 headers: { Authorization: `Bearer ${accessToken}` },
             })
             .then((r) => {
@@ -31,7 +31,7 @@ export const  umfragenLöschen =  (selectedIds, setSelectedIds, getData, setData
 
     selectedIds.forEach((id) => {
         axios
-            .post(`${window.location.origin}/umfrage/delete/${id}`, {}, {
+            .delete(`${import.meta.env.VITE_BACKEND_URL}/umfrage/delete/${id}`, {
                 headers: { Authorization: `Bearer ${accessToken}` },
             })
             .then((r) => {

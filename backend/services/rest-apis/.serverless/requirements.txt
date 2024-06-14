@@ -1,9 +1,11 @@
 PyJWT
 bcrypt
 boto3
+jsonschema
 mysql
 mysql-connector-python
 mysqlclient
 pydantic
 pymysql
+python-dotenv
 sqlalchemy

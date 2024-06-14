@@ -1,8 +1,109 @@
+# Define the stages
 stages:
+  - format
+  - lint
   - test
-test:
-  image: python:3.9
-  stage: test
-  before_script: 
+  - codecov
+  - deploy
+
+# Formatting Check for Backend
+format:backend:
+  stage: format
+  image: python:3.8
+  before_script:
+    - python -m venv venv
+    - . venv/bin/activate
+    - pip install click
+    - pip install black==22.3
   script:
-     - export DATABASE_URL=mysql://root:password@localhost:3306/mydatabase && export SECRET_KEY="umfragetool2024" && cd backend/services/rest-apis && pip install -r requirements.txt && pytest
+    - black --check .
+
+# Linting Stage
+lint:backend:
+  stage: lint
+  image: python:3.8
+  script:
+    - python -m venv venv
+    - . venv/bin/activate
+    - pip install flake8
+    - flake8 .
+
+# Testing Stage for Backend
+test:backend:
+  stage: test
+  image: python:3.8
+  before_script:
+    - python -m venv venv
+    - . venv/bin/activate
+    - pip install -r backend/requirements.txt
+    - pip install -r backend/services/rest-apis/requirements.txt
+  script:
+    - export DATABASE_URL=mysql://root:password@localhost:3306/mydatabase
+#    - pytest backend/services/rest-apis
+    - pytest --cov=backend/services/rest-apis --cov-report=xml --cov-report=term backend/services/rest-apis
+  artifacts:
+    paths:
+      - coverage.xml
+  coverage: '/^TOTAL.*\s+(\d+%)$/'  
+  dependencies:
+    - lint:backend
+
+# Codecov Stage
+codecov:backend:
+  stage: codecov
+  image: python:3.8
+  script:
+    - python -m venv venv
+    - . venv/bin/activate
+    - pip install codecov
+    - codecov
+  dependencies:
+    - test:backend
+  only:
+    - main
+  environment:
+    name: development
+
+# Deployment Stage
+#deploy:backend:
+#  stage: deploy
+#  image: node:14
+#  script:
+#    - npm install -g serverless
+#    - serverless deploy --stage dev | tee deploy_output.txt
+#  artifacts:
+#     name: deploy_output.txt
+#     paths:
+#       - deploy_output.txt
+#  before_script:
+#    - export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+#    - export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+#  dependencies:
+#    - test:backend
+
+# extract_endpoint:
+#   stage: deploy
+#   image: alpine
+#   script:
+#     - echo "Extracting API Endpoint URL"
+#     - export API_URL=$(cat deploy_output.txt | grep -oP 'https://[a-zA-Z0-9-.]+/dev')
+#     - echo "API_URL=$API_URL" > api_url.env
+#   artifacts:
+#     paths:
+#       - api_url.env
+#   dependencies:
+#     - deploy:backend
+
+# deploy:frontend:
+#   stage: deploy
+#   image: amazon/aws-cli
+#   before_script:
+#     - apk add --no-cache jq
+#     - export API_URL=$(cat api_url.env | grep API_URL | cut -d'=' -f2)
+#     - sed -i "s|REPLACE_API_URL|$API_URL|g" frontend/dist/config.js  # Assuming you have a config file to replace
+#   script:
+#     - aws s3 sync frontend/dist s3://your-frontend-bucket --delete
+#   dependencies:
+#     - extract_endpoint
+#   only:
+#     - main
