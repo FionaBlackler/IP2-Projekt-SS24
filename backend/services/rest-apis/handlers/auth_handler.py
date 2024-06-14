@@ -48,7 +48,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     )
 
 
-def create_token(user_id: int, email: str) -> str: # pragma: no cover
+def create_token(user_id: int, email: str) -> str:
     payload = {
         "admin_id": user_id,
         "email": email,
