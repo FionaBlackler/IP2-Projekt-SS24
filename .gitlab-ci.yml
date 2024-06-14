@@ -59,8 +59,6 @@ codecov:backend:
     - main
   environment:
     name: development
-  before_script:
-    - export CODECOV_TOKEN=${{ secrets.CODECOV_TOKEN }}
 
 # Deployment Stage
 #deploy:backend:
