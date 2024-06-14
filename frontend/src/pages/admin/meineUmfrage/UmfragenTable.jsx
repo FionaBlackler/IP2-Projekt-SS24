@@ -60,7 +60,6 @@ export default function UmfragenTable({ data, setData }) {
                     <tr>
                         <th className="text-lg">Name</th>
                         <th className="text-lg">ID</th>
-                        <th className="text-lg">Admin ID</th>
                         <th className="text-lg">Beschreibung</th>
                         <th className="text-lg">Erstellungsdatum</th>
                         <th className="text-lg">Status</th>
