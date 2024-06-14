@@ -35,6 +35,8 @@ test:backend:
   before_script:
     - python -m venv venv
     - . venv/bin/activate
+    - pip install pytest
+    - pip install pytest-cov
     - pip install -r backend/requirements.txt
     - pip install -r backend/services/rest-apis/requirements.txt
   script:
