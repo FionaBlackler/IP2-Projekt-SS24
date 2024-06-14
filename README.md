@@ -34,7 +34,7 @@ Note: Because serverless is not installed globally you need to execute it with `
 **Installation macos via homebrew**: `brew install python`
 **check on macos**: `python3 --version`
 
-Add Virtual Enviorment and install Dependencies
+Add Virtual Enviroment and install Dependencies
 ```bash
 cd backend/services/rest-apis/
 python3 -m venv venv
