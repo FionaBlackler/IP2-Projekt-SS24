@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom'
 import { umfragenArchivieren, umfragenLöschen } from './UmfragenUtils'
 import { MdDeleteOutline, MdOutlineStart } from 'react-icons/md'
 import { AiOutlineDelete } from 'react-icons/ai'
-
 import { FiArchive } from 'react-icons/fi'
 
 export default function UmfragenTable({ data, setData }) {
@@ -22,10 +21,12 @@ export default function UmfragenTable({ data, setData }) {
         navigate(`/dashboard/${id}`)
     }
 
+    const umfragenVorhanden = data && data.umfragen && data.umfragen.length > 0
+
     return (
         <div className="h-full w-full">
             {selectedIds.length > 0 && (
-                <div className="flex space-x-4 ">
+                <div className="flex space-x-4">
                     <button
                         className="mb-4 text-white hover:text-gray-200 hover:underline"
                         onClick={() =>
@@ -55,7 +56,7 @@ export default function UmfragenTable({ data, setData }) {
                 </div>
             )}
 
-            <table id="Umfragentabelle" className="w-full text-center ">
+            <table id="Umfragentabelle" className="w-full text-center">
                 <thead>
                     <tr>
                         <th className="text-lg">Name</th>
@@ -63,35 +64,27 @@ export default function UmfragenTable({ data, setData }) {
                         <th className="text-lg">Beschreibung</th>
                         <th className="text-lg">Erstellungsdatum</th>
                         <th className="text-lg">Status</th>
+                        <th className="text-lg">Aktionen</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {data?.umfragen?.filter(
-                        (umfrage) => umfrage.archivierungsdatum === null
-                    ).length !== 0 ? (
+                    {umfragenVorhanden ? (
                         data.umfragen
-                            .filter(
-                                (umfrage) => umfrage.archivierungsdatum === null
-                            )
+                            .filter((umfrage) => umfrage.archivierungsdatum === null)
                             .map((umfrage) => (
                                 <tr
                                     className="text-lg even:bg-[#FAEEDB] odd:bg-[#210803] even:text-black odd:text-white"
                                     key={umfrage.id}
                                 >
-                                    <td className="min-w-[100px] min-h-[50px] p-3  ">
+                                    <td className="min-w-[100px] min-h-[50px] p-3">
                                         <div className="flex items-center">
                                             <input
                                                 type="checkbox"
                                                 id={umfrage.id}
                                                 className="mr-10"
-                                                checked={selectedIds.includes(
-                                                    umfrage.id
-                                                )}
+                                                checked={selectedIds.includes(umfrage.id)}
                                                 onChange={(event) =>
-                                                    handleCheckboxChange(
-                                                        event,
-                                                        umfrage.id
-                                                    )
+                                                    handleCheckboxChange(event, umfrage.id)
                                                 }
                                             />
                                             <label htmlFor={umfrage.id}>
@@ -99,24 +92,22 @@ export default function UmfragenTable({ data, setData }) {
                                             </label>
                                         </div>
                                     </td>
-                                    <td className="min-w-[100px] min-h-[50px] p-3  ">
+                                    <td className="min-w-[100px] min-h-[50px] p-3">
                                         <h1>{umfrage.id}</h1>
-                                    </td>   
-                                    <td className="min-w-[100px] min-h-[50px] p-3  ">
+                                    </td>
+                                    <td className="min-w-[100px] min-h-[50px] p-3">
                                         <h1>{umfrage.beschreibung}</h1>
                                     </td>
-                                    <td className="min-w-[100px] min-h-[50px] p-3  ">
+                                    <td className="min-w-[100px] min-h-[50px] p-3">
                                         <h1>{umfrage.erstellungsdatum}</h1>
                                     </td>
-                                    <td className="min-w-[100px] min-h-[50px] p-3  ">
+                                    <td className="min-w-[100px] min-h-[50px] p-3">
                                         <h1>{umfrage.status}</h1>
                                     </td>
-                                    <td className="min-w-[100px] min-h-[50px] p-3  ">
+                                    <td className="min-w-[100px] min-h-[50px] p-3">
                                         <button
                                             className="hover:underline"
-                                            onClick={() =>
-                                                handleHistory(umfrage.id)
-                                            }
+                                            onClick={() => handleHistory(umfrage.id)}
                                         >
                                             <MdOutlineStart />
                                         </button>
@@ -126,9 +117,7 @@ export default function UmfragenTable({ data, setData }) {
                     ) : (
                         <tr>
                             <td colSpan="7">
-                                <p className="mt-16 text-xl">
-                                    Keine Umfragen vorhanden
-                                </p>
+                                <p className="mt-16 text-xl">Keine Umfragen vorhanden</p>
                             </td>
                         </tr>
                     )}
