@@ -3,7 +3,7 @@ import Umfrage from './Umfrage.jsx'
 
 export default function MeineUmfragen() {
     return (
-        <div>
+        <div className=''>
             <AdminLayout children={<Umfrage />} />
         </div>
     )

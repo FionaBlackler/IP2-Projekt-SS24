@@ -22,7 +22,6 @@ function RootRoutes() {
                     path="/meineUmfragen"
                     element={<ProtectedRoute component={MeineUmfragen} />}
                 />
-                {/*<Route path="/Dashboard/:id" element={<Dashboard/>} />*/}
                 <Route exact={true} path="/login" element={<Login />} />
                 <Route exact={true} path="/register" element={<Register />} />
                 <Route

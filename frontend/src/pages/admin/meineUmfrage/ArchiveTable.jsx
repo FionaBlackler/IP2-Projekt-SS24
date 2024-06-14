@@ -75,7 +75,7 @@ export default function UmfragenTable({ data, setData }) {
                                     className="text-lg even:bg-[#FAEEDB] odd:bg-[#210803] even:text-black odd:text-white "
                                     key={umfrage.id}
                                 >
-                                    <td className="min-w-[100px] min-h-[50px] p-2">
+                                    <td className="min-w-[100px] min-h-[50px] p-3">
                                         <div className="flex items-center">
                                             <input
                                                 type="checkbox"
@@ -96,22 +96,22 @@ export default function UmfragenTable({ data, setData }) {
                                             </label>
                                         </div>
                                     </td>
-                                    <td className="min-w-[100px] min-h-[50px] p-2">
+                                    <td className="min-w-[100px] min-h-[50px] p-3">
                                         <h1>{umfrage.id}</h1>
                                     </td>
-                                    <td className="min-w-[100px] min-h-[50px] p-2">
+                                    <td className="min-w-[100px] min-h-[50px] p-3">
                                         <h1>{umfrage.admin_id}</h1>
                                     </td>
-                                    <td className="min-w-[100px] min-h-[50px] p-2">
+                                    <td className="min-w-[100px] min-h-[50px] p-3">
                                         <h1>{umfrage.beschreibung}</h1>
                                     </td>
-                                    <td className="min-w-[100px] min-h-[50px] p-2">
+                                    <td className="min-w-[100px] min-h-[50px] p-3">
                                         <h1>{umfrage.erstellungsdatum}</h1>
                                     </td>
-                                    <td className="min-w-[100px] min-h-[50px] p-2">
+                                    <td className="min-w-[100px] min-h-[50px] p-3">
                                         <h1>{umfrage.archivierungsdatum}</h1>
                                     </td>
-                                    <td className="min-w-[100px] min-h-[50px] p-2">
+                                    <td className="min-w-[100px] min-h-[50px] p-3">
                                         <h1>{umfrage.status}</h1>
                                     </td>
                                 </tr>
