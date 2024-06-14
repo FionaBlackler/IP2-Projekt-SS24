@@ -3,6 +3,7 @@ stages:
   - format
   - lint
   - test
+  - codecov
   - deploy
 
 # Formatting Check for Backend
@@ -42,6 +43,25 @@ test:backend:
     - pytest backend/services/rest-apis
   dependencies:
     - lint:backend
+
+# Codecov Stage
+codecov:backend:
+  stage: codecov
+  image: python:3.8
+  script:
+    - python -m venv venv
+    - . venv/bin/activate
+    - pip install codecov
+    - codecov
+  dependencies:
+    - test:backend
+  only:
+    - develop
+  environment:
+    name: development
+  before_script:
+    - export CODECOV_TOKEN=${{ secrets.CODECOV_TOKEN }}
+
 # Deployment Stage
 #deploy:backend:
 #  stage: deploy
