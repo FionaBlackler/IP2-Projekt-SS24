@@ -43,6 +43,8 @@ test:backend:
     - export DATABASE_URL=mysql://root:password@localhost:3306/mydatabase
 #    - pytest backend/services/rest-apis
     - pytest --cov=backend/services/rest-apis --cov-report=xml --cov-report=term backend/services/rest-apis
+  after_script:
+    - cp coverage.xml ${CI_PROJECT_DIR}/coverage.xml  
   artifacts:
     paths:
       - coverage.xml
