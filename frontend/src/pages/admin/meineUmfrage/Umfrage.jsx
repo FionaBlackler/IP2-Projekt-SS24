@@ -15,7 +15,7 @@ export default function Umfrage() {
 
     const umfragenLaden = () => {
         axios
-            .get(`${window.location.origin}/umfrage/getAll`, {}, {
+            .get(`${import.meta.env.VITE_BACKEND_URL}/umfrage/getAll`, {}, {
                 headers: { Authorization: `Bearer ${accessToken}` },
             })
             .then((r) => {
