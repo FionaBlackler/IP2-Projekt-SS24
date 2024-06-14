@@ -11,6 +11,7 @@ import Homepage from '../pages/home/Homepage.jsx'
 import MeineUmfragen from '../pages/admin/meineUmfrage/MeineUmfragen.jsx'
 import UmfrageSitzungen from '../pages/admin/umfrageSitzungen/UmfrageSizungen.jsx'
 import StaticUmfrageSitzungen from '../pages/admin/staticUmfrageSitzungen/StaticUmfrageSitzungen.jsx'
+import SitzungenResults from '../pages/admin/umfrageSitzungen/Results.jsx'
 
 function RootRoutes() {
     return (
@@ -24,8 +25,11 @@ function RootRoutes() {
                     path="/meineUmfragen"
                     element={<ProtectedRoute component={MeineUmfragen} />}
                 />
+
                 <Route exact={true} path="/dashboard/static/:umfrageId" element={<StaticUmfrageSitzungen />} />  {/* statistische daten zum testen */}
                 <Route exact={true} path="/dashboard/:umfrageId" element={<UmfrageSitzungen />} />
+                <Route exact={true} path="/sitzung/:ids/results" element={<SitzungenResults />} />
+
                 <Route exact={true} path="/login" element={<Login />} />
                 <Route exact={true} path="/register" element={<Register />} />
                 <Route

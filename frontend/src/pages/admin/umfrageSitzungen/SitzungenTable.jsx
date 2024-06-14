@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { sitzungenLöschen } from './SitzungUtils'
+import { sitzungenLöschen, resultsLaden } from './SitzungUtils'
 import { AiOutlineDelete, AiOutlineDotChart } from 'react-icons/ai'
+import SitzungenResults from './Results'
 
 
 export default function SitzungenTable({ data, setData }) {
@@ -16,10 +17,11 @@ export default function SitzungenTable({ data, setData }) {
         }
     }
 
-    // Navigate to result page based on status
-    const handleHistory = (sitzung) => {
-        const route = sitzung.aktiv ? `/sitzung/${sitzung.id}/live` : `/sitzung/${sitzung.id}/results`;
-        navigate(route)
+    // Navigate to result page
+    const handleHistory = () => {
+        let ids = [...selectedIds]
+        setSelectedIds([])
+        navigate( `/sitzung/${ids}/results`)
     }
 
     return (
@@ -39,6 +41,13 @@ export default function SitzungenTable({ data, setData }) {
                     >
                         <AiOutlineDelete className="size-7" />
                     </button>
+
+                    <button
+                        className="mb-4 text-white hover:text-gray-200 hover:underline"
+                        onClick={handleHistory}
+                    >
+                        <AiOutlineDotChart className="size-7" />
+                    </button>
                 </div>
             )}
 
@@ -56,7 +65,7 @@ export default function SitzungenTable({ data, setData }) {
                     {data?.sitzungen && data.sitzungen.length !== 0 ? (
                         data.sitzungen.map((sitzung) =>
                             <tr
-                                className="text-lg even:bg-[#FAEEDB] odd:bg-[#210803] even:text-black odd:text-white"
+                                className="text-lg even:bg-[#210803] odd:bg-[#FAEEDB] even:text-white odd:text-black"
                                 key={sitzung.id}
                             >
                                 <td className="min-w-[100px] min-h-[50px] p-2  ">
@@ -92,7 +101,7 @@ export default function SitzungenTable({ data, setData }) {
                                 <td className="min-w-[100px] min-h-[50px] p-2  ">
                                     <h1>{sitzung.aktiv ? 'Aktiv' : 'Geschlossen'}</h1>
                                 </td>
-                                <td className="min-w-[100px] min-h-[50px] p-2  ">       
+                                {/* <td className="min-w-[100px] min-h-[50px] p-2  ">       
                                     <button
                                         className="hover:underline"
                                         onClick={() =>
@@ -101,7 +110,7 @@ export default function SitzungenTable({ data, setData }) {
                                     >
                                         <AiOutlineDotChart />
                                     </button>
-                                </td>
+                                </td> */}
                             </tr>
                         ))
                         : (
