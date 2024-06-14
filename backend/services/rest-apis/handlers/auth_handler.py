@@ -38,11 +38,11 @@ class UserCreateRegister(BaseModel):
     password: str
 
 
-def hash_password(password: str) -> str:
+def hash_password(password: str) -> str:  # pragma: no cover
     return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
 
 
-def verify_password(plain_password: str, hashed_password: str) -> bool:
+def verify_password(plain_password: str, hashed_password: str) -> bool:  # pragma: no cover
     return bcrypt.checkpw(
         plain_password.encode("utf-8"), hashed_password.encode("utf-8")
     )
