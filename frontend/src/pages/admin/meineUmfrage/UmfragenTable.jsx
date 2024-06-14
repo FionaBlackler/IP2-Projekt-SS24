@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { umfragenArchivieren, umfragenLöschen } from './UmfragenUtils'
 import { MdDeleteOutline, MdOutlineStart } from 'react-icons/md'
-import { AiOutlineDelete } from "react-icons/ai";
+import { AiOutlineDelete } from 'react-icons/ai'
 
 import { FiArchive } from 'react-icons/fi'
 
@@ -19,13 +19,13 @@ export default function UmfragenTable({ data, setData }) {
     }
 
     const handleHistory = (id) => {
-        navigate(`/Dashboard/${id}`)
+        navigate(`/dashboard/${id}`)
     }
 
     return (
-        <div className="h-screen w-full p-4">
+        <div className="h-full w-full">
             {selectedIds.length > 0 && (
-                <div className="flex space-x-4">
+                <div className="flex space-x-4 ">
                     <button
                         className="mb-4 text-white hover:text-gray-200 hover:underline"
                         onClick={() =>
@@ -37,7 +37,7 @@ export default function UmfragenTable({ data, setData }) {
                             )
                         }
                     >
-                        <FiArchive className='size-6'/>
+                        <FiArchive className="size-6" />
                     </button>
                     <button
                         className="mb-4 text-white hover:text-gray-200 hover:underline"
@@ -50,12 +50,12 @@ export default function UmfragenTable({ data, setData }) {
                             )
                         }
                     >
-                        <AiOutlineDelete className="size-7"  />
+                        <AiOutlineDelete className="size-7" />
                     </button>
                 </div>
             )}
 
-            <table id="Umfragentabelle" className="w-full text-center">
+            <table id="Umfragentabelle" className="w-full text-center ">
                 <thead>
                     <tr>
                         <th className="text-lg">Name</th>
@@ -79,7 +79,7 @@ export default function UmfragenTable({ data, setData }) {
                                     className="text-lg even:bg-[#FAEEDB] odd:bg-[#210803] even:text-black odd:text-white"
                                     key={umfrage.id}
                                 >
-                                    <td className="p-2">
+                                    <td className="min-w-[100px] min-h-[50px] p-3  ">
                                         <div className="flex items-center">
                                             <input
                                                 type="checkbox"
@@ -100,22 +100,19 @@ export default function UmfragenTable({ data, setData }) {
                                             </label>
                                         </div>
                                     </td>
-                                    <td className="p-2">
+                                    <td className="min-w-[100px] min-h-[50px] p-3  ">
                                         <h1>{umfrage.id}</h1>
-                                    </td>
-                                    <td className="p-2">
-                                        <h1>{umfrage.admin_id}</h1>
-                                    </td>
-                                    <td className="p-2">
+                                    </td>   
+                                    <td className="min-w-[100px] min-h-[50px] p-3  ">
                                         <h1>{umfrage.beschreibung}</h1>
                                     </td>
-                                    <td className="p-2">
+                                    <td className="min-w-[100px] min-h-[50px] p-3  ">
                                         <h1>{umfrage.erstellungsdatum}</h1>
                                     </td>
-                                    <td className="p-2">
+                                    <td className="min-w-[100px] min-h-[50px] p-3  ">
                                         <h1>{umfrage.status}</h1>
                                     </td>
-                                    <td className="p-2">
+                                    <td className="min-w-[100px] min-h-[50px] p-3  ">
                                         <button
                                             className="hover:underline"
                                             onClick={() =>

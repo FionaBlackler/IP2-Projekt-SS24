@@ -41,7 +41,7 @@ const SideMenu = () => {
                     },
                     {
                         label: 'Meine Umfragen',
-                        key: '/my-surveys'
+                        key: '/meineUmfragen'
                     }
                 ]}
             ></Menu>

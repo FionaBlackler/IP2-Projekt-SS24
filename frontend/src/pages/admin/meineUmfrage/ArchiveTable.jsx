@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { umfragenArchivieren, umfragenLöschen } from './UmfragenUtils'
-import { MdDeleteOutline } from 'react-icons/md'
-import { FiArchive } from 'react-icons/fi'
+import { AiOutlineDelete } from 'react-icons/ai'
+import { RiInboxUnarchiveLine } from "react-icons/ri";
 
 export default function UmfragenTable({ data, setData }) {
     const [selectedIds, setSelectedIds] = useState([])
@@ -15,7 +15,7 @@ export default function UmfragenTable({ data, setData }) {
     }
 
     return (
-        <div className="h-screen w-full p-4">
+        <div className="h-full w-full ">
             {selectedIds.length > 0 && (
                 <div className="flex space-x-4">
                     <button
@@ -29,7 +29,7 @@ export default function UmfragenTable({ data, setData }) {
                             )
                         }
                     >
-                        <FiArchive />
+                        <RiInboxUnarchiveLine className="size-6" />
                     </button>
                     <button
                         className="mb-4 text-white hover:text-gray-200 hover:underline"
@@ -42,21 +42,24 @@ export default function UmfragenTable({ data, setData }) {
                             )
                         }
                     >
-                        <MdDeleteOutline />
+                        <AiOutlineDelete className="size-7" />
                     </button>
                 </div>
             )}
 
-            <table id="Umfragentabelle" className="w-full text-center">
+            <table
+                id="Umfragentabelle"
+                className="w-full text-center leading-relaxed"
+            >
                 <thead>
                     <tr>
-                        <th className="text-lg">Name</th>
-                        <th className="text-lg">ID</th>
-                        <th className="text-lg">Admin ID</th>
-                        <th className="text-lg">Beschreibung</th>
-                        <th className="text-lg">Erstellungsdatum</th>
-                        <th className="text-lg">Archivierungsdatum</th>
-                        <th className="text-lg">Status</th>
+                        <th className="text-lg p-4">Name</th>
+                        <th className="text-lg p-4">ID</th>
+                        <th className="text-lg p-4">Admin ID</th>
+                        <th className="text-lg p-4">Beschreibung</th>
+                        <th className="text-lg p-4">Erstellungsdatum</th>
+                        <th className="text-lg p-4">Archivierungsdatum</th>
+                        <th className="text-lg p-4">Status</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -69,10 +72,10 @@ export default function UmfragenTable({ data, setData }) {
                             )
                             .map((umfrage) => (
                                 <tr
-                                    className="text-lg even:bg-[#FAEEDB] odd:bg-[#210803] even:text-black odd:text-white"
+                                    className="text-lg even:bg-[#FAEEDB] odd:bg-[#210803] even:text-black odd:text-white "
                                     key={umfrage.id}
                                 >
-                                    <td className="p-2">
+                                    <td className="min-w-[100px] min-h-[50px] p-3">
                                         <div className="flex items-center">
                                             <input
                                                 type="checkbox"
@@ -93,22 +96,22 @@ export default function UmfragenTable({ data, setData }) {
                                             </label>
                                         </div>
                                     </td>
-                                    <td className="p-2">
+                                    <td className="min-w-[100px] min-h-[50px] p-3">
                                         <h1>{umfrage.id}</h1>
                                     </td>
-                                    <td className="p-2">
+                                    <td className="min-w-[100px] min-h-[50px] p-3">
                                         <h1>{umfrage.admin_id}</h1>
                                     </td>
-                                    <td className="p-2">
+                                    <td className="min-w-[100px] min-h-[50px] p-3">
                                         <h1>{umfrage.beschreibung}</h1>
                                     </td>
-                                    <td className="p-2">
+                                    <td className="min-w-[100px] min-h-[50px] p-3">
                                         <h1>{umfrage.erstellungsdatum}</h1>
                                     </td>
-                                    <td className="p-2">
+                                    <td className="min-w-[100px] min-h-[50px] p-3">
                                         <h1>{umfrage.archivierungsdatum}</h1>
                                     </td>
-                                    <td className="p-2">
+                                    <td className="min-w-[100px] min-h-[50px] p-3">
                                         <h1>{umfrage.status}</h1>
                                     </td>
                                 </tr>

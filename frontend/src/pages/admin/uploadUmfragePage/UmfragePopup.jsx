@@ -1,5 +1,5 @@
 import UploadComponent from './UploadComponent.jsx';
-import { useState, useEffect } from "react";
+import React, {useState, useEffect, useRef} from "react";
 import { useDropzone } from "react-dropzone";
 import "./scrollBar.css";
 import "./hoverDropzone.css";
@@ -7,24 +7,20 @@ import "./hoverDropzone.css";
 const UmfragePopup = () => {
     const [loading, setLoading] = useState([]);
     const [newItemsCount, setNewItemsCount] = useState(0);
+    const scrollDivRef = useRef(null);
 
-    const handleUpload = (acceptedFiles, fileRejections) => {
-        if (fileRejections.length > 0) {
-            console.log("ERROR");
-        }
-        const newUploadedItems = [];
+    function processJSON(acceptedFiles, newUploadedItems) {
         acceptedFiles.forEach((file, index) => {
             const reader = new FileReader();
             reader.onload = () => {
                 const fileContent = reader.result;
                 newUploadedItems.push({
                     item: loading.length + index,
-                    component: <UploadComponent json={fileContent.toString()} fileName={file.name} />,
+                    component: <UploadComponent json={fileContent.toString()} fileName={file.name}/>,
                 });
                 if (newUploadedItems.length === acceptedFiles.length) {
                     setLoading(prevLoading => {
                         const updatedLoading = [...prevLoading, ...newUploadedItems];
-                        //const itemsToShow = updatedLoading.slice(-2); // Keep only the latest 20 elements
                         setNewItemsCount(newUploadedItems.length);
                         return updatedLoading;
                     });
@@ -32,7 +28,31 @@ const UmfragePopup = () => {
             };
             reader.readAsText(file);
         });
+    }
+
+    const handleUpload = (acceptedFiles, fileRejections) => {
+        if (fileRejections.length > 0) {
+            console.log("ERROR");
+        }
+        const newUploadedItems = [];
+        if(scrollDivRef.current.scrollTop !== 0){
+            const scrollPromise = new Promise(resolve => {
+                scrollDivRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+                scrollDivRef.current.addEventListener('scroll', function checkScroll() {
+                    if (scrollDivRef.current.scrollTop === 0) {
+                        scrollDivRef.current.removeEventListener('scroll', checkScroll);
+                        resolve();
+                    }
+                });
+            });
+            scrollPromise.then(() => {
+                processJSON(acceptedFiles, newUploadedItems);
+            });
+        } else {
+            processJSON(acceptedFiles, newUploadedItems);
+        }
     };
+
 
     useEffect(() => {
         if (newItemsCount > 0) {
@@ -57,7 +77,7 @@ const UmfragePopup = () => {
     });
 
     return (
-        <div className='w-[1398.09px] h-[766px] absolute left-0 right-0'>
+        <div className='w-[1398.09px] h-[766px]'>
             <div
                 className='bg-[#FAEEDB] h-full w-full rounded-[40px] flex flex-col space-y-[6.3%] border-r-2 border-l-2 border-b-2 border-[rgba(175,134,116,0.3)]'>
                 <div
@@ -66,7 +86,7 @@ const UmfragePopup = () => {
                         className="align-middle text-[#FEF2DE] text-4xl font-normal font-['Inter']">Umfrage Hochladen</span>
                 </div>
                 <div className='px-[5%] h-[68.3%] flex flex-col space-y-4'>
-                    <div {...getRootProps()}
+                    <div data-testid="dropzone"  {...getRootProps()}
                          className={'parentHover w-full h-[190px] bg-[#EEDFCE] rounded-[45px] outline-[#4A362F] outline-[5px] outline-dashed outline-offset-2 overflow-auto flex flex-col items-center justify-center space-y-3'}>
                         <input {...getInputProps()} />
                         <svg className={isDragActive ? 'dragging icon' : 'icon'} width="80" height="104"
@@ -95,7 +115,7 @@ const UmfragePopup = () => {
                         </span>
                     </div>
                     <div></div>
-                    <div className='w-full h-[310px] overflow-y-scroll' id="scrollbar2">
+                    <div ref={scrollDivRef} className='w-full h-[310px] overflow-y-scroll' id="scrollbar2">
                         <div
                             className='min-w-0 px-[3%] flex flex-col-reverse space-y-reverse space-y-[10px] justify-end'>
                             {loading.map((l, index) => (
