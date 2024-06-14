@@ -25,7 +25,7 @@ export default function Umfrage() {
                     console.log('Data received from server:', responseData)
                     setData(responseData)
                 } else if (r.status === 204) {
-                    console.log('Keine Einträge vorhanden')
+                    console.log('Keine Umfrgaen vorhanden')
                 } else if (r.status === 500) {
                     console.log(r.data)
                 }
@@ -47,7 +47,11 @@ export default function Umfrage() {
     }
 
     return (
-        <Popup content={<UmfragePopup/>} open={showPopUp} setOpen={setShowPopUp}>
+        <Popup
+            content={<UmfragePopup />}
+            open={showPopUp}
+            setOpen={setShowPopUp}
+        >
             <>
                 <div className="h-screen justify-between p-8 bg-[#AF8A74] overflow-auto">
                     <div className="flex justify-between">
