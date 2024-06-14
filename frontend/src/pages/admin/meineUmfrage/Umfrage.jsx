@@ -4,7 +4,7 @@ import React from 'react'
 import UmfragenTable from './UmfragenTable'
 import ArchiveTable from './ArchiveTable'
 import UmfragePopup from '../uploadUmfragePage/UmfragePopup'
-import Popup from 'E:/IF_6/umfragetool/frontend/src/components/Popup.jsx'
+import Popup from '../../../components/Popup.jsx'
 
 export default function Umfrage() {
     const [data, setData] = useState({ umfragen: [] })
