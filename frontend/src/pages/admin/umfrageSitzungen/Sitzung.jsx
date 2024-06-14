@@ -8,8 +8,7 @@ import { VscAccount } from 'react-icons/vsc'
 
 export default function Sitzung() {
     const { umfrageId } = useParams();  //umfrageId aus der URL mittels useParams extrahiert.
-    console.log('umfrageId:', umfrageId);
-
+    //console.log('umfrageId:', umfrageId);
     //const navigate = useNavigate()
 
     const [data, setData] = useState({ sitzungen: [] })
@@ -19,12 +18,12 @@ export default function Sitzung() {
 
     const sitzungenLaden = () => {
         axios
-            .get(`${import.meta.env.VITE_BACKEND_URL}/umfrage/${umfrageId}/sitzungen`, {  //HTTP-GET-Anfrage
-                headers: { Authorization: `Bearer ${accessToken}` },
+            .get(`${import.meta.env.VITE_BACKEND_URL}umfrage/${umfrageId}/sitzungen`, {  //HTTP-GET-Anfrage
+                headers: { 'Authorization' : `Bearer ${accessToken}` ,
+                           "ContentType": 'application/json' } 
             })
             .then((r) => {
-                console.log(r.data)
-                console.log(import.meta.env.VITE_BACKEND_URL)
+                //console.log(r.data)
                 if (r.status === 200) {
                     const responseData = r.data
                     console.log('Data received from server:', responseData)  //must be JSON

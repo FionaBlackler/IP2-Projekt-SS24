@@ -10,8 +10,9 @@ export const  sitzungenLöschen =  (selectedIds, setSelectedIds, getData, setDat
 
     selectedIds.forEach((id) => {
         axios
-            .delete(`${import.meta.env.VITE_BACKEND_URL}/sitzung/delete/${id}`, {
-                headers: { Authorization: `Bearer ${accessToken}` },
+            .delete(`${import.meta.env.VITE_BACKEND_URL}sitzung/delete/${id}`, {
+                headers:  { 'Authorization' : `Bearer ${accessToken}` ,
+                            "ContentType": 'application/json' }
             })
             .then((r) => {
                 if (r.status === 200) {
@@ -27,12 +28,13 @@ export const  sitzungenLöschen =  (selectedIds, setSelectedIds, getData, setDat
 };
 
 
-// Funktion zum Abrufen der Sitzungsergebnisse (1)
+// Funktion zum Abrufen der Sitzungsergebnisse (eine Sitzung)
 export const sitzungResults = (id) => {
 
   axios
-    .get(`${import.meta.env.VITE_BACKEND_URL}/sitzung/${id}/result`, {
-      headers: { Authorization: `Bearer ${accessToken}` },
+    .get(`${import.meta.env.VITE_BACKEND_URL}sitzung/${id}/result`, {
+      headers: { 'Authorization' : `Bearer ${accessToken}` ,
+                 "ContentType": 'application/json' }
     })
     .then((r) => {
       if (r.status === 200) {
@@ -45,7 +47,7 @@ export const sitzungResults = (id) => {
 };
 
 
-// Funktion zum Abrufen der Ergebnisse vielen Sitzungen
+// Funktion zum Abrufen der Ergebnisse mehreren Sitzungen
 export const  sitzungenResults =  (selectedIds, setSelectedIds) => {
   
   selectedIds.forEach((id) => {

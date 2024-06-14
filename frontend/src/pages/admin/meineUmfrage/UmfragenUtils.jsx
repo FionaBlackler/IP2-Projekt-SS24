@@ -9,8 +9,8 @@ export const umfragenArchivieren = (selectedIds, setSelectedIds, getData, setDat
 
     selectedIds.forEach((id) => {
         axios
-            .get(`${import.meta.env.VITE_BACKEND_URL}/umfrage/archive/${id}`, {
-                headers: { Authorization: `Bearer ${accessToken}` },
+            .get(`${import.meta.env.VITE_BACKEND_URL}umfrage/archive/${id}`, {
+                headers: { 'Authorization' : `Bearer ${accessToken}` } 
             })
             .then((r) => {
                 if (r.status === 200) {
@@ -31,8 +31,8 @@ export const  umfragenLöschen =  (selectedIds, setSelectedIds, getData, setData
 
     selectedIds.forEach((id) => {
         axios
-            .delete(`${import.meta.env.VITE_BACKEND_URL}/umfrage/delete/${id}`, {
-                headers: { Authorization: `Bearer ${accessToken}` },
+            .delete(`${import.meta.env.VITE_BACKEND_URL}umfrage/delete/${id}`, {
+                headers: { 'Authorization' : `Bearer ${accessToken}` } 
             })
             .then((r) => {
                 if (r.status === 200) {
