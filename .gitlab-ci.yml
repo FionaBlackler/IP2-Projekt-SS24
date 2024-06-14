@@ -42,13 +42,14 @@ test:backend:
   script:
     - export DATABASE_URL=mysql://root:password@localhost:3306/mydatabase
 #    - pytest backend/services/rest-apis
-    - pytest --cov=backend/services/rest-apis --cov-report=xml --cov-report=term backend/services/rest-apis
+    - pytest --cov=backend/services/rest-apis --cov-report=xml --cov-report=html:coverage_html_report backend/services/rest-apis
   after_script:
-  #  - cp coverage.xml ${CI_PROJECT_DIR}/coverage.xml  
+    - mv coverage_html_report ${CI_PROJECT_DIR}/coverage_html_report  # Verschiebe den HTML-Bericht in das CI-Projektverzeichnis
   artifacts:
     paths:
       - coverage.xml
-  coverage: '/^TOTAL.*\s+(\d+%)$/'  
+      - coverage_html_report  # Füge den HTML-Bericht als Artefakt hinzu
+  coverage: '/^TOTAL.*\s+(\d+%)$/'
   dependencies:
     - lint:backend
 
@@ -60,7 +61,7 @@ codecov:backend:
     - python -m venv venv
     - . venv/bin/activate
     - pip install codecov
-    - codecov
+    - codecov -f coverage.xml -F unittests -X gcov -y coverage_html_report/coverage.xml
   dependencies:
     - test:backend
   only:
