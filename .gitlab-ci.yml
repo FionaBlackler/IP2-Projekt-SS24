@@ -56,7 +56,7 @@ codecov:backend:
   dependencies:
     - test:backend
   only:
-    - develop
+    - main
   environment:
     name: development
   before_script:
