@@ -27,8 +27,8 @@ function RootRoutes() {
                 />
 
                 <Route exact={true} path="/dashboard/static/:umfrageId" element={<StaticUmfrageSitzungen />} />  {/* statistische daten zum testen */}
-                <Route exact={true} path="/dashboard/:umfrageId" element={<UmfrageSitzungen />} />
-                <Route exact={true} path="/sitzung/:ids/results" element={<SitzungenResults />} />
+                <Route path="/dashboard/:umfrageId" element={<ProtectedRoute component={UmfrageSitzungen}/>} />
+                <Route path="/sitzung/:ids/results" element={<ProtectedRoute component={SitzungenResults} />} />
 
                 <Route exact={true} path="/login" element={<Login />} />
                 <Route exact={true} path="/register" element={<Register />} />

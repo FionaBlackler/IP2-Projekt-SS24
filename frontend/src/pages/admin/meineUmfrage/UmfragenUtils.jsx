@@ -1,9 +1,11 @@
 import axios from 'axios'
 import { useEffect } from 'react'
 
-const accessToken = localStorage.getItem('accessToken')
+
 
 export const umfragenArchivieren = (selectedIds, setSelectedIds, getData, setData) => {
+    const accessToken = localStorage.getItem('accessToken')
+
     const newUmfragen = getData.umfragen.filter((umfrage) => !selectedIds.includes(umfrage.id));
     setData({ umfragen: newUmfragen });
 
@@ -26,6 +28,8 @@ export const umfragenArchivieren = (selectedIds, setSelectedIds, getData, setDat
 };
 
 export const  umfragenLöschen =  (selectedIds, setSelectedIds, getData, setData) => {
+    const accessToken = localStorage.getItem('accessToken')
+    
     const newUmfragen = getData.umfragen.filter((umfrage) => !selectedIds.includes(umfrage.id));
     setData({ umfragen: newUmfragen });
 
