@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { umfragenArchivieren, umfragenLöschen } from './UmfragenUtils'
 import { AiOutlineDelete } from 'react-icons/ai'
-import { RiInboxUnarchiveLine } from "react-icons/ri";
+import { RiInboxUnarchiveLine } from 'react-icons/ri'
 
 export default function UmfragenTable({ data, setData }) {
     const [selectedIds, setSelectedIds] = useState([])
@@ -14,8 +14,10 @@ export default function UmfragenTable({ data, setData }) {
         }
     }
 
+    const umfragenVorhanden = data && data.umfragen && data.umfragen.filter((umfrage) => umfrage.archivierungsdatum !== null).length > 0
+
     return (
-        <div className="h-full w-full ">
+        <div className="h-full w-full">
             {selectedIds.length > 0 && (
                 <div className="flex space-x-4">
                     <button
@@ -47,10 +49,7 @@ export default function UmfragenTable({ data, setData }) {
                 </div>
             )}
 
-            <table
-                id="Umfragentabelle"
-                className="w-full text-center leading-relaxed"
-            >
+            <table id="Umfragentabelle" className="w-full text-center leading-relaxed">
                 <thead>
                     <tr>
                         <th className="text-lg p-4">Name</th>
@@ -63,16 +62,12 @@ export default function UmfragenTable({ data, setData }) {
                     </tr>
                 </thead>
                 <tbody>
-                    {data?.umfragen?.filter(
-                        (umfrage) => umfrage.archivierungsdatum !== null
-                    ).length !== 0 ? (
+                    {umfragenVorhanden ? (
                         data.umfragen
-                            .filter(
-                                (umfrage) => umfrage.archivierungsdatum !== null
-                            )
+                            .filter((umfrage) => umfrage.archivierungsdatum !== null)
                             .map((umfrage) => (
                                 <tr
-                                    className="text-lg even:bg-[#FAEEDB] odd:bg-[#210803] even:text-black odd:text-white "
+                                    className="text-lg even:bg-[#FAEEDB] odd:bg-[#210803] even:text-black odd:text-white"
                                     key={umfrage.id}
                                 >
                                     <td className="min-w-[100px] min-h-[50px] p-3">
@@ -81,14 +76,9 @@ export default function UmfragenTable({ data, setData }) {
                                                 type="checkbox"
                                                 id={umfrage.id}
                                                 className="mr-10"
-                                                checked={selectedIds.includes(
-                                                    umfrage.id
-                                                )}
+                                                checked={selectedIds.includes(umfrage.id)}
                                                 onChange={(event) =>
-                                                    handleCheckboxChange(
-                                                        event,
-                                                        umfrage.id
-                                                    )
+                                                    handleCheckboxChange(event, umfrage.id)
                                                 }
                                             />
                                             <label htmlFor={umfrage.id}>
@@ -119,9 +109,7 @@ export default function UmfragenTable({ data, setData }) {
                     ) : (
                         <tr>
                             <td colSpan="7">
-                                <p className="mt-16 text-xl">
-                                    Keine Umfragen vorhanden
-                                </p>
+                                <p className="mt-16 text-xl">Keine Umfragen vorhanden</p>
                             </td>
                         </tr>
                     )}
