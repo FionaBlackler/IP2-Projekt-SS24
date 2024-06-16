@@ -30,16 +30,22 @@ export default function Sitzung() {
                     setData(responseData)
                 } else if (r.status === 204) {
                     console.log('Keine Einträge vorhanden')
-                } else if (r.status === 401) {
-                    console.error('Authentifizierungsfehler', r.data);
-                } else if (response.status === 404) {
-                    console.error('Umfrage nicht gefunden (falsche ID):', r.data);
-                } else if (r.status === 500) {
-                    console.error('server error', r.data)
-                }
+                } 
             })
             .catch((error) => {
-                console.log('ERROR: ' + error)
+                if (error.response) {
+                    if (error.response.status === 401) {
+                        console.log('Authentifizierungsfehler', error.response.data)
+                    } else if (error.response.status === 404) {
+                        console.log('Umfrage nicht gefunden (falsche ID)', error.response.data)
+                    } else if (error.response.status === 500) {
+                        console.log('server error', error.response.data)
+                    } else {
+                        console.log('ERROR: ' + error.response.data)
+                    }
+                } else {
+                    console.log('ERROR: ' + error.message)
+                }
             })
             .finally(() => {
                 setLoading(false)

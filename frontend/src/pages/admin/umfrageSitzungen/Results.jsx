@@ -29,15 +29,27 @@ export default function SitzungenResults() {
                 .then((r) => {
                     if (r.status === 200) {
                       const responseData = r.data
-                      console.log(`Ergebnisse zur Sitzung mit ID  ${id} sind ${r.data}`);
+                      console.log(`Ergebnisse zur Sitzung mit ID  ${id}`);
                       setData(responseData)
-                    } else if (r.status === 404) {
-                      console.error(`Could not find umfrage with a associated sitzung with id: ${id}`);
-                    } 
+                    }
                 })
                 .catch((error) => {
-                    console.log('ERROR: ' + error);
-                });
+                    if (error.response) {
+                        if (error.response.status === 404) {
+                            console.error('not found',  error.response.data);
+                        } else if (error.response.status === 500) {
+                            console.error('server error',  error.response.data);
+                        }
+                        else {
+                            console.log('ERROR: ' + error.response.data)
+                        }
+                    } else {
+                        console.log('ERROR: ' + error.message)
+                    }
+                })
+                .finally(() => {
+                    setLoading(false)
+                })
         });
     };
 

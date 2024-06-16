@@ -39,14 +39,14 @@ export default function SitzungenTable({ data, setData }) {
                             )
                         }
                     >
-                        <AiOutlineDelete className="size-7" />
+                        <AiOutlineDelete className="size-7" data-testid="delete-button"/>
                     </button>
 
                     <button
                         className="mb-4 text-white hover:text-gray-200 hover:underline"
                         onClick={handleHistory}
                     >
-                        <AiOutlineDotChart className="size-7" />
+                        <AiOutlineDotChart className="size-7" data-testid="results-button"/>
                     </button>
                 </div>
             )}
