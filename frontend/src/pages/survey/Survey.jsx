@@ -14,7 +14,7 @@ const Survey = () => {
     const [selections, setSelections] = useState({})
     const [isScreenReaderMode, setIsScreenReaderMode] = useState(false)
     const [lockedQuestions, setLockedQuestions] = useState({})
-    const [isModalOpen, setIsModalOpen] = useState(false) // State for modal
+    const [isModalOpen, setIsModalOpen] = useState(false)
     const navigate = useNavigate()
     const dispatch = useDispatch()
 
@@ -51,7 +51,7 @@ const Survey = () => {
         const currentSelection = {
             antworten: selections[questionId].map(selection => ({
                 antwort_id: selection.id,
-                gewaehlteAntwort: selection.isSelected // Assuming isSelected is the correct property to use
+                gewaehlteAntwort: selection.isSelected
             }))
         }
 
