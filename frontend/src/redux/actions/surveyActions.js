@@ -26,52 +26,37 @@ export const fetchSurveyData = (umfrageId) => {
     }
 }
 
-export const saveSurveyAnswers = (sitzungId, antworten) => {
+export const saveQuestionAnswers = (sitzungId, antworten) => {
     return async (dispatch) => {
-        dispatch({ type: actionTypes.SAVE_SURVEY_REQUEST })
+        dispatch({ type: actionTypes.SAVE_QUESTION_ANSWERS_REQUEST })
 
         try {
 
             const { data } = await axios.post(`http://localhost:3000/sitzung/${sitzungId}/teilnehmerAntwort`, antworten)
 
             dispatch({
-                type: actionTypes.SAVE_SURVEY_SUCCESS,
+                type: actionTypes.SAVE_QUESTION_ANSWERS_SUCCESS,
                 payload: data
             })
         } catch (error) {
+            console.log('error in save thunk: ', error)
             const errorMessage = error.response && error.response.data && error.response.data.message
                 ? error.response.data.message
                 : error.message
 
             dispatch({
-                type: actionTypes.SAVE_SURVEY_FAILURE,
+                type: actionTypes.SAVE_QUESTION_ANSWERS_FAILURE,
                 payload: errorMessage
             })
         }
     }
 }
 
-export const submitSurveyAnswers = (sitzungId, antworten) => {
-    return async (dispatch) => {
-        dispatch({ type: actionTypes.SUBMIT_SURVEY_REQUEST })
-
-        try {
-            const { data } = await axios.post(`http://localhost:3000/sitzung/${sitzungId}/teilnehmerAntwort`, { antworten })
-
-            console.log('data in submit thunk: ', data)
-            dispatch({
-                type: actionTypes.SUBMIT_SURVEY_SUCCESS,
-                payload: data
-            })
-        } catch (error) {
-            const errorMessage = error.response && error.response.data && error.response.data.message
-                ? error.response.data.message
-                : error.message
-
-            dispatch({
-                type: actionTypes.SUBMIT_SURVEY_FAILURE,
-                payload: errorMessage
-            })
-        }
-    }
-}
+export const saveSurveyAnswers = (antworten) => {
+    return (dispatch) => {
+        dispatch({
+            type: actionTypes.SAVE_SURVEY_ANSWERS,
+            payload: antworten
+        });
+    };
+};

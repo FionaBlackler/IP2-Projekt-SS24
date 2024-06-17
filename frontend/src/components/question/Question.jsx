@@ -1,10 +1,23 @@
 import { useState, useEffect } from 'react'
 import QuestionHeader from '../questionHeader/QuestionHeader.jsx'
-import './QuestionStyle.css'
+import './question.scss'
 
-const Question = ({ number, text, options, score, questionType, onAnswerSelect, isScreenReaderMode, index, isLocked, onSubmit }) => {
+const Question = ({
+                      number,
+                      text,
+                      options,
+                      score,
+                      questionType,
+                      onAnswerSelect,
+                      isScreenReaderMode,
+                      index,
+                      isLocked,
+                      onSubmit,
+                  }) => {
     const [selectedAnswers, setSelectedAnswers] = useState([])
-    console.log('options: ', options)
+    console.log('index passed: ', index)
+    console.log("number: ", number)
+    console.log("isLocked: ", isLocked)
 
     useEffect(() => {
         setSelectedAnswers(options.filter(option => option.isSelected).map(option => option.id))
@@ -100,81 +113,87 @@ const Question = ({ number, text, options, score, questionType, onAnswerSelect, 
         switch (questionType) {
             case 'A':
                 return (<div className="question-options-container">
-                        {options.map((option) => (<div key={option.id} className="option">
-                                <input
-                                    type="radio"
-                                    id={`option-${option.id}`}
-                                    name={`question-${number}`}
-                                    value={option.text}
-                                    onChange={() => handleRadioChange(option.id)}
-                                    disabled={isLocked}
-                                    className="option-checkbox"
-                                />
-                                <label htmlFor={`option-${option.id}`} className="option-label">
-                                    {option.text}
-                                </label>
-                            </div>))}
-                    </div>)
+                    {options.map((option) => (<div key={option.id} className="option">
+                        <input
+                            type="radio"
+                            id={`option-${option.id}`}
+                            name={`question-${number}`}
+                            value={option.text}
+                            onChange={() => handleRadioChange(option.id)}
+                            disabled={isLocked}
+                            className="option-checkbox"
+                        />
+                        <label htmlFor={`option-${option.id}`} className="option-label">
+                            {option.text}
+                        </label>
+                    </div>))}
+                </div>)
             case 'P':
                 return (<div className="question-options-container">
-                        {options.map((option) => (<div key={option.id} className="option">
-                                <input
-                                    type="checkbox"
-                                    id={`option-${option.id}`}
-                                    name={`question-${number}`}
-                                    value={option.text}
-                                    checked={selectedAnswers.includes(option.id)}
-                                    onChange={() => handleCheckboxChangeForP(option.id)}
-                                    disabled={isLocked}
-                                    className="option-checkbox"
-                                />
-                                <label htmlFor={`option-${option.id}`} className="option-label">
-                                    {option.text}
-                                </label>
-                            </div>))}
-                    </div>)
+                    {options.map((option) => (<div key={option.id} className="option">
+                        <input
+                            type="checkbox"
+                            id={`option-${option.id}`}
+                            name={`question-${number}`}
+                            value={option.text}
+                            checked={selectedAnswers.includes(option.id)}
+                            onChange={() => handleCheckboxChangeForP(option.id)}
+                            disabled={isLocked}
+                            className="option-checkbox"
+                        />
+                        <label htmlFor={`option-${option.id}`} className="option-label">
+                            {option.text}
+                        </label>
+                    </div>))}
+                </div>)
             case 'K':
                 return (<div className="question-options-container">
-                        {options.map((option) => (<div key={option.id} className="checkbox-container">
+                    <div className="label-container">
+                        <span className="label-text">Zutreffend</span>
+                        <span className="label-text">Nicht Zutreffend</span>
+                    </div>
+                    {options.map((option) => (
+                        <div key={option.id} className="checkbox-container">
+                            <div className="option-text-container">
                                 <span className="option-text">{option.text}</span>
-                                <fieldset className="checkbox-options">
-                                    <input
-                                        type="checkbox"
-                                        id={`option-${option.id}-true`}
-                                        onChange={() => handleCheckboxChangeForK(option.id, true)}
-                                        checked={selectedAnswers.includes(`${option.id}-true`)}
-                                        disabled={isLocked}
-                                    />
-                                    <label htmlFor={`option-${option.id}-true`} className="checkbox-label">
-                                        Stimmt zu
-                                    </label>
-                                    <input
-                                        type="checkbox"
-                                        id={`option-${option.id}-false`}
-                                        onChange={() => handleCheckboxChangeForK(option.id, false)}
-                                        checked={selectedAnswers.includes(`${option.id}-false`)}
-                                        disabled={isLocked}
-                                    />
-                                    <label htmlFor={`option-${option.id}-false`} className="checkbox-label">
-                                        Stimmt nicht zu
-                                    </label>
-                                </fieldset>
-                            </div>))}
-                    </div>)
+                            </div>
+                            <fieldset className="checkbox-options">
+                                <input
+                                    type="checkbox"
+                                    id={`option-${option.id}-true`}
+                                    onChange={() => handleCheckboxChangeForK(option.id, true)}
+                                    checked={selectedAnswers.includes(`${option.id}-true`)}
+                                    disabled={isLocked}
+                                    className="checkbox-left"
+                                />
+                                <input
+                                    type="checkbox"
+                                    id={`option-${option.id}-false`}
+                                    onChange={() => handleCheckboxChangeForK(option.id, false)}
+                                    checked={selectedAnswers.includes(`${option.id}-false`)}
+                                    disabled={isLocked}
+                                    className="checkbox-right"
+                                />
+                            </fieldset>
+                        </div>
+                    ))}
+                </div>)
             default:
                 return null
         }
     }
 
-    return (<div className={`survey-question ${isScreenReaderMode && index !== number ? 'blurred' : ''}`}>
+    return (
+        <div className={`survey-question ${isScreenReaderMode && index > 0 ? 'blurred' : ''}`}>
             <QuestionHeader number={number} score={score} text={text} />
             <div className="question-options-container">
                 {renderOptions()}
             </div>
             {!isLocked && (<button onClick={() => onSubmit(number)} className="submit-question-button">
-                    Antworten und sperren
-                </button>)}
-        </div>)
+                Antworten und sperren
+            </button>)}
+        </div>
+    )
 }
 
 export default Question

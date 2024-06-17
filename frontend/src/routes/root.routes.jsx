@@ -1,11 +1,12 @@
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
-import Login from '../pages/login/Login.jsx';
-import Register from '../pages/register/Register.jsx';
-import ProtectedRoute from './protected.route.jsx';
-import Homepage from '../pages/home/Homepage.jsx';
-import Survey from "../pages/survey/Survey.jsx";
-import BinaryQuestion from "../pages/user-view/BinaryQuestion.jsx";
-import Question from "../components/question/Question.jsx";
+import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import Login from '../pages/login/Login.jsx'
+import Register from '../pages/register/Register.jsx'
+import ProtectedRoute from './protected.route.jsx'
+import Homepage from '../pages/home/Homepage.jsx'
+import Survey from '../pages/survey/Survey.jsx'
+import Question from '../components/question/Question.jsx'
+import FocusExample from '../components/FocusExample.jsx'
+import FinishSurveyView from '../pages/FinishSurveyView/FinishSurveyView.jsx'
 
 function RootRoutes() {
     return (
@@ -15,11 +16,12 @@ function RootRoutes() {
                 <Route exact={true} path="/login" element={<Login />} />
                 <Route exact={true} path="/register" element={<Register />} />
                 <Route path="/test" element={<Survey />} />
-                <Route path="/questions/:questionId" element={<Question/>} />
-                <Route path="/binary-questions/:questionId" element={<BinaryQuestion/>} />
+                <Route path="/finish-survey" element={<FinishSurveyView />} />
+                <Route path="/questions/:questionId" element={<Question />} />
+                <Route path="/focus" element={<FocusExample />} />
             </Routes>
         </BrowserRouter>
-    );
+    )
 }
 
-export default RootRoutes;
+export default RootRoutes
