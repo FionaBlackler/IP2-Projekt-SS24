@@ -1,144 +1,180 @@
-import React, { useState, useEffect } from 'react';
-import QuestionHeader from '../questionHeader/QuestionHeader.jsx';
-import './QuestionStyle.css';
+import { useState, useEffect } from 'react'
+import QuestionHeader from '../questionHeader/QuestionHeader.jsx'
+import './QuestionStyle.css'
 
-const Question = ({ number, text, options, score, questionType, onAnswerSelect, isScreenReaderMode, index }) => {
-    const [selectedAnswers, setSelectedAnswers] = useState([]);
+const Question = ({ number, text, options, score, questionType, onAnswerSelect, isScreenReaderMode, index, isLocked, onSubmit }) => {
+    const [selectedAnswers, setSelectedAnswers] = useState([])
+    console.log('options: ', options)
 
     useEffect(() => {
-        // Initialize selectedAnswers based on options, important for screen reader mode where options might be preselected
-        setSelectedAnswers(options.filter(option => option.isSelected).map(option => option.text));
-    }, [options]);
+        setSelectedAnswers(options.filter(option => option.isSelected).map(option => option.id))
+    }, [options])
 
-    const handleChange = (selectedAnswer) => {
-        let points = 0;
-        let updatedSelections = [];
+    const handleChange = (selectedOptionIds) => {
+        let updatedSelections = []
 
         switch (questionType) {
             case 'A':
-                const optionIndex = options.findIndex(option => option.text === selectedAnswer);
-                points = options[optionIndex].ist_richtig ? score : 0;
-                updatedSelections.push({ text: selectedAnswer, isCorrect: options[optionIndex].ist_richtig });
-                break;
+                updatedSelections = options.map(option => {
+                    const isSelected = selectedOptionIds.includes(option.id)
+                    const isCorrect = option.ist_richtig
+                    const isAnswerCorrect = isSelected && isCorrect
+                    return {
+                        id: option.id,
+                        text: option.text,
+                        isCorrect: isCorrect,
+                        isSelected: isSelected,
+                        isAnswerCorrect: isAnswerCorrect
+                    }
+                })
+                break
             case 'P':
-                updatedSelections = options.map(option => ({
-                    text: option.text,
-                    isCorrect: option.ist_richtig,
-                    isSelected: selectedAnswer.includes(option.text),
-                }));
-                points = updatedSelections.reduce((acc, option) => acc + (option.isCorrect && option.isSelected ? 1 : 0), 0);
-                break;
+                updatedSelections = options.map(option => {
+                    const isSelected = selectedOptionIds.includes(option.id)
+                    const isCorrect = option.ist_richtig
+                    const isAnswerCorrect = isSelected && isCorrect
+                    return {
+                        id: option.id,
+                        text: option.text,
+                        isCorrect: isCorrect,
+                        isSelected: isSelected,
+                        isAnswerCorrect: isAnswerCorrect
+                    }
+                })
+                break
             case 'K':
-                console.log("options: ", options)
-                const isCorrect = selectedAnswer === 'Stimmt zu';
-                points = isCorrect ? score : 0;
-                updatedSelections.push({ text: selectedAnswer, isCorrect });
-                break;
+                updatedSelections = options.map(option => {
+                    const isTrueSelected = selectedOptionIds.includes(`${option.id}-true`)
+                    const isFalseSelected = selectedOptionIds.includes(`${option.id}-false`)
+                    const isCorrect = option.ist_richtig
+                    const userAnswer = isTrueSelected ? true : isFalseSelected ? false : null
+                    const isAnswerCorrect = userAnswer === isCorrect
+                    return {
+                        id: option.id,
+                        text: option.text,
+                        isCorrect: isCorrect,
+                        isSelected: userAnswer,
+                        isAnswerCorrect: isAnswerCorrect
+                    }
+                })
+                break
             default:
-                break;
+                break
         }
 
-        console.log("updatedSelections: ", updatedSelections);
-        onAnswerSelect(updatedSelections, points);
-    };
+        onAnswerSelect(updatedSelections)
+    }
 
-    const handleCheckboxChange = (optionText) => {
-        console.log("optionText: ", optionText);
-        const updatedSelectedAnswers = selectedAnswers.includes(optionText)
-            ? selectedAnswers.filter(answer => answer !== optionText)
-            : [...selectedAnswers, optionText];
-        console.log("updatedSelectedAnswers: ", updatedSelectedAnswers);
+    const handleRadioChange = (optionId) => {
+        setSelectedAnswers([optionId])
+        handleChange([optionId])
+    }
 
-        setSelectedAnswers(updatedSelectedAnswers);
-        handleChange(updatedSelectedAnswers);
-    };
+    const handleCheckboxChangeForP = (optionId) => {
+        const updatedSelectedAnswers = selectedAnswers.includes(optionId) ? selectedAnswers.filter(id => id !== optionId) : [...selectedAnswers, optionId]
+
+        setSelectedAnswers(updatedSelectedAnswers)
+        handleChange(updatedSelectedAnswers)
+    }
+
+    const handleCheckboxChangeForK = (optionId, isTrueSelected) => {
+        let updatedSelectedAnswers = [...selectedAnswers]
+
+        if (isTrueSelected) {
+            if (updatedSelectedAnswers.includes(`${optionId}-false`)) {
+                updatedSelectedAnswers = updatedSelectedAnswers.filter(id => id !== `${optionId}-false`)
+            }
+            updatedSelectedAnswers = updatedSelectedAnswers.includes(`${optionId}-true`) ? updatedSelectedAnswers.filter(id => id !== `${optionId}-true`) : [...updatedSelectedAnswers, `${optionId}-true`]
+        } else {
+            if (updatedSelectedAnswers.includes(`${optionId}-true`)) {
+                updatedSelectedAnswers = updatedSelectedAnswers.filter(id => id !== `${optionId}-true`)
+            }
+            updatedSelectedAnswers = updatedSelectedAnswers.includes(`${optionId}-false`) ? updatedSelectedAnswers.filter(id => id !== `${optionId}-false`) : [...updatedSelectedAnswers, `${optionId}-false`]
+        }
+
+        setSelectedAnswers(updatedSelectedAnswers)
+        handleChange(updatedSelectedAnswers)
+    }
 
     const renderOptions = () => {
         switch (questionType) {
             case 'A':
-                return (
-                    <div className="question-options-container">
-                        {options.map((option, index) => (
-                            <div key={index} className="option">
+                return (<div className="question-options-container">
+                        {options.map((option) => (<div key={option.id} className="option">
                                 <input
                                     type="radio"
-                                    id={`option-${index}`}
+                                    id={`option-${option.id}`}
                                     name={`question-${number}`}
                                     value={option.text}
-                                    onChange={() => handleChange(option.text)}
+                                    onChange={() => handleRadioChange(option.id)}
+                                    disabled={isLocked}
                                     className="option-checkbox"
                                 />
-                                <label htmlFor={`option-${index}`} className="option-label">
+                                <label htmlFor={`option-${option.id}`} className="option-label">
                                     {option.text}
                                 </label>
-                            </div>
-                        ))}
-                    </div>
-                );
+                            </div>))}
+                    </div>)
             case 'P':
-                return (
-                    <div className="question-options-container">
-                        {options.map((option, index) => (
-                            <div key={index} className="option">
+                return (<div className="question-options-container">
+                        {options.map((option) => (<div key={option.id} className="option">
                                 <input
                                     type="checkbox"
-                                    id={`option-${index}`}
+                                    id={`option-${option.id}`}
                                     name={`question-${number}`}
                                     value={option.text}
-                                    checked={selectedAnswers.includes(option.text)}
-                                    onChange={() => handleCheckboxChange(option.text)}
+                                    checked={selectedAnswers.includes(option.id)}
+                                    onChange={() => handleCheckboxChangeForP(option.id)}
+                                    disabled={isLocked}
                                     className="option-checkbox"
                                 />
-                                <label htmlFor={`option-${index}`} className="option-label">
+                                <label htmlFor={`option-${option.id}`} className="option-label">
                                     {option.text}
                                 </label>
-                            </div>
-                        ))}
-                    </div>
-                );
+                            </div>))}
+                    </div>)
             case 'K':
-                return (
-                    <div className="question-options-container">
-                        {options.map((option, index) => (
-                            <div key={index} className="checkbox-container">
+                return (<div className="question-options-container">
+                        {options.map((option) => (<div key={option.id} className="checkbox-container">
                                 <span className="option-text">{option.text}</span>
-                                <div className="checkbox-options">
+                                <fieldset className="checkbox-options">
                                     <input
                                         type="checkbox"
-                                        id={`option-${index}-true`}
-                                        onChange={() => handleChange('Stimmt zu')}
-                                        checked={selectedAnswers.includes('Stimmt zu')}
+                                        id={`option-${option.id}-true`}
+                                        onChange={() => handleCheckboxChangeForK(option.id, true)}
+                                        checked={selectedAnswers.includes(`${option.id}-true`)}
+                                        disabled={isLocked}
                                     />
-                                    <label htmlFor={`option-${index}-true`} className="checkbox-label">
+                                    <label htmlFor={`option-${option.id}-true`} className="checkbox-label">
                                         Stimmt zu
                                     </label>
                                     <input
                                         type="checkbox"
-                                        id={`option-${index}-false`}
-                                        onChange={() => handleChange('Stimmt nicht zu')}
-                                        checked={selectedAnswers.includes('Stimmt nicht zu')}
+                                        id={`option-${option.id}-false`}
+                                        onChange={() => handleCheckboxChangeForK(option.id, false)}
+                                        checked={selectedAnswers.includes(`${option.id}-false`)}
+                                        disabled={isLocked}
                                     />
-                                    <label htmlFor={`option-${index}-false`} className="checkbox-label">
+                                    <label htmlFor={`option-${option.id}-false`} className="checkbox-label">
                                         Stimmt nicht zu
                                     </label>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                );
+                                </fieldset>
+                            </div>))}
+                    </div>)
             default:
-                return null;
+                return null
         }
-    };
+    }
 
-    return (
-        <div className={`survey-question ${isScreenReaderMode && index !== number ? 'blurred' : ''}`}>
-            <QuestionHeader number={number} score={score} text={text}/>
+    return (<div className={`survey-question ${isScreenReaderMode && index !== number ? 'blurred' : ''}`}>
+            <QuestionHeader number={number} score={score} text={text} />
             <div className="question-options-container">
                 {renderOptions()}
             </div>
-        </div>
-    );
-};
+            {!isLocked && (<button onClick={() => onSubmit(number)} className="submit-question-button">
+                    Antworten und sperren
+                </button>)}
+        </div>)
+}
 
-export default Question;
+export default Question
