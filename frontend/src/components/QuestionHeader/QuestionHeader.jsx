@@ -1,4 +1,4 @@
-import './QuestionHeader.css';
+import './questionHeader.scss';
 
 const QuestionHeader = ({ number, score, text }) => {
     return (

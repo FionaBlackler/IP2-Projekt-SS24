@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import QuestionHeader from '../questionHeader/QuestionHeader.jsx'
+import QuestionHeader from '../QuestionHeader/QuestionHeader.jsx'
 import './question.scss'
 
 const Question = ({
