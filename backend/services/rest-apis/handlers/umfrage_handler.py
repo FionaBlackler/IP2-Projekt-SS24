@@ -27,7 +27,7 @@ Session = sessionmaker(bind=engine)
 
 def auth_error(message: str):
     return {
-        "statusCode": 404,
+        "statusCode": 401,
         "body": json.dumps({"message": message}),
         "headers": {"Content-Type": "application/json"},
     }
@@ -39,7 +39,8 @@ err_admin_not_found = {
     "headers": {"Content-Type": "application/json"},
 }
 
-
+# Autor: Daniel Kom
+# https://gitlab.rz.hft-stuttgart.de/sose2024-informatikprojekt-2/umfragetool/-/wikis/Backend-API-Dokumenation/Umfrage/Delete
 def deleteUmfrageById(event, context):
     try:
         getDecodedTokenFromHeader(event)
@@ -409,6 +410,8 @@ def getAllSitzungenFromUmfrage(event, context):
         session.close()
 
 
+# Autor: Daniel Kom
+# https://gitlab.rz.hft-stuttgart.de/sose2024-informatikprojekt-2/umfragetool/-/wikis/Backend-API-Dokumenation/Umfrage/GetAll
 def getAllUmfragenFromAdmin(event, context):
     try:
         decoded_token = getDecodedTokenFromHeader(event)
@@ -500,6 +503,8 @@ def getUmfrage(event, context):
     return response
 
 
+# Autor: Daniel Kom
+# https://gitlab.rz.hft-stuttgart.de/sose2024-informatikprojekt-2/umfragetool/-/wikis/Backend-API-Dokumenation/Umfrage/Archive
 def archiveUmfrage(event, context):
     try:
         getDecodedTokenFromHeader(event)
@@ -624,7 +629,10 @@ def getQuestionsWithOptions(event, context):
     return response
 
 
+# Autor: Daniel Kom
+# https://gitlab.rz.hft-stuttgart.de/sose2024-informatikprojekt-2/umfragetool/-/wikis/Backend-API-Dokumenation/Umfrage/SaveTeilnehmerAntwort
 def saveTeilnehmerAntwort(event, context):
+    # Überprüfe ob JWT gültig oder überhaupt vorhanden ist
     try:
         getDecodedTokenFromHeader(event)
     except ValueError as e:
@@ -636,14 +644,14 @@ def saveTeilnehmerAntwort(event, context):
     # Extrahiere und validiere die Anfrageinformationen aus dem Body
     try:
         body = json.loads(event.get("body", "{}"))
-        antworten = body.get("antworten", [])
-    except (json.JSONDecodeError, KeyError):
+    except (json.JSONDecodeError, TypeError):
         return {
             "statusCode": 400,
             "body": json.dumps({"message": "Invalid request: Missing fields."}),
             "headers": {"Content-Type": "application/json"},
         }
 
+    antworten = body.get("antworten", [])
     if not antworten:
         return {
             "statusCode": 400,
@@ -654,10 +662,20 @@ def saveTeilnehmerAntwort(event, context):
     session = Session()
     try:
         for antwort in antworten:
-            antwort_id = antwort.get("antwort_id")
-            gewaehlteAntwort = antwort.get("gewaehlteAntwort")
+            antwort_id: int = antwort.get("antwort_id")
+            gewaehlteAntwort: bool = antwort.get("gewaehlteAntwort")
 
-            # Überprüfe, ob die Sitzung und die AntwortOption existieren
+            # Type Check
+            if not isinstance(gewaehlteAntwort, bool):
+                return {
+                    "statusCode": 404,
+                    "body": json.dumps(
+                        {"message": "Invalid request: Wrong Type for gewaehlteAntwort"}
+                    ),
+                    "headers": {"Content-Type": "application/json"},
+                }
+
+            # Überprüfe, ob die Sitzung und die AntwortOption existieren, wenn nicht return Error
             sitzung = session.query(Sitzung).filter(Sitzung.id == sitzung_id).first()
             antwort_option = (
                 session.query(AntwortOption)
@@ -684,7 +702,7 @@ def saveTeilnehmerAntwort(event, context):
                 .first()
             )
 
-            # Teilnehmer Antwort existiert noch nicht, Erstelle eine neue TeilnehmerAntwort
+            # Die Teilnehmer Antwort existiert noch nicht, Erstelle eine neue TeilnehmerAntwort
             if not teilnehmer_antwort:
                 teilnehmer_antwort = TeilnehmerAntwort(
                     sitzung_id=sitzung_id,
@@ -693,9 +711,12 @@ def saveTeilnehmerAntwort(event, context):
                     anzahl_false=0,
                 )
 
+            # gewaehlteAntwort kann nur den Wert True oder False annehmen
             if gewaehlteAntwort:
+                # Zähle die Anzahl der Teilnehmer die True gewählt haben um Eins hoch
                 teilnehmer_antwort.anzahl_true += 1
             else:
+                # Zähle die Anzahl der Teilnehmer die False gewählt haben um Eins hoch
                 teilnehmer_antwort.anzahl_false += 1
 
             session.add(teilnehmer_antwort)
