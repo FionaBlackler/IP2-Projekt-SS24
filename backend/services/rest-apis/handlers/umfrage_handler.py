@@ -39,6 +39,7 @@ err_admin_not_found = {
     "headers": {"Content-Type": "application/json"},
 }
 
+
 # Autor: Daniel Kom
 # https://gitlab.rz.hft-stuttgart.de/sose2024-informatikprojekt-2/umfragetool/-/wikis/Backend-API-Dokumenation/Umfrage/Delete
 def deleteUmfrageById(event, context):
