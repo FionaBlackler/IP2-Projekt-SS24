@@ -4,7 +4,7 @@ import './survey.scss'
 import { useDispatch, useSelector } from 'react-redux'
 import { fetchSurveyData, saveQuestionAnswers, saveSurveyAnswers } from '../../redux/actions/surveyActions.js'
 import { EyeInvisibleOutlined, EyeOutlined, LeftOutlined } from '@ant-design/icons'
-import Question from '../../components/question/Question.jsx'
+import Question from '../../components/Question/Question.jsx'
 import ConfirmationModal from '../../components/ConfirmationModal/ConfirmationModal.jsx'
 
 const umfrageId = '1'
