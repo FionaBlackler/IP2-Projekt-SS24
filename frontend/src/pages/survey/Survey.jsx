@@ -2,18 +2,19 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import './survey.scss'
 import { useDispatch, useSelector } from 'react-redux'
-import { fetchSurveyData, saveSurveyAnswers } from '../../redux/actions/surveyActions.js'
+import { fetchSurveyData, saveQuestionAnswers, saveSurveyAnswers } from '../../redux/actions/surveyActions.js'
 import { EyeInvisibleOutlined, EyeOutlined, LeftOutlined } from '@ant-design/icons'
 import Question from '../../components/question/Question.jsx'
+import ConfirmationModal from '../../components/ConfirmationModal/ConfirmationModal.jsx'
 
 const umfrageId = '1'
 const sitzungId = '1'
 
 const Survey = () => {
     const [selections, setSelections] = useState({})
-    const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
     const [isScreenReaderMode, setIsScreenReaderMode] = useState(false)
     const [lockedQuestions, setLockedQuestions] = useState({})
+    const [isModalOpen, setIsModalOpen] = useState(false) // State for modal
     const navigate = useNavigate()
     const dispatch = useDispatch()
 
@@ -35,20 +36,10 @@ const Survey = () => {
     }
 
     const handleAnswerSelection = (questionId, updatedSelections) => {
-        console.log('questionId:', questionId)
-        console.log('updatedSelections asd:', updatedSelections)
         setSelections(prevSelections => ({
             ...prevSelections,
-            [questionId]: updatedSelections.map(updatedSelection => ({
-                    antwort_id: updatedSelection.id,
-                    gewaehlteAntwort: updatedSelection.isAnswerCorrect
-                })
-            )
-        }))
-
-        if (isScreenReaderMode && currentQuestionIndex < data.fragen.length - 1) {
-            setCurrentQuestionIndex(currentQuestionIndex + 1)
-        }
+            [questionId]: updatedSelections
+        }));
     }
 
     const handleQuestionSubmit = (questionId) => {
@@ -58,34 +49,39 @@ const Survey = () => {
         }))
 
         const currentSelection = {
-            antworten: selections[questionId]
+            antworten: selections[questionId].map(selection => ({
+                antwort_id: selection.id,
+                gewaehlteAntwort: selection.isSelected // Assuming isSelected is the correct property to use
+            }))
         }
 
-        dispatch(saveSurveyAnswers(sitzungId, currentSelection))
+        dispatch(saveQuestionAnswers(sitzungId, currentSelection))
     }
 
+    const confirmSubmit = () => {
+        setIsModalOpen(false)
+        dispatch(saveSurveyAnswers(selections))
+        navigate('/finish-survey')
+    }
 
     const submitSurvey = () => {
-        // console.log("selections in submit: ", selections)
-        //
-        // const antworten = Object.entries(selections).map(([questionId, selection]) => ({
-        //     antwort_id: questionId,
-        //     ist_richtig: selection.points > 0
-        // }))
-        //
-        // dispatch(saveSurveyAnswers(sitzungId, antworten))
-        // toast.success('☑ Umfrage erfolgreich abgeschickt!')
-        // navigate('/ok')
+        const totalQuestions = data.fragen.length
+        const answeredQuestionsCount = Object.keys(lockedQuestions).length
+
+        if (answeredQuestionsCount < totalQuestions) {
+            setIsModalOpen(true)
+        } else {
+            confirmSubmit()
+        }
     }
 
     const totalQuestions = data.fragen.length
-    const answeredQuestionsCount = Object.keys(selections).length
+    const answeredQuestionsCount = Object.keys(lockedQuestions).length
     const progress = (answeredQuestionsCount / totalQuestions) * 100
     const progressText = `${answeredQuestionsCount} von ${totalQuestions} beantwortet`
 
     const toggleMode = () => {
         setIsScreenReaderMode(!isScreenReaderMode)
-        if (!isScreenReaderMode) setCurrentQuestionIndex(0)
     }
 
     return (
@@ -97,15 +93,12 @@ const Survey = () => {
                 <h1>Umfrage</h1>
                 <button onClick={toggleMode} className="toggle-mode-button">
                     {isScreenReaderMode ? <EyeInvisibleOutlined /> : <EyeOutlined />}
-                    {isScreenReaderMode ? ' Normale Ansicht' : ' Bildschirmlesemodus'}
                 </button>
             </header>
 
             <div className="survey-content">
                 <div className="survey-questions">
                     {data.fragen.map((frage, index) => {
-                        console.log('frage:', frage) // Log the question
-
                         return (
                             <Question
                                 key={frage.id}
@@ -119,29 +112,32 @@ const Survey = () => {
                                 }}
                                 isScreenReaderMode={isScreenReaderMode}
                                 index={index}
-                                currentQuestionIndex={currentQuestionIndex}
                                 isLocked={lockedQuestions[frage.id] || false}
                                 onSubmit={() => handleQuestionSubmit(frage.id)}
                             />
                         )
                     })}
                 </div>
-
-                <div className="survey-footer">
-                    <button
-                        onClick={submitSurvey}
-                        className="submit-button"
-                        disabled={answeredQuestionsCount < totalQuestions}
-                    >
-                        Fertig
-                    </button>
-                </div>
             </div>
-
+            <div className="survey-footer">
+                <button
+                    onClick={submitSurvey}
+                    className="submit-button"
+                >
+                    Fertig
+                </button>
+            </div>
             <div className="progress-bar-container">
                 <div className="progress-bar" style={{ width: `${progress}%` }}></div>
                 <div className="progress-text">{progressText}</div>
             </div>
+            <ConfirmationModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                onConfirm={confirmSubmit}
+                title="Don't leave us yet!"
+                content={`You have answered ${answeredQuestionsCount} out of ${totalQuestions} questions. Do you want to submit anyway?`}
+            />
         </div>
     )
 }
