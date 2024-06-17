@@ -4,6 +4,9 @@ import boto3
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from botocore.exceptions import ClientError
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 def get_secret(secret_name, region_name="eu-central-1"):
@@ -42,6 +45,6 @@ def create_database_connection():
 
 def create_local_engine():
     # Database connection with local database
-    DATABASE_URL = os.environ['DATABASE_URL']
+    DATABASE_URL = os.environ["DATABASE_URL"]
     engine = create_engine(DATABASE_URL, echo=False)
     return engine

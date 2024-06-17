@@ -1,10 +1,13 @@
 import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
-import { FINISHED, ERROR } from "../UploadConstants.js";
+import {FINISHED, ERROR, LOADING} from "../UploadConstants.js";
 
-export const useUploadPoll = (json, admin_id) => {
+export const useUploadPoll = (json) => {
+    console.log("CALL POLL")
     const [pollStatus, setPollStatus] = useState({ state: ERROR, info: "Hochgeladene Datei hat kein JSON-Format!" });
+    const accessToken = localStorage.getItem('accessToken');
     const fetchUmfrage = useCallback(async () => {
+        setPollStatus({state: LOADING, info: "Datei wird geprüft..."})
         let noJSON = false;
         console.log("fetchUmfrage called");
         let parsedJSON;
@@ -17,14 +20,15 @@ export const useUploadPoll = (json, admin_id) => {
         }
         if(!noJSON){
             try {
-                const response = await axios.post('http://localhost:5173/umfrage/upload', parsedJSON, {
-                    params: { admin_id: admin_id },
+                const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/umfrage/upload`, parsedJSON['umfrage'], {
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${accessToken}`
                     }
                 });
+                console.log(response.data)
                 if (response.status === 201) {
-                    const responseJSON = JSON.parse(response.data);
+                    const responseJSON = response.data;
                     setPollStatus({
                         state: FINISHED,
                         info: "Umfrage erfolgreich hinzugefügt! ID: " + responseJSON["umfrage_id"]
@@ -58,7 +62,7 @@ export const useUploadPoll = (json, admin_id) => {
                 }
             }
         }
-    }, [json, admin_id]);
+    }, [json, accessToken]);
 
     useEffect(() => {
         fetchUmfrage();

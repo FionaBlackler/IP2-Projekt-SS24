@@ -1,30 +1,31 @@
 import axios from 'axios'
 import { useEffect, useState } from 'react'
+import React from 'react'
+import UmfragenTable from './UmfragenTable'
+import ArchiveTable from './ArchiveTable'
+import UmfragePopup from '../uploadUmfragePage/UmfragePopup'
+import Popup from '../../../components/Popup.jsx'
 
 export default function Umfrage() {
-    const accessToken = localStorage.getItem('accessToken')
-    console.log(accessToken)
     const [data, setData] = useState({ umfragen: [] })
-    const [selectedIds, setSelectedIds] = useState([])
-
-    const handleCheckboxChange = (event, id) => {
-        if (event.target.checked) {
-            setSelectedIds([...selectedIds, id])
-        } else {
-            setSelectedIds(selectedIds.filter((item) => item !== id))
-        }
-    }
+    const [filter, setFilter] = useState(true)
+    const [showPopUp, setShowPopUp] = useState(false)
+    const [loading, setLoading] = useState(true)
+    const accessToken = localStorage.getItem('accessToken')
 
     const umfragenLaden = () => {
         axios
-            .post(`${window.location.origin}/umfrage/getAll`, { headers: {"Authorization" : `Bearer ${accessToken}`}})
+            .get(`${import.meta.env.VITE_BACKEND_URL}/umfrage/getAll`, {
+                headers: { Authorization: `Bearer ${accessToken}` },
+            })
             .then((r) => {
+                console.log(r.data)
                 if (r.status === 200) {
-                    setStatus({ state: 'FINISHED' })
-                    setData(JSON.parse(r.data))
-                    console.log(data)
+                    const responseData = r.data
+                    console.log('Data received from server:', responseData)
+                    setData(responseData)
                 } else if (r.status === 204) {
-                    console.log('Keine Einträge vorhanden')
+                    console.log('Keine Umfrgaen vorhanden')
                 } else if (r.status === 500) {
                     console.log(r.data)
                 }
@@ -32,162 +33,57 @@ export default function Umfrage() {
             .catch((error) => {
                 console.log('ERROR: ' + error)
             })
-       
-    }
-
-    const umfragenArchivieren = () => {
-        selectedIds.forEach((id) => {
-            setData({
-                umfragen: data.umfragen.filter(
-                    (umfrage) => !selectedIds.includes(umfrage.id)
-                ),
+            .finally(() => {
+                setLoading(false)
             })
-
-            // console.log(`${window.location.origin}/umfrage/archive/${id}`)
-            axios
-                .post(`${window.location.origin}/umfrage/archive/${id}`, { headers: {"Authorization" : `Bearer ${accessToken}`}})
-                .then((r) => {
-                    if (r.status === 200) {
-                        setStatus({ state: 'FINISHED' })
-                    }
-                })
-                .catch((error) => {
-                    console.log('ERROR: ' + error)
-                })
-        })
-        setSelectedIds([])
-    }
-
-    const umfragenLöschen = () => {
-        selectedIds.forEach((id) => {
-            setData({
-                umfragen: data.umfragen.filter(
-                    (umfrage) => !selectedIds.includes(umfrage.id)
-                ),
-            })
-            axios
-
-                .post(`${window.location.origin}/umfrage/delete/${id}`, { headers: {"Authorization" : `Bearer ${accessToken}`}})
-                .then((r) => {
-                    if (r.status === 200) {
-                        setStatus({ state: 'FINISHED' })
-                    }
-                })
-                .catch((error) => {
-                    console.log('ERROR: ' + error)
-                })
-        })
-
-        setSelectedIds([])
     }
 
     useEffect(() => {
         umfragenLaden()
-    }, [])
+    }, [filter, showPopUp])
+
+    if (loading) {
+        return <div>Loading...</div>
+    }
 
     return (
-        <>
-            <div className="h-screen w-full p-4">
-                <div className=" w-full justify-between p-8 bg-[#AF8A74]">
-                    <div className="flex flex-wrap  justify-between p-8 ">
-                        <button className="mb-4 text-white hover:text-gray-200 hover:underline">
+        <Popup
+            content={<UmfragePopup />}
+            open={showPopUp}
+            setOpen={setShowPopUp}
+        >
+            <>
+                <div className="h-screen justify-between p-8 bg-[#AF8A74] overflow-auto">
+                    <div className="flex justify-between">
+                        <div className="flex-grow text-center">
+                            <h1 className="text-3xl text-white">
+                                Meine Umfragen
+                            </h1>
+                        </div>
+                    </div>
+
+                    <div className="flex flex-wrap justify-between p-8">
+                        <button
+                            className="mb-4 text-white hover:text-gray-200 hover:underline"
+                            onClick={() => setShowPopUp(!showPopUp)}
+                        >
                             + Umfragen hochladen
                         </button>
-                        {selectedIds.length > 0 && (
-                            <div className="flex space-x-4">
-                                <button
-                                    className="mb-4 text-white hover:text-gray-200 hover:underline"
-                                    onClick={umfragenArchivieren}
-                                >
-                                    Archivieren
-                                </button>
-                                <button
-                                    className="mb-4 text-white hover:text-gray-200 hover:underline"
-                                    onClick={umfragenLöschen}
-                                >
-                                    Löschen
-                                </button>
-                            </div>
+                        <button
+                            className="mb-4 text-white hover:text-gray-200 hover:underline"
+                            onClick={() => setFilter(!filter)}
+                        >
+                            Archiviert {filter ? 'anzeigen' : 'verbergen'}
+                        </button>
+
+                        {filter ? (
+                            <UmfragenTable data={data} setData={setData} />
+                        ) : (
+                            <ArchiveTable data={data} setData={setData} />
                         )}
-                        <table className="w-full text-center">
-                            <thead>
-                                <tr>
-                                    <th className="text-lg">Name</th>
-                                    <th className="text-lg">ID</th>
-                                    <th className="text-lg">Admin ID</th>
-                                    <th className="text-lg">Beschreibung</th>
-                                    <th className="text-lg">
-                                        Erstellungsdatum
-                                    </th>
-                                    <th className="text-lg">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {data.umfragen.length !== 0 ? (
-                                    data.umfragen.map((umfrage) => (
-                                        <tr
-                                            className="text-lg even:bg-[#FAEEDB] odd:bg-[#210803] even:text-black  odd:text-white"
-                                            key={umfrage.id}
-                                        >
-                                            <td className="p-2">
-                                                <div className="flex items-center">
-                                                    <input
-                                                        type="checkbox"
-                                                        id={umfrage.id}
-                                                        className="mr-10"
-                                                        checked={selectedIds.includes(
-                                                            umfrage.id
-                                                        )}
-                                                        onChange={(event) =>
-                                                            handleCheckboxChange(
-                                                                event,
-                                                                umfrage.id
-                                                            )
-                                                        }
-                                                    />
-                                                    <label htmlFor={umfrage.id}>
-                                                        <h1>{umfrage.titel}</h1>
-                                                    </label>
-                                                </div>
-                                            </td>
-                                            <td className="p-2">
-                                                <h1>{umfrage.id}</h1>
-                                            </td>
-                                            <td className="p-2">
-                                                <h1>{umfrage.admin_id}</h1>
-                                            </td>
-                                            <td className="p-2">
-                                                <h1>{umfrage.beschreibung}</h1>
-                                            </td>
-                                            <td className="p-2">
-                                                <h1>
-                                                    {umfrage.erstellungsdatum}
-                                                </h1>
-                                            </td>
-                                            <td className="p-2">
-                                                <h1>{umfrage.status}</h1>
-                                            </td>
-                                            <td className=" p-2">
-                                                <button className="hover:underline">
-                                                    Starten
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    ))
-                                ) : (
-                                    <tr>
-                                        <td colSpan="5">
-                                            <p className="mt-16 text-xl">
-                                                Keine Umfragen vorhanden
-                                            </p>
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
                     </div>
                 </div>
-            </div>
-        </>
+            </>
+        </Popup>
     )
 }

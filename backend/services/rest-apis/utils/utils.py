@@ -1,19 +1,39 @@
-import json
 import os
 import jwt
 
+
 def getDecodedTokenFromHeader(event) -> dict:
-    auth_header = event.get('headers', {})
+    header = event.get("headers", {})
+    if not header:
+        print("No headers provided in the event")
+        raise ValueError("No headers provided in the event")
+
+    auth_header = header.get("authorization")
     if not auth_header:
-        return None
-    header = auth_header.get("authorization")
-    token = header.split(" ")[1]
+        print("No authorization header provided")
+        raise ValueError("No authorization header provided")
+
     try:
-        decoded_token = jwt.decode(token, key=os.environ["SECRET_KEY"], algorithms=["HS256"])
+        token = auth_header.split(" ")[1]
+    except IndexError:
+        print("The authorization header is formatted incorrectly")
+        raise ValueError("The authorization header is formatted incorrectly")
+
+    try:
+        decoded_token = jwt.decode(
+            token, key=os.environ["SECRET_KEY"], algorithms=["HS256"]
+        )
     except jwt.ExpiredSignatureError:
-        return {
-            "statusCode": 404,
-            "body": json.dumps({"message": "No Authorization Header"}),
-            "headers": {"Content-Type": "application/json"}
-        }
+        print("Token has expired")
+        raise ValueError("Token has expired")
+    except jwt.InvalidTokenError:
+        print("Token is invalid")
+        raise ValueError("Token is invalid")
+
+    if "admin_id" not in decoded_token:
+        print("admin_id missing in token")
+        raise ValueError(
+            "token is invalid"
+        )  # Keine genauere Fehlermeldung, ansonsten bietet es leichetere Angriffsmöglichkeiten
+
     return decoded_token

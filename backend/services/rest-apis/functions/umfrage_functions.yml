@@ -21,7 +21,13 @@ endSession:
   events:
     - httpApi:
         path: /sitzung/end/{sitzungId}
-        method: post        
+        method: post    
+getAllSitzungenFromUmfrage:
+  handler: handlers.umfrage_handler.getAllSitzungenFromUmfrage
+  events:
+    - httpApi:
+        path: /umfrage/{umfrageId}/sitzungen
+        method: get
 uploadUmfrage:
   handler: handlers.umfrage_handler.uploadUmfrage
   events:
@@ -52,9 +58,22 @@ getUmfrageResult:
     - httpApi:
         path: /umfrage/{umfrageId}/result
         method: get
+getActiveUmfrageResults:
+  handler: handlers.umfrage_handler.getActiveUmfrageResults
+  events:
+    - httpApi:
+        path: /umfrage/{umfrageId}/active
+        method: get
+getSessionResults:
+  handler: handlers.umfrage_handler.getSessionResults
+  events:
+    - httpApi:
+        path: /sitzung/{sitzungId}/result
+        method: get
 saveTeilnehmerAntwort:
   handler: handlers.umfrage_handler.saveTeilnehmerAntwort
   events:
     - httpApi:
         path: /sitzung/{sitzungId}/teilnehmerAntwort
         method: post
+        

@@ -1,0 +1,14 @@
+[flake8]
+exclude =
+    .git,
+    __pycache__,
+    build,
+    dist,
+    .venv,
+    venv,
+    node_modules,
+    backend/plugins
+
+ignore =
+    E501,  
+    W503   
