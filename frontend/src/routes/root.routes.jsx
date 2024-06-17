@@ -16,7 +16,7 @@ function RootRoutes() {
                 <Route exact={true} path="/register" element={<Register />} />
                 <Route path="/test" element={<Survey />} />
                 <Route path="/questions/:questionId" element={<Question/>} />
-                <Route path="/binary-questions/:questionId" element={<BinaryQuestion/>} />  {/* Neue Route hinzufügen */}
+                <Route path="/binary-questions/:questionId" element={<BinaryQuestion/>} />
             </Routes>
         </BrowserRouter>
     );
