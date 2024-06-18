@@ -20,7 +20,7 @@ export default function Sitzung() {
         axios
             .get(`${import.meta.env.VITE_BACKEND_URL}umfrage/${umfrageId}/sitzungen`, {  //HTTP-GET-Anfrage
                 headers: { 'Authorization' : `Bearer ${accessToken}` ,
-                           "ContentType": 'application/json' } 
+                           "ContentType": `application/json` } 
             })
             .then((r) => {
                 //console.log(r.data)

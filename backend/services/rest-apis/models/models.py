@@ -73,10 +73,15 @@ class Frage(Base):
         "AntwortOption", back_populates="frage", cascade="all, delete"
     )
 
-    def to_json(self):
-        antwort_optionen_json = []
-        for antwort_option in self.antwort_optionen:
-            antwort_optionen_json.append(antwort_option.to_json())
+    def to_json(self, sitzung_id=None, only_active=False):
+        #antwort_optionen_json = []
+        #for antwort_option in self.antwort_optionen:
+        #    antwort_optionen_json.append(antwort_option.to_json())
+
+        antwort_optionen_json = [
+            antwort_option.to_json_with_count(sitzung_id=sitzung_id, only_active=only_active)
+            for antwort_option in self.antwort_optionen
+        ]
         return {
             "id": self.id,
             "local_id": self.local_id,
@@ -86,6 +91,7 @@ class Frage(Base):
             "punktzahl": self.punktzahl,
             "bestaetigt": self.bestaetigt,
             "verneint": self.verneint,
+            "antwort_optionen": antwort_optionen_json
         }
 
 

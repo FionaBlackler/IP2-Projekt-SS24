@@ -22,6 +22,7 @@ export default function Umfrage() {
             })
             .then((r) => {
                 console.log(r.data)
+                console.log(import.meta.env.VITE_BACKEND_URL)
                 if (r.status === 200) {
                     const responseData = r.data
                     console.log('Data received from server:', responseData)
