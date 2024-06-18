@@ -72,8 +72,8 @@ class Frage(Base):
     antwort_optionen = relationship(
         "AntwortOption", back_populates="frage", cascade="all, delete"
     )
-
-    def to_json(self, sitzung_id=None, only_active=False):
+    #sitzung_id=None, only_active=False
+    def to_json(self, ):
         #antwort_optionen_json = []
         #for antwort_option in self.antwort_optionen:
         #    antwort_optionen_json.append(antwort_option.to_json())

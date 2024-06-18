@@ -4,6 +4,13 @@ import { useNavigate } from 'react-router-dom'
 import { resultsLaden } from './SitzungUtils';
 import { useParams } from 'react-router-dom';
 import axios from 'axios'; 
+import AdminLayout from '../../../layouts/AdminLayout.jsx';
+import BarChart from '../../../components/Barchart.jsx';
+import Piechart from '../../../components/Piechart.jsx';
+import StackedBarchart from '../../../components/StackedBarchart.jsx';
+import Menu from '../../../components/StatistikMenü.jsx';
+
+
 
 
 export default function SitzungenResults() {
@@ -61,6 +68,24 @@ export default function SitzungenResults() {
         return <div>Loading...</div>
     }
 
-    return(<></>)
+    return (
+        <AdminLayout>
+            
+            <div>
+                <h1>Ergebnisse der ausgewählten Sitzungen</h1>
+                <Menu />
+                
+            </div>
+        
+        </AdminLayout>
+    );
 
 }
+
+/*{data.map((result, index) => (
+                    <div key={index}>
+                        <h2>Sitzung ID: {result.sitzung_id}</h2>
+                        
+                        <BarChartComponent />
+                        <pre>{JSON.stringify(result, null, 2)}</pre>
+                    </div>*/
