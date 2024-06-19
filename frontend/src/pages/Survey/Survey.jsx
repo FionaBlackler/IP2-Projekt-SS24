@@ -55,8 +55,6 @@ const Survey = () => {
             }))
         }
 
-        console.log("currentSelection: ", currentSelection)
-
         dispatch(saveQuestionAnswers(sitzungId, currentSelection))
     }
 
