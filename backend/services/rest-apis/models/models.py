@@ -102,6 +102,7 @@ class AntwortOption(Base):
 
     def to_json_with_count(self, sitzung_id=None):
         """Returns a TeilnehmerAntwort with the Answers if a sitzung_id is set it will only calculate the answers of the corrsponding Sitzung."""
+
         def filter_antworten(antwort: TeilnehmerAntwort):
             if sitzung_id is None:
                 return True

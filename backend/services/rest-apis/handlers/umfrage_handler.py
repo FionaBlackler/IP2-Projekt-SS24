@@ -725,7 +725,7 @@ def saveTeilnehmerAntwort(event, context):
 
 def getSessionResult(event, context):
     """Get the result of a Sitzung Umfragen
-    
+
     wiki: https://gitlab.rz.hft-stuttgart.de/sose2024-informatikprojekt-2/umfragetool/-/wikis/Backend-API-Dokumenation/Umfrage/Sitzung-Result
     """
     token = None
@@ -739,38 +739,53 @@ def getSessionResult(event, context):
     sitzung_id = event["pathParameters"]["sitzungId"]
 
     session = Session()
-    sitzung = session.query(Sitzung).filter_by(id=sitzung_id).first()
-    
-    if not sitzung:
-        return  {"message": "Umfrage not found"},404
-    
-    umfrage: Umfrage = sitzung.umfrage
-    if umfrage.admin_id != admin_id:
-        return {"message": "Not allowed!"}, 404
-    fragen = []
-    for frage in umfrage.fragen:
-        if type(frage) is Frage:
-            frage_json = frage.to_json()
-            frage_json["antworten"] = []
-            for antwort in frage.antwort_optionen:
-                if type(antwort) is AntwortOption:
-                    frage_json["antworten"].append(
-                        antwort.to_json_with_count(sitzung_id=sitzung_id)
-                    )
+    try:
+        sitzung = session.query(Sitzung).filter_by(id=sitzung_id).first()
 
-            fragen.append(frage_json)
+        if not sitzung:
+            return {"message": "Umfrage not found"}, 404
 
-        else:
-            print(type(frage))
+        umfrage: Umfrage = sitzung.umfrage
+        if umfrage.admin_id != admin_id:
+            return {"message": "Not allowed!"}, 404
+        fragen = []
+        for frage in umfrage.fragen:
+            if type(frage) is Frage:
+                frage_json = frage.to_json()
+                frage_json["antworten"] = []
+                for antwort in frage.antwort_optionen:
+                    if type(antwort) is AntwortOption:
+                        frage_json["antworten"].append(
+                            antwort.to_json_with_count(sitzung_id=sitzung_id)
+                        )
 
-    umfrage_json = sitzung.umfrage.to_json()
-    result = {"umfrage": umfrage_json, "result": fragen}
-    return result, 200
+                fragen.append(frage_json)
+
+            else:
+                print(type(frage))
+
+        umfrage_json = sitzung.umfrage.to_json()
+        response = {"umfrage": umfrage_json, "result": fragen}
+
+    except Exception as e:
+        session.rollback()
+        response = {
+            "statusCode": 500,
+            "body": json.dumps(
+                {"message": "Internal Server Error, contact Backend-Team for more Info"}
+            ),
+            "headers": {"Content-Type": "application/json"},
+        }
+        logger.error(str(e))
+    finally:
+        session.close()
+
+    return response, 200
 
 
 def getUmfrageResult(event, context):
     """Get the complete result for a Umfrage
-    
+
     wiki: https://gitlab.rz.hft-stuttgart.de/sose2024-informatikprojekt-2/umfragetool/-/wikis/Backend-API-Dokumenation/Umfrage/Umfrage-Result
     """
     token = None
@@ -782,40 +797,72 @@ def getUmfrageResult(event, context):
 
     admin_id = token["admin_id"]
     umfrage_id = event["pathParameters"]["umfrageId"]
+    try:
+        session = Session()
+        umfrage: Umfrage = session.query(Umfrage).filter_by(id=umfrage_id).first()
+        if not umfrage:
+            return {"message": "Umfrage not found"}, 402
+        if umfrage.admin_id != admin_id:
+            return {"message": "Not allowed!"}, 403
+        fragen = []
+        for frage in umfrage.fragen:
+            if type(frage) is Frage:
+                frage_json = frage.to_json()
+                frage_json["antworten"] = []
+                for antwort in frage.antwort_optionen:
+                    if type(antwort) is AntwortOption:
+                        frage_json["antworten"].append(antwort.to_json_with_count())
 
-    session = Session()
-    umfrage: Umfrage = session.query(Umfrage).filter_by(id=umfrage_id).first()
-    if not umfrage:
-        return  {"message": "Umfrage not found"},402
-    if umfrage.admin_id != admin_id:
-        return {"message": "Not allowed!"}, 403
-    fragen = []
-    for frage in umfrage.fragen:
-        if type(frage) is Frage:
-            frage_json = frage.to_json()
-            frage_json["antworten"] = []
-            for antwort in frage.antwort_optionen:
-                if type(antwort) is AntwortOption:
-                    frage_json["antworten"].append(antwort.to_json_with_count())
+                fragen.append(frage_json)
 
-            fragen.append(frage_json)
+            else:
+                print(type(frage))
 
-        else:
-            print(type(frage))
+        umfrage_json = umfrage.to_json()
+        response = {"umfrage": umfrage_json, "result": fragen}
 
-    umfrage_json = umfrage.to_json()
-    result = {"umfrage": umfrage_json, "result": fragen}
-    return result, 200
+    except Exception as e:
+        response = {
+            "statusCode": 500,
+            "body": json.dumps(
+                {"message": "Internal Server Error, contact Backend-Team for more Info"}
+            ),
+            "headers": {"Content-Type": "application/json"},
+        }
+        logger.error(str(e))
+    finally:
+        session.close()
+
+    return response, 200
+
 
 def isSessionActive(event, context):
     """Gets the current status of a Sitzung by Id"""
 
     sitzung_id = event["pathParameters"]["sitzungId"]
     session = Session()
-    sitzung = session.query(Sitzung).filter_by(id=sitzung_id).first()
+    try:
+        sitzung = session.query(Sitzung).filter_by(id=sitzung_id).first()
 
-    if sitzung:
-        return {"active": sitzung.aktiv}
-    else:
-        return {"Error": "No Sitzung was found"}
-    
+        if sitzung:
+            if sitzung.aktiv:
+                status = "active"
+            else:
+                status = "inactive"
+            response = {"status": status}
+        else:
+            response = {"status": "No Sitzung was found"}
+
+    except Exception as e:
+        response = {
+            "statusCode": 500,
+            "body": json.dumps(
+                {"message": "Internal Server Error, contact Backend-Team for more Info"}
+            ),
+            "headers": {"Content-Type": "application/json"},
+        }
+        logger.error(str(e))
+    finally:
+        session.close()
+
+    return response, 200

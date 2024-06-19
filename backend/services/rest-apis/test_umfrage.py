@@ -19,6 +19,7 @@ from handlers.umfrage_handler import (
     getUmfrageResult,
     saveTeilnehmerAntwort,
     uploadUmfrage,
+    isSessionActive,
 )
 from dotenv import load_dotenv
 
@@ -1115,22 +1116,102 @@ def test_saveTeilnehmerAntwort(
         mock_session_instance.close.assert_called_once()
 
 
-@pytest.mark.parametrize("umfrage_id, admin_id, umfrage, expected_status, expected_result", [
-    ("1", "1", Umfrage(id=1, admin_id=1, titel="Test Umfrage", beschreibung="Eine Testbeschreibung", erstellungsdatum=datetime.now(), status="aktiv", json_text="", fragen=[
-        Frage(id=1, local_id=0,umfrage_id=1,text="Beispiel Frage",typ_id="P",punktzahl=1, bestaetigt=None,verneint=None, antwort_optionen=[
-            AntwortOption(id=1, text="Option 1", ist_richtig=True, teilnehmer_antworten=[]),
-            AntwortOption(id=2, text="Option 2", ist_richtig=False, teilnehmer_antworten=[])
-        ])
-    ]), 200, {
-        "umfrage": {"id": 1, "admin_id": 1,'archivierungsdatum': None, "titel": "Test Umfrage", "beschreibung": "Eine Testbeschreibung", "erstellungsdatum": datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f"), "status": "aktiv", "json_text": ""},
-        "result": [{"id": 1, "local_id":0,"umfrage_id":1,"text":"Beispiel Frage","typ_id":"P","punktzahl":1, "bestaetigt":None,"verneint":None, "antworten": [
-            {"id": 1, "text": "Option 1", "ist_richtig": True, "antwortenTrue": 0, "antwortenFalse": 0},
-            {"id": 2, "text": "Option 2", "ist_richtig": False, "antwortenTrue": 0, "antwortenFalse": 0}
-        ]}]
-    }),
-    ("3", "1", None, 402, {"message": "Umfrage not found"}),
-])
-def test_getUmfrageResults(mock_getDecodedTokenFromHeader, mock_session, common_event, umfrage_id, admin_id, umfrage, expected_status, expected_result):
+@pytest.mark.parametrize(
+    "umfrage_id, admin_id, umfrage, expected_status, expected_result",
+    [
+        (
+            "1",
+            "1",
+            Umfrage(
+                id=1,
+                admin_id=1,
+                titel="Test Umfrage",
+                beschreibung="Eine Testbeschreibung",
+                erstellungsdatum=fixed_datetime,
+                status="aktiv",
+                json_text="",
+                fragen=[
+                    Frage(
+                        id=1,
+                        local_id=0,
+                        umfrage_id=1,
+                        text="Beispiel Frage",
+                        typ_id="P",
+                        punktzahl=1,
+                        bestaetigt=None,
+                        verneint=None,
+                        antwort_optionen=[
+                            AntwortOption(
+                                id=1,
+                                text="Option 1",
+                                ist_richtig=True,
+                                teilnehmer_antworten=[],
+                            ),
+                            AntwortOption(
+                                id=2,
+                                text="Option 2",
+                                ist_richtig=False,
+                                teilnehmer_antworten=[],
+                            ),
+                        ],
+                    )
+                ],
+            ),
+            200,
+            {
+                "umfrage": {
+                    "id": 1,
+                    "admin_id": 1,
+                    "archivierungsdatum": None,
+                    "titel": "Test Umfrage",
+                    "beschreibung": "Eine Testbeschreibung",
+                    "erstellungsdatum": "2024-06-10 23:05:55.415831",
+                    "status": "aktiv",
+                    "json_text": "",
+                },
+                "result": [
+                    {
+                        "id": 1,
+                        "local_id": 0,
+                        "umfrage_id": 1,
+                        "text": "Beispiel Frage",
+                        "typ_id": "P",
+                        "punktzahl": 1,
+                        "bestaetigt": None,
+                        "verneint": None,
+                        "antworten": [
+                            {
+                                "id": 1,
+                                "text": "Option 1",
+                                "ist_richtig": True,
+                                "antwortenTrue": 0,
+                                "antwortenFalse": 0,
+                            },
+                            {
+                                "id": 2,
+                                "text": "Option 2",
+                                "ist_richtig": False,
+                                "antwortenTrue": 0,
+                                "antwortenFalse": 0,
+                            },
+                        ],
+                    }
+                ],
+            },
+        ),
+        ("3", "1", None, 402, {"message": "Umfrage not found"}),
+    ],
+)
+def test_getUmfrageResults(
+    mock_getDecodedTokenFromHeader,
+    mock_session,
+    common_event,
+    umfrage_id,
+    admin_id,
+    umfrage,
+    expected_status,
+    expected_result,
+):
     mock_getDecodedTokenFromHeader.return_value = {
         "admin_id": 1,
     }
@@ -1139,9 +1220,13 @@ def test_getUmfrageResults(mock_getDecodedTokenFromHeader, mock_session, common_
     mock_session.return_value = mock_session_instance
 
     if umfrage is None:
-        mock_session_instance.query.return_value.filter_by.return_value.first.return_value = None
+        mock_session_instance.query.return_value.filter_by.return_value.first.return_value = (
+            None
+        )
     else:
-        mock_session_instance.query.return_value.filter_by.return_value.first.return_value = umfrage
+        mock_session_instance.query.return_value.filter_by.return_value.first.return_value = (
+            umfrage
+        )
 
     event = common_event({"umfrageId": 1}, admin_id)
 
@@ -1154,42 +1239,37 @@ def test_getUmfrageResults(mock_getDecodedTokenFromHeader, mock_session, common_
         mock_session_instance.close.assert_called_once()
 
 
-@pytest.mark.parametrize("umfrage_id, admin_id, umfrage, expected_status, expected_result", [
-    ("1", "1", Umfrage(id=1, admin_id=1, titel="Test Umfrage", beschreibung="Eine Testbeschreibung", erstellungsdatum=datetime.now(), status="aktiv", json_text="", fragen=[
-        Frage(id=1, local_id=0,umfrage_id=1,text="Beispiel Frage",typ_id="P",punktzahl=1, bestaetigt=None,verneint=None, antwort_optionen=[
-            AntwortOption(id=1, text="Option 1", ist_richtig=True, teilnehmer_antworten=[]),
-            AntwortOption(id=2, text="Option 2", ist_richtig=False, teilnehmer_antworten=[])
-        ])
-    ]), 200, {
-        "umfrage": {"id": 1, "admin_id": 1,'archivierungsdatum': None, "titel": "Test Umfrage", "beschreibung": "Eine Testbeschreibung", "erstellungsdatum": datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f"), "status": "aktiv", "json_text": ""},
-        "result": [{"id": 1, "local_id":0,"umfrage_id":1,"text":"Beispiel Frage","typ_id":"P","punktzahl":1, "bestaetigt":None,"verneint":None, "antworten": [
-            {"id": 1, "text": "Option 1", "ist_richtig": True, "antwortenTrue": 0, "antwortenFalse": 0},
-            {"id": 2, "text": "Option 2", "ist_richtig": False, "antwortenTrue": 0, "antwortenFalse": 0}
-        ]}]
-    }),
-    ("3", "1", None, 402, {"message": "Umfrage not found"}),
-])
-def test_getUmfrageResults(mock_getDecodedTokenFromHeader, mock_session, common_event, umfrage_id, admin_id, umfrage, expected_status, expected_result):
-    mock_getDecodedTokenFromHeader.return_value = {
-        "admin_id": 1,
-    }
-
+@pytest.mark.parametrize(
+    "sitzung_id, query_result, expected_status, expected_response",
+    [
+        ("1", Sitzung(id=1, aktiv=True), 200, {"status": "active"}),
+        ("1", Sitzung(id=1, aktiv=False), 200, {"status": "inactive"}),
+        ("2", None, 200, {"status": "No Sitzung was found"}),
+    ],
+)
+def test_isSessionActive(
+    mock_session,
+    common_event,
+    sitzung_id,
+    query_result,
+    expected_status,
+    expected_response,
+):
     mock_session_instance = MagicMock()
     mock_session.return_value = mock_session_instance
 
-    if umfrage is None:
-        mock_session_instance.query.return_value.filter_by.return_value.first.return_value = None
-    else:
-        mock_session_instance.query.return_value.filter_by.return_value.first.return_value = umfrage
+    mock_session_instance.query.return_value.filter_by.return_value.first.return_value = (
+        query_result
+    )
 
-    event = common_event({"umfrageId": 1}, admin_id)
+    event = common_event({"sitzungId": sitzung_id})
 
-    response, status = getUmfrageResult(event, None)
+    response, status = isSessionActive(event, None)
 
     assert status == expected_status
-    assert response == expected_result
+    assert response == expected_response
 
-    if umfrage is not None and umfrage.admin_id == admin_id:
-        mock_session_instance.close.assert_called_once()
-
-
+    mock_session_instance.query.return_value.filter_by.assert_called_once_with(
+        id=sitzung_id
+    )
+    mock_session_instance.close.assert_called_once()
