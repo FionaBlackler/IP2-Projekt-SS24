@@ -100,20 +100,18 @@ class AntwortOption(Base):
         "TeilnehmerAntwort", back_populates="antwort_optionen"
     )
 
-    def to_json_with_count(self, sitzung_id=None, only_active=False):
-        def filter_antworten(antwort):
-            if sitzung_id and antwort.sitzung_id != sitzung_id:
-                return False
-            if only_active and not antwort.sitzungen.aktiv:
-                return False
-            return True
+    def to_json_with_count(self, sitzung_id=None):
+        """Returns a TeilnehmerAntwort with the Answers if a sitzung_id is set it will only calculate the answers of the corrsponding Sitzung."""
+        def filter_antworten(antwort: TeilnehmerAntwort):
+            if sitzung_id is None:
+                return True
+            return antwort.sitzung_id == int(sitzung_id)
 
         filtered_antworten = [
             antwort
             for antwort in self.teilnehmer_antworten
             if filter_antworten(antwort)
         ]
-
         antwortenTrue = sum(antwort.anzahl_true for antwort in filtered_antworten)
         antwortenFalse = sum(antwort.anzahl_false for antwort in filtered_antworten)
 
@@ -160,6 +158,7 @@ class TeilnehmerAntwort(Base):
     antwort_id = Column(
         Integer, ForeignKey("antwort_optionen.id"), primary_key=True, nullable=False
     )
+    frage_id = Column(Integer, ForeignKey("fragen.id"), nullable=False)
     anzahl_true = Column(Integer, nullable=False)
     anzahl_false = Column(Integer, nullable=False)
 
