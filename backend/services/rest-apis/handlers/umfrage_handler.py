@@ -806,3 +806,16 @@ def getUmfrageResult(event, context):
     umfrage_json = umfrage.to_json()
     result = {"umfrage": umfrage_json, "result": fragen}
     return result, 200
+
+def isSessionActive(event, context):
+    """Gets the current status of a Sitzung by Id"""
+
+    sitzung_id = event["pathParameters"]["sitzungId"]
+    session = Session()
+    sitzung = session.query(Sitzung).filter_by(id=sitzung_id).first()
+
+    if sitzung:
+        return {"active": sitzung.aktiv}
+    else:
+        return {"Error": "No Sitzung was found"}
+    

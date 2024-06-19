@@ -1152,3 +1152,44 @@ def test_getUmfrageResults(mock_getDecodedTokenFromHeader, mock_session, common_
 
     if umfrage is not None and umfrage.admin_id == admin_id:
         mock_session_instance.close.assert_called_once()
+
+
+@pytest.mark.parametrize("umfrage_id, admin_id, umfrage, expected_status, expected_result", [
+    ("1", "1", Umfrage(id=1, admin_id=1, titel="Test Umfrage", beschreibung="Eine Testbeschreibung", erstellungsdatum=datetime.now(), status="aktiv", json_text="", fragen=[
+        Frage(id=1, local_id=0,umfrage_id=1,text="Beispiel Frage",typ_id="P",punktzahl=1, bestaetigt=None,verneint=None, antwort_optionen=[
+            AntwortOption(id=1, text="Option 1", ist_richtig=True, teilnehmer_antworten=[]),
+            AntwortOption(id=2, text="Option 2", ist_richtig=False, teilnehmer_antworten=[])
+        ])
+    ]), 200, {
+        "umfrage": {"id": 1, "admin_id": 1,'archivierungsdatum': None, "titel": "Test Umfrage", "beschreibung": "Eine Testbeschreibung", "erstellungsdatum": datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f"), "status": "aktiv", "json_text": ""},
+        "result": [{"id": 1, "local_id":0,"umfrage_id":1,"text":"Beispiel Frage","typ_id":"P","punktzahl":1, "bestaetigt":None,"verneint":None, "antworten": [
+            {"id": 1, "text": "Option 1", "ist_richtig": True, "antwortenTrue": 0, "antwortenFalse": 0},
+            {"id": 2, "text": "Option 2", "ist_richtig": False, "antwortenTrue": 0, "antwortenFalse": 0}
+        ]}]
+    }),
+    ("3", "1", None, 402, {"message": "Umfrage not found"}),
+])
+def test_getUmfrageResults(mock_getDecodedTokenFromHeader, mock_session, common_event, umfrage_id, admin_id, umfrage, expected_status, expected_result):
+    mock_getDecodedTokenFromHeader.return_value = {
+        "admin_id": 1,
+    }
+
+    mock_session_instance = MagicMock()
+    mock_session.return_value = mock_session_instance
+
+    if umfrage is None:
+        mock_session_instance.query.return_value.filter_by.return_value.first.return_value = None
+    else:
+        mock_session_instance.query.return_value.filter_by.return_value.first.return_value = umfrage
+
+    event = common_event({"umfrageId": 1}, admin_id)
+
+    response, status = getUmfrageResult(event, None)
+
+    assert status == expected_status
+    assert response == expected_result
+
+    if umfrage is not None and umfrage.admin_id == admin_id:
+        mock_session_instance.close.assert_called_once()
+
+
