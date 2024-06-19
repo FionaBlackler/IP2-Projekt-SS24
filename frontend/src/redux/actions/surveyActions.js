@@ -1,12 +1,20 @@
-import * as actionTypes from '../constants/surveyActionTypes' // Assuming you have constants defined for survey action types
+import * as actionTypes from '../constants/surveyActionTypes'
 import axios from 'axios'
 
 export const fetchSurveyData = (umfrageId) => {
-    return async (dispatch) => {
+    return async (dispatch, getState) => {
         dispatch({ type: actionTypes.FETCH_SURVEY_REQUEST })
 
         try {
-            const { data } = await axios.get(`http://localhost:3000/umfrage/${umfrageId}/fragen`)
+            const { accessToken } = getState().adminLogin
+
+            const config = {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`
+                }
+            }
+
+            const { data } = await axios.get(`http://localhost:3000/umfrage/${umfrageId}/fragen`, config)
 
             console.log('data in thunk: ', data)
             dispatch({
@@ -27,12 +35,19 @@ export const fetchSurveyData = (umfrageId) => {
 }
 
 export const saveQuestionAnswers = (sitzungId, antworten) => {
-    return async (dispatch) => {
+    return async (dispatch, getState) => {
         dispatch({ type: actionTypes.SAVE_QUESTION_ANSWERS_REQUEST })
 
         try {
+            const { accessToken } = getState().adminLogin
 
-            const { data } = await axios.post(`http://localhost:3000/sitzung/${sitzungId}/teilnehmerAntwort`, antworten)
+            const config = {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`
+                }
+            }
+
+            const { data } = await axios.post(`http://localhost:3000/sitzung/${sitzungId}/teilnehmerAntwort`, antworten, config)
 
             dispatch({
                 type: actionTypes.SAVE_QUESTION_ANSWERS_SUCCESS,

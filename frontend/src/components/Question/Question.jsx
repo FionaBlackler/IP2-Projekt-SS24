@@ -12,12 +12,13 @@ const Question = ({
                       isScreenReaderMode,
                       index,
                       isLocked,
-                      onSubmit,
+                      onSubmit
                   }) => {
     const [selectedAnswers, setSelectedAnswers] = useState([])
     console.log('index passed: ', index)
-    console.log("number: ", number)
-    console.log("isLocked: ", isLocked)
+    console.log('number: ', number)
+    console.log('isLocked: ', isLocked)
+    console.log("options: ", options)
 
     useEffect(() => {
         setSelectedAnswers(options.filter(option => option.isSelected).map(option => option.id))
@@ -27,7 +28,7 @@ const Question = ({
         let updatedSelections = []
 
         switch (questionType) {
-            case 'A':
+            case '1':
                 updatedSelections = options.map(option => {
                     const isSelected = selectedOptionIds.includes(option.id)
                     const isCorrect = option.ist_richtig
@@ -41,7 +42,7 @@ const Question = ({
                     }
                 })
                 break
-            case 'P':
+            case '2':
                 updatedSelections = options.map(option => {
                     const isSelected = selectedOptionIds.includes(option.id)
                     const isCorrect = option.ist_richtig
@@ -55,7 +56,7 @@ const Question = ({
                     }
                 })
                 break
-            case 'K':
+            case '3':
                 updatedSelections = options.map(option => {
                     const isTrueSelected = selectedOptionIds.includes(`${option.id}-true`)
                     const isFalseSelected = selectedOptionIds.includes(`${option.id}-false`)
@@ -111,7 +112,7 @@ const Question = ({
 
     const renderOptions = () => {
         switch (questionType) {
-            case 'A':
+            case '1':
                 return (<div className="question-options-container">
                     {options.map((option) => (<div key={option.id} className="option">
                         <input
@@ -128,7 +129,7 @@ const Question = ({
                         </label>
                     </div>))}
                 </div>)
-            case 'P':
+            case '2':
                 return (<div className="question-options-container">
                     {options.map((option) => (<div key={option.id} className="option">
                         <input
@@ -146,7 +147,7 @@ const Question = ({
                         </label>
                     </div>))}
                 </div>)
-            case 'K':
+            case '3':
                 return (<div className="question-options-container">
                     <div className="label-container">
                         <span className="label-text">Zutreffend</span>
@@ -189,9 +190,13 @@ const Question = ({
             <div className="question-options-container">
                 {renderOptions()}
             </div>
-            {!isLocked && (<button onClick={() => onSubmit(number)} className="submit-question-button">
-                Antworten und sperren
-            </button>)}
+            {!isLocked && (
+                <div className="submit-container">
+                    <button onClick={() => onSubmit(number)} className="submit-question-button">
+                        Antwort absenden
+                    </button>
+                </div>
+            )}
         </div>
     )
 }

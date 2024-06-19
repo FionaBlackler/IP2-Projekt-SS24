@@ -31,7 +31,7 @@
 }
 
 .option-label {
-    background-color: $background-color; // Replace with your background color variable
+    background-color: $background-color;
     color: #fff;
     padding: 10px;
     border-radius: 5px;
@@ -40,7 +40,7 @@
     transition: background-color 0.3s;
 
     &:hover {
-        background-color: rgba(175, 41, 41, 0.8); // Adjust hover color as needed
+        background-color: rgba(175, 41, 41, 0.8);
     }
 }
 
@@ -91,4 +91,25 @@
 .checkbox-left{
     width: 25px;
     height: 25px;
+}
+
+.submit-container {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 20px;
+    margin-right: 20px;
+}
+
+.submit-question-button {
+    background-color: $background-color;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+
+    &:hover {
+        background-color: rgba(175, 41, 41, 0.8);
+    }
 }

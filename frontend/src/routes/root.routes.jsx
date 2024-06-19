@@ -9,6 +9,8 @@ import Umfrage from '../pages/admin/meineUmfrage/Umfrage.jsx'
 import ProtectedRoute from './protected.route.jsx'
 import Homepage from '../pages/home/Homepage.jsx'
 import MeineUmfragen from '../pages/admin/meineUmfrage/MeineUmfragen.jsx'
+import Survey from '../pages/Survey/Survey.jsx'
+import FinishSurveyView from '../pages/FinishSurveyView/FinishSurveyView.jsx'
 
 function RootRoutes() {
     return (
@@ -28,6 +30,16 @@ function RootRoutes() {
                     exact={true}
                     path="/changePassword"
                     element={<ChangePassword />}
+                />
+                <Route
+                    exact={true}
+                    path="/umfrage/:id"
+                    element={<Survey />}
+                />
+                <Route
+                    exact={true}
+                    path="/finish-survey"
+                    element={<FinishSurveyView />}
                 />
                 <Route
                     exact={true}

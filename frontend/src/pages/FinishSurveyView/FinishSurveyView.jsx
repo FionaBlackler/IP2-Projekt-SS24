@@ -18,7 +18,7 @@ const FinishSurveyView = () => {
 
         return Object.keys(data).map(questionId => (
             <div key={questionId} className="question-container">
-                <h3>Question {questionId}</h3>
+                <h3>Answers of question {questionId}:</h3>
                 <ul>
                     {data[questionId].map(answer => (
                         <li key={answer.id}>
