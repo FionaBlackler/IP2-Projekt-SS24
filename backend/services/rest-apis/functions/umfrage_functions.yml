@@ -53,13 +53,13 @@ getQuestionsWithOptions:
         path: /umfrage/{umfrageId}/fragen
         method: get
 getUmfrageResult:
-  handler: handlers.umfrage_handler.getUmfrageResults
+  handler: handlers.umfrage_handler.getUmfrageResult
   events:
     - httpApi:
         path: /umfrage/{umfrageId}/result
         method: get
-getSessionResults:
-  handler: handlers.umfrage_handler.getSessionResults
+getSessionResult:
+  handler: handlers.umfrage_handler.getSessionResult
   events:
     - httpApi:
         path: /sitzung/{sitzungId}/result

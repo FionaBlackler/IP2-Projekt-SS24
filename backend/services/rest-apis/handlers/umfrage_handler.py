@@ -723,7 +723,7 @@ def saveTeilnehmerAntwort(event, context):
     return response
 
 
-def getSessionResults(event, context):
+def getSessionResult(event, context):
     """Get the result of a Sitzung Umfragen
     
     wiki: https://gitlab.rz.hft-stuttgart.de/sose2024-informatikprojekt-2/umfragetool/-/wikis/Backend-API-Dokumenation/Umfrage/Sitzung-Result
@@ -740,6 +740,10 @@ def getSessionResults(event, context):
 
     session = Session()
     sitzung = session.query(Sitzung).filter_by(id=sitzung_id).first()
+    
+    if not sitzung:
+        return  {"message": "Umfrage not found"},404
+    
     umfrage: Umfrage = sitzung.umfrage
     if umfrage.admin_id != admin_id:
         return {"message": "Not allowed!"}, 404
@@ -764,7 +768,7 @@ def getSessionResults(event, context):
     return result, 200
 
 
-def getUmfrageResults(event, context):
+def getUmfrageResult(event, context):
     """Get the complete result for a Umfrage
     
     wiki: https://gitlab.rz.hft-stuttgart.de/sose2024-informatikprojekt-2/umfragetool/-/wikis/Backend-API-Dokumenation/Umfrage/Umfrage-Result
@@ -781,8 +785,10 @@ def getUmfrageResults(event, context):
 
     session = Session()
     umfrage: Umfrage = session.query(Umfrage).filter_by(id=umfrage_id).first()
+    if not umfrage:
+        return  {"message": "Umfrage not found"},402
     if umfrage.admin_id != admin_id:
-        return {"message": "Not allowed!"}, 404
+        return {"message": "Not allowed!"}, 403
     fragen = []
     for frage in umfrage.fragen:
         if type(frage) is Frage:
