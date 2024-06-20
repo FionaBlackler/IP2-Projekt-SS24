@@ -22,6 +22,13 @@ logger = logging.getLogger()
 # Database connection with aws secrets manager
 # engine, Session = create_database_connection()
 Session = sessionmaker(bind=engine)
+internel_server_error = {
+    "statusCode": 500,
+    "body": json.dumps(
+        {"message": "Internal Server Error, contact Backend-Team for more Info"}
+    ),
+    "headers": {"Content-Type": "application/json"},
+}
 
 
 def auth_error(message: str):
@@ -743,12 +750,12 @@ def getSessionResult(event, context):
         sitzung = session.query(Sitzung).filter_by(id=sitzung_id).first()
 
         if not sitzung:
-            return {"message": "Umfrage not found"}, 404
+            getErrorMessage("Umfrage not found")
 
         umfrage: Umfrage = sitzung.umfrage
         if umfrage.admin_id != admin_id:
-            return {"message": "Not allowed!"}, 404
-        fragen = []
+            return getErrorMessage("Not allowed!")
+        fragen = {}
         for frage in umfrage.fragen:
             if type(frage) is Frage:
                 frage_json = frage.to_json()
@@ -759,28 +766,17 @@ def getSessionResult(event, context):
                             antwort.to_json_with_count(sitzung_id=sitzung_id)
                         )
 
-                fragen.append(frage_json)
+                fragen[frage.id] = frage_json
 
-            else:
-                print(type(frage))
-
-        umfrage_json = sitzung.umfrage.to_json()
-        response = {"umfrage": umfrage_json, "result": fragen}
+        umfrage_json = umfrage.to_json()
+        return {"umfrage": umfrage_json, "result": fragen}
 
     except Exception as e:
         session.rollback()
-        response = {
-            "statusCode": 500,
-            "body": json.dumps(
-                {"message": "Internal Server Error, contact Backend-Team for more Info"}
-            ),
-            "headers": {"Content-Type": "application/json"},
-        }
         logger.error(str(e))
+        return internel_server_error
     finally:
         session.close()
-
-    return response, 200
 
 
 def getUmfrageResult(event, context):
@@ -801,10 +797,11 @@ def getUmfrageResult(event, context):
         session = Session()
         umfrage: Umfrage = session.query(Umfrage).filter_by(id=umfrage_id).first()
         if not umfrage:
-            return {"message": "Umfrage not found"}, 402
+            return getErrorMessage("Umfrage not found")
         if umfrage.admin_id != admin_id:
-            return {"message": "Not allowed!"}, 403
-        fragen = []
+            return getErrorMessage("Not allowed!")
+
+        fragen = {}
         for frage in umfrage.fragen:
             if type(frage) is Frage:
                 frage_json = frage.to_json()
@@ -813,56 +810,100 @@ def getUmfrageResult(event, context):
                     if type(antwort) is AntwortOption:
                         frage_json["antworten"].append(antwort.to_json_with_count())
 
-                fragen.append(frage_json)
-
-            else:
-                print(type(frage))
+                fragen[frage.id] = frage_json
 
         umfrage_json = umfrage.to_json()
-        response = {"umfrage": umfrage_json, "result": fragen}
+        return {"umfrage": umfrage_json, "result": fragen}
 
     except Exception as e:
-        response = {
-            "statusCode": 500,
-            "body": json.dumps(
-                {"message": "Internal Server Error, contact Backend-Team for more Info"}
-            ),
-            "headers": {"Content-Type": "application/json"},
-        }
         logger.error(str(e))
+        return internel_server_error
     finally:
         session.close()
-
-    return response, 200
 
 
 def isSessionActive(event, context):
     """Gets the current status of a Sitzung by Id"""
 
+    def response_ok(status):
+        return {
+            "statusCode": 200,
+            "body": json.dumps({"status": status}),
+            "headers": {"Content-Type": "application/json"},
+        }
+
     sitzung_id = event["pathParameters"]["sitzungId"]
     session = Session()
     try:
         sitzung = session.query(Sitzung).filter_by(id=sitzung_id).first()
-
-        if sitzung:
-            if sitzung.aktiv:
-                status = "active"
-            else:
-                status = "inactive"
-            response = {"status": status}
+        if not sitzung:
+            return response_ok("No Sitzung was found")
+        elif sitzung.aktiv:
+            return response_ok("active")
         else:
-            response = {"status": "No Sitzung was found"}
+            return response_ok("inactive")
 
     except Exception as e:
-        response = {
-            "statusCode": 500,
-            "body": json.dumps(
-                {"message": "Internal Server Error, contact Backend-Team for more Info"}
-            ),
-            "headers": {"Content-Type": "application/json"},
-        }
         logger.error(str(e))
+        return internel_server_error
     finally:
         session.close()
 
-    return response, 200
+
+def getQuestionResult(event, context):
+    """Get the result of a Sitzung Umfragen
+
+    wiki: https://gitlab.rz.hft-stuttgart.de/sose2024-informatikprojekt-2/umfragetool/-/wikis/Backend-API-Dokumenation/Umfrage/Sitzung-Result
+    """
+    token = None
+    try:
+        token = getDecodedTokenFromHeader(event)
+    except ValueError as e:
+        logger.error(str(e))
+        return auth_error(str(e))
+
+    admin_id = token["admin_id"]
+    sitzung_id = event["pathParameters"]["sitzungId"]
+    frage_id = event["pathParameters"]["frageId"]
+    session = Session()
+    try:
+        sitzung = session.query(Sitzung).filter_by(id=sitzung_id).first()
+
+        if not sitzung:
+            return getErrorMessage("Umfrage not found")
+
+        umfrage: Umfrage = sitzung.umfrage
+        if umfrage.admin_id != admin_id:
+            return {"message": "Not allowed!"}, 404
+        for frage in umfrage.fragen:
+            if type(frage) is Frage:
+                if frage.id == int(frage_id):
+                    frage_json = frage.to_json()
+                    frage_json["antworten"] = []
+                    for antwort in frage.antwort_optionen:
+                        if type(antwort) is AntwortOption:
+                            frage_json["antworten"].append(
+                                antwort.to_json_with_count(sitzung_id=sitzung_id)
+                            )
+                    return {
+                        "statusCode": 200,
+                        "body": json.dumps({"question_result": frage_json}),
+                        "headers": {"Content-Type": "application/json"},
+                    }
+
+    except Exception as e:
+        session.rollback()
+        logger.error(str(e))
+        return internel_server_error
+    finally:
+        session.close()
+
+    return getErrorMessage("Question not found")
+
+
+def getErrorMessage(message="Error", error_code=404):
+    return {
+        "statusCode": error_code,
+        "body": json.dumps({"message": message}),
+        "headers": {"Content-Type": "application/json"},
+    }

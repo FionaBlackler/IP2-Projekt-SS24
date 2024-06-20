@@ -1117,7 +1117,7 @@ def test_saveTeilnehmerAntwort(
 
 
 @pytest.mark.parametrize(
-    "umfrage_id, admin_id, umfrage, expected_status, expected_result",
+    "umfrage_id, admin_id, umfrage, expected_result",
     [
         (
             "1",
@@ -1157,7 +1157,6 @@ def test_saveTeilnehmerAntwort(
                     )
                 ],
             ),
-            200,
             {
                 "umfrage": {
                     "id": 1,
@@ -1169,8 +1168,8 @@ def test_saveTeilnehmerAntwort(
                     "status": "aktiv",
                     "json_text": "",
                 },
-                "result": [
-                    {
+                "result": {
+                    1: {
                         "id": 1,
                         "local_id": 0,
                         "umfrage_id": 1,
@@ -1196,10 +1195,19 @@ def test_saveTeilnehmerAntwort(
                             },
                         ],
                     }
-                ],
+                },
             },
         ),
-        ("3", "1", None, 402, {"message": "Umfrage not found"}),
+        (
+            "3",
+            "1",
+            None,
+            {
+                "statusCode": 404,
+                "body": '{"message": "Umfrage not found"}',
+                "headers": {"Content-Type": "application/json"},
+            },
+        ),
     ],
 )
 def test_getUmfrageResults(
@@ -1209,7 +1217,6 @@ def test_getUmfrageResults(
     umfrage_id,
     admin_id,
     umfrage,
-    expected_status,
     expected_result,
 ):
     mock_getDecodedTokenFromHeader.return_value = {
@@ -1230,9 +1237,8 @@ def test_getUmfrageResults(
 
     event = common_event({"umfrageId": 1}, admin_id)
 
-    response, status = getUmfrageResult(event, None)
+    response = getUmfrageResult(event, None)
 
-    assert status == expected_status
     assert response == expected_result
 
     if umfrage is not None and umfrage.admin_id == admin_id:
@@ -1240,11 +1246,35 @@ def test_getUmfrageResults(
 
 
 @pytest.mark.parametrize(
-    "sitzung_id, query_result, expected_status, expected_response",
+    "sitzung_id, query_result, expected_response",
     [
-        ("1", Sitzung(id=1, aktiv=True), 200, {"status": "active"}),
-        ("1", Sitzung(id=1, aktiv=False), 200, {"status": "inactive"}),
-        ("2", None, 200, {"status": "No Sitzung was found"}),
+        (
+            "1",
+            Sitzung(id=1, aktiv=True),
+            {
+                "statusCode": 200,
+                "body": '{"status": "active"}',
+                "headers": {"Content-Type": "application/json"},
+            },
+        ),
+        (
+            "1",
+            Sitzung(id=1, aktiv=False),
+            {
+                "statusCode": 200,
+                "body": '{"status": "inactive"}',
+                "headers": {"Content-Type": "application/json"},
+            },
+        ),
+        (
+            "2",
+            None,
+            {
+                "statusCode": 200,
+                "body": '{"status": "No Sitzung was found"}',
+                "headers": {"Content-Type": "application/json"},
+            },
+        ),
     ],
 )
 def test_isSessionActive(
@@ -1252,7 +1282,6 @@ def test_isSessionActive(
     common_event,
     sitzung_id,
     query_result,
-    expected_status,
     expected_response,
 ):
     mock_session_instance = MagicMock()
@@ -1264,9 +1293,8 @@ def test_isSessionActive(
 
     event = common_event({"sitzungId": sitzung_id})
 
-    response, status = isSessionActive(event, None)
+    response = isSessionActive(event, None)
 
-    assert status == expected_status
     assert response == expected_response
 
     mock_session_instance.query.return_value.filter_by.assert_called_once_with(

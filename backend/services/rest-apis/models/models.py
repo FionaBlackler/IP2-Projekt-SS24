@@ -104,17 +104,19 @@ class AntwortOption(Base):
         """Returns a TeilnehmerAntwort with the Answers if a sitzung_id is set it will only calculate the answers of the corrsponding Sitzung."""
 
         def filter_antworten(antwort: TeilnehmerAntwort):
-            if sitzung_id is None:
-                return True
             return antwort.sitzung_id == int(sitzung_id)
 
-        filtered_antworten = [
-            antwort
-            for antwort in self.teilnehmer_antworten
-            if filter_antworten(antwort)
-        ]
-        antwortenTrue = sum(antwort.anzahl_true for antwort in filtered_antworten)
-        antwortenFalse = sum(antwort.anzahl_false for antwort in filtered_antworten)
+        if sitzung_id:
+            antworten = [
+                antwort
+                for antwort in self.teilnehmer_antworten
+                if filter_antworten(antwort)
+            ]
+        else:
+            antworten = self.teilnehmer_antworten
+
+        antwortenTrue = sum(antwort.anzahl_true for antwort in antworten)
+        antwortenFalse = sum(antwort.anzahl_false for antwort in antworten)
 
         return {
             "id": self.id,
@@ -159,7 +161,6 @@ class TeilnehmerAntwort(Base):
     antwort_id = Column(
         Integer, ForeignKey("antwort_optionen.id"), primary_key=True, nullable=False
     )
-    frage_id = Column(Integer, ForeignKey("fragen.id"), nullable=False)
     anzahl_true = Column(Integer, nullable=False)
     anzahl_false = Column(Integer, nullable=False)
 

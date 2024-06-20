@@ -70,6 +70,12 @@ saveTeilnehmerAntwort:
     - httpApi:
         path: /sitzung/{sitzungId}/teilnehmerAntwort
         method: post
+getFrageAntworten:
+  handler: handlers.umfrage_handler.getQuestionResult
+  events:
+    - httpApi:
+        path: /{sitzungId}/{frageId}
+        method: get
 isSessionActive:
   handler: handlers.umfrage_handler.isSessionActive
   events:
