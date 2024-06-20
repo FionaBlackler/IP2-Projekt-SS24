@@ -1,3 +1,4 @@
+import json
 import os
 import jwt
 
@@ -37,7 +38,6 @@ def getDecodedTokenFromHeader(event) -> dict:
         )  # Keine genauere Fehlermeldung, ansonsten bietet es leichetere Angriffsmöglichkeiten
 
     return decoded_token
-
 
 
 def getErrorMessage(message="Error", error_code=404):

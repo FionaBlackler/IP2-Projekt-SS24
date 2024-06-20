@@ -896,4 +896,3 @@ def getQuestionResult(event, context):
         session.close()
 
     return getErrorMessage("Question not found")
-
