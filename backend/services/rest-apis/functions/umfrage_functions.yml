@@ -53,19 +53,13 @@ getQuestionsWithOptions:
         path: /umfrage/{umfrageId}/fragen
         method: get
 getUmfrageResult:
-  handler: handlers.umfrage_handler.getUmfrageResults
+  handler: handlers.umfrage_handler.getUmfrageResult
   events:
     - httpApi:
         path: /umfrage/{umfrageId}/result
         method: get
-getActiveUmfrageResults:
-  handler: handlers.umfrage_handler.getActiveUmfrageResults
-  events:
-    - httpApi:
-        path: /umfrage/{umfrageId}/active
-        method: get
-getSessionResults:
-  handler: handlers.umfrage_handler.getSessionResults
+getSessionResult:
+  handler: handlers.umfrage_handler.getSessionResult
   events:
     - httpApi:
         path: /sitzung/{sitzungId}/result
@@ -76,4 +70,15 @@ saveTeilnehmerAntwort:
     - httpApi:
         path: /sitzung/{sitzungId}/teilnehmerAntwort
         method: post
-        
+getFrageAntworten:
+  handler: handlers.umfrage_handler.getQuestionResult
+  events:
+    - httpApi:
+        path: /{sitzungId}/{frageId}
+        method: get
+isSessionActive:
+  handler: handlers.umfrage_handler.isSessionActive
+  events:
+    - httpApi:
+        path: /sitzung/{sitzungId}/active
+        method: get
