@@ -152,7 +152,7 @@ let data = {"result": {
                   "id": 24,
                   "text": "Das Internet ist eine Erfindung des 20. Jahrhunderts'?",
                   "ist_richtig": true,
-                  "antwortenTrue": 18,
+                  "antwortenTrue": 11,
                   "antwortenFalse": 5
               },
               {

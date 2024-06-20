@@ -150,33 +150,144 @@ let data = {"result": {
           "typ_id": "K",
           "bestaetigt": "zutreffend",
           "verneint": "nicht zutreffend"
-      }
+      },{
+        "id": 7,
+        "antwort_optionen": [
+            {
+                "id": 24,
+                "text": "Das Internet ist eine Erfindung des 20. Jahrhunderts'?",
+                "ist_richtig": true,
+                "antwortenTrue": 11,
+                "antwortenFalse": 5
+            },
+            {
+                "id": 25,
+                "text": "Trifft diese Aussage zu: 'Wasser besteht aus den Elementen Wasserstoff und Sauerstoff'?",
+                "ist_richtig": true,
+                "antwortenTrue": 16,
+                "antwortenFalse": 8
+            },
+            {
+                "id": 26,
+                "text": "Trifft diese Aussage zu: 'Die Sonne ist ein Planet'?",
+                "ist_richtig": false,
+                "antwortenTrue": 9,
+                "antwortenFalse": 0
+            }
+        ],
+        "punktzahl": 2,
+        "text": "welche der folgenden Antworten trifft zu ...:",
+        "umfrage_id": 2,
+        "typ_id": "K",
+        "bestaetigt": "zutreffend",
+        "verneint": "nicht zutreffend"
+    },{
+      "id": 8,
+      "antwort_optionen": [
+          {
+              "id": 24,
+              "text": "Das Internet ist eine Erfindung des 20. Jahrhunderts'?",
+              "ist_richtig": true,
+              "antwortenTrue": 6,
+              "antwortenFalse": 13
+          },
+          {
+              "id": 25,
+              "text": "Trifft diese Aussage zu: 'Wasser besteht aus den Elementen Wasserstoff und Sauerstoff'?",
+              "ist_richtig": true,
+              "antwortenTrue": 6,
+              "antwortenFalse": 25
+          },
+          {
+              "id": 26,
+              "text": "Trifft diese Aussage zu: 'Die Sonne ist ein Planet'?",
+              "ist_richtig": false,
+              "antwortenTrue": 19,
+              "antwortenFalse": 10
+          }
+      ],
+      "punktzahl": 2,
+      "text": "welche der folgenden Antworten trifft zu ...:",
+      "umfrage_id": 2,
+      "typ_id": "K",
+      "bestaetigt": "zutreffend",
+      "verneint": "nicht zutreffend"
+  },{
+    "id": 9,
+    "antwort_optionen": [
+        {
+            "id": 24,
+            "text": "Das Internet ist eine Erfindung des 20. Jahrhunderts'?",
+            "ist_richtig": true,
+            "antwortenTrue": 6,
+            "antwortenFalse": 0
+        },
+        {
+            "id": 25,
+            "text": "Trifft diese Aussage zu: 'Wasser besteht aus den Elementen Wasserstoff und Sauerstoff'?",
+            "ist_richtig": true,
+            "antwortenTrue": 6,
+            "antwortenFalse": 0
+        },
+        {
+            "id": 26,
+            "text": "Trifft diese Aussage zu: 'Die Sonne ist ein Planet'?",
+            "ist_richtig": false,
+            "antwortenTrue": 9,
+            "antwortenFalse": 0
+        }
+    ],
+    "punktzahl": 2,
+    "text": "welche der folgenden Antworten trifft zu ...:",
+    "umfrage_id": 2,
+    "typ_id": "K",
+    "bestaetigt": "zutreffend",
+    "verneint": "nicht zutreffend"
+}
   ]
 }
 }
 
-const COLORS = ['#4f81bd', '#c0504d', '#9bbb59', '#8064a2', '#4bacc6', '#f79646'];
+const COLORS = ['#4f81bd', '#c0504d', '#9bbb59', '#8064a2', '#4bacc6', '#f79646', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf'];
 
 let processedData = data.result.fragen.map((frage, index) => {
   let result = {
     name: `Frage ${index + 1}`,
+    questionText: frage.text,
     ...frage.antwort_optionen.reduce((acc, option, idx) => {
       acc[`option${idx + 1}`] = option.antwortenTrue;
+      acc[`option${idx + 1}Text`] = option.text;
       return acc;
     }, {}),
   };
+  console.log(result)
   return result;
-});
   
+});
+
+const CustomTooltip = ({ active, payload, label }) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="p-4 bg-white text-black flex flex-col gap-4 rounded-md">
+        <p className="text-medium text-lg">{payload[0].payload.questionText}</p>
+        {payload.map((entry, index) => (
+          <p key={`tooltip-item-${index}`} className="text-sm" style={{ color: entry.color }}>
+            {entry.payload[`option${index + 1}Text`]}: {entry.value}
+          </p>
+        ))}
+      </div>
+    );
+  }
+  return null;
+};
 
 
-const StackedBarChartComponent = () => {
+const StackedBarchart = () => {
   const { titel, beschreibung } = data.result.umfrage;
 
   return (
     <div className="text-center p-4">
-      {/* <h1 className="text-3xl font-bold mb-2">{titel}</h1>
-      <h2 className="text-lg text-gray-600 mb-4">{beschreibung}</h2> */}
+      
       <ResponsiveContainer width="100%" height={400}>
         <BarChart
           data={processedData}
@@ -190,9 +301,9 @@ const StackedBarChartComponent = () => {
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="name" />
           <YAxis />
-          <Tooltip />
+          <Tooltip content={<CustomTooltip />} />
           <Legend />
-          {Object.keys(processedData[0]).filter(key => key.startsWith('option')).map((key, index) => (
+          {Object.keys(processedData[0]).filter(key => key.startsWith('option') && !key.endsWith('Text')).map((key, index) => (
             <Bar key={index} dataKey={key} stackId="a" fill={COLORS[index % COLORS.length]} name={`Option ${index + 1}`}>
               {processedData.map((entry, idx) => (
                 <Cell key={`cell-${idx}`} fill={COLORS[index % COLORS.length]} />
@@ -205,4 +316,4 @@ const StackedBarChartComponent = () => {
   );
 };
 
-export default StackedBarChartComponent;
+export default StackedBarchart;
