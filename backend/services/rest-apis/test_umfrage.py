@@ -17,9 +17,9 @@ from handlers.umfrage_handler import (
     getQuestionsWithOptions,
     getUmfrage,
     getUmfrageResult,
-    getUmfrageResults,
     saveTeilnehmerAntwort,
     uploadUmfrage,
+    isSessionActive,
 )
 from dotenv import load_dotenv
 
@@ -1117,16 +1117,96 @@ def test_saveTeilnehmerAntwort(
 
 
 @pytest.mark.parametrize(
-    "umfrage_id, sitzung_exists, exception, expected_status, expected_body",
+    "umfrage_id, admin_id, umfrage, expected_result",
     [
-        ("1", True, None, 200, {"fragen": []}),
-        ("2", False, None, 404, {"message": "Umfrage not found"}),
+        (
+            "1",
+            "1",
+            Umfrage(
+                id=1,
+                admin_id=1,
+                titel="Test Umfrage",
+                beschreibung="Eine Testbeschreibung",
+                erstellungsdatum=fixed_datetime,
+                status="aktiv",
+                json_text="",
+                fragen=[
+                    Frage(
+                        id=1,
+                        local_id=0,
+                        umfrage_id=1,
+                        text="Beispiel Frage",
+                        typ_id="P",
+                        punktzahl=1,
+                        bestaetigt=None,
+                        verneint=None,
+                        antwort_optionen=[
+                            AntwortOption(
+                                id=1,
+                                text="Option 1",
+                                ist_richtig=True,
+                                teilnehmer_antworten=[],
+                            ),
+                            AntwortOption(
+                                id=2,
+                                text="Option 2",
+                                ist_richtig=False,
+                                teilnehmer_antworten=[],
+                            ),
+                        ],
+                    )
+                ],
+            ),
+            {
+                "umfrage": {
+                    "id": 1,
+                    "admin_id": 1,
+                    "archivierungsdatum": None,
+                    "titel": "Test Umfrage",
+                    "beschreibung": "Eine Testbeschreibung",
+                    "erstellungsdatum": "2024-06-10 23:05:55.415831",
+                    "status": "aktiv",
+                    "json_text": "",
+                },
+                "result": {
+                    1: {
+                        "id": 1,
+                        "local_id": 0,
+                        "umfrage_id": 1,
+                        "text": "Beispiel Frage",
+                        "typ_id": "P",
+                        "punktzahl": 1,
+                        "bestaetigt": None,
+                        "verneint": None,
+                        "antworten": [
+                            {
+                                "id": 1,
+                                "text": "Option 1",
+                                "ist_richtig": True,
+                                "antwortenTrue": 0,
+                                "antwortenFalse": 0,
+                            },
+                            {
+                                "id": 2,
+                                "text": "Option 2",
+                                "ist_richtig": False,
+                                "antwortenTrue": 0,
+                                "antwortenFalse": 0,
+                            },
+                        ],
+                    }
+                },
+            },
+        ),
         (
             "3",
-            True,
-            Exception("Database Error"),
-            500,
-            {"message": "Internal Server Error, contact Backend-Team for more Info"},
+            "1",
+            None,
+            {
+                "statusCode": 404,
+                "body": '{"message": "Umfrage not found"}',
+                "headers": {"Content-Type": "application/json"},
+            },
         ),
     ],
 )
@@ -1135,159 +1215,89 @@ def test_getUmfrageResults(
     mock_session,
     common_event,
     umfrage_id,
-    sitzung_exists,
-    exception,
-    expected_status,
-    expected_body,
+    admin_id,
+    umfrage,
+    expected_result,
 ):
     mock_getDecodedTokenFromHeader.return_value = {
-        "admin_id": "1",
+        "admin_id": 1,
     }
 
     mock_session_instance = MagicMock()
     mock_session.return_value = mock_session_instance
 
-    # Mock the query result and exception
-    if exception:
-        mock_session_instance.query.return_value.filter.return_value.first.side_effect = (
-            exception
-        )
-    elif sitzung_exists:
-        sitzung_mock = MagicMock()
-        sitzung_mock.fragen = []
-        sitzung_mock.sitzungen = []
-        mock_session_instance.query.return_value.filter.return_value.first.return_value = (
-            sitzung_mock
-        )
-    else:
-        mock_session_instance.query.return_value.filter.return_value.first.return_value = (
+    if umfrage is None:
+        mock_session_instance.query.return_value.filter_by.return_value.first.return_value = (
             None
         )
-
-    event = common_event({"umfrageId": umfrage_id})
-
-    response = getUmfrageResults(event, None)
-
-    assert response.get("statusCode") == expected_status
-    assert json.loads(response["body"]) == expected_body
-
-    if expected_status == 500:
-        mock_session_instance.rollback.assert_called_once()
     else:
-        mock_session_instance.rollback.assert_not_called()
+        mock_session_instance.query.return_value.filter_by.return_value.first.return_value = (
+            umfrage
+        )
 
-    mock_session_instance.close.assert_called_once()
+    event = common_event({"umfrageId": 1}, admin_id)
 
+    response = getUmfrageResult(event, None)
 
-@pytest.fixture
-def mock_is_one_active():
-    with patch("handlers.umfrage_handler.is_one_active") as mock_is_one_active:
-        yield mock_is_one_active
+    assert response == expected_result
+
+    if umfrage is not None and umfrage.admin_id == admin_id:
+        mock_session_instance.close.assert_called_once()
 
 
 @pytest.mark.parametrize(
-    "umfrage_id, sitzung_id, umfrage_result, sitzung_result, only_active, is_active, expected_status, expected_message",
+    "sitzung_id, query_result, expected_response",
     [
         (
-            1,
-            None,
-            Umfrage(
-                id=1,
-                titel="Test Umfrage",
-                beschreibung="Eine Testbeschreibung",
-                erstellungsdatum=fixed_datetime,
-                status="aktiv",
-                json_text="",
-            ),
-            None,
-            False,
-            True,
-            200,
-            None,
+            "1",
+            Sitzung(id=1, aktiv=True),
+            {
+                "statusCode": 200,
+                "body": '{"status": "active"}',
+                "headers": {"Content-Type": "application/json"},
+            },
         ),
         (
-            None,
-            2,
-            None,
-            Sitzung(
-                id=2,
-                umfrage=Umfrage(
-                    id=1,
-                    titel="Test Umfrage",
-                    beschreibung="Eine Testbeschreibung",
-                    erstellungsdatum=fixed_datetime,
-                    status="aktiv",
-                    json_text="",
-                ),
-            ),
-            False,
-            True,
-            200,
-            None,
-        ),
-        (1, None, None, None, False, True, 404, "Could not find Umfrage with id: 1."),
-        (
-            None,
-            2,
-            None,
-            None,
-            False,
-            True,
-            404,
-            "Could not find umfrage with a associated sitzung with id: 2.",
+            "1",
+            Sitzung(id=1, aktiv=False),
+            {
+                "statusCode": 200,
+                "body": '{"status": "inactive"}',
+                "headers": {"Content-Type": "application/json"},
+            },
         ),
         (
-            1,
+            "2",
             None,
-            Umfrage(
-                id=1,
-                titel="Test Umfrage",
-                beschreibung="Eine Testbeschreibung",
-                erstellungsdatum=fixed_datetime,
-                status="inaktiv",
-                json_text="",
-            ),
-            None,
-            True,
-            False,
-            404,
-            "No Active Sitzung for Umfrage 1",
+            {
+                "statusCode": 200,
+                "body": '{"status": "No Sitzung was found"}',
+                "headers": {"Content-Type": "application/json"},
+            },
         ),
     ],
 )
-def test_getUmfrageResult(
-    mock_is_one_active,
+def test_isSessionActive(
     mock_session,
     common_event,
-    umfrage_id,
     sitzung_id,
-    umfrage_result,
-    sitzung_result,
-    only_active,
-    is_active,
-    expected_status,
-    expected_message,
+    query_result,
+    expected_response,
 ):
-    mock_is_one_active.return_value = is_active
-
     mock_session_instance = MagicMock()
     mock_session.return_value = mock_session_instance
 
-    if umfrage_id is not None:
-        mock_session_instance.query.return_value.filter.return_value.first.side_effect = [
-            umfrage_result
-        ]
-    elif sitzung_id is not None:
-        mock_session_instance.query.return_value.filter.return_value.first.side_effect = [
-            sitzung_result
-        ]
-
-    response = getUmfrageResult(
-        umfrage_id=umfrage_id, sitzung_id=sitzung_id, only_active=only_active
+    mock_session_instance.query.return_value.filter_by.return_value.first.return_value = (
+        query_result
     )
 
-    assert response.get("statusCode") == expected_status
-    if expected_message:
-        assert json.loads(response["body"])["message"] == expected_message
+    event = common_event({"sitzungId": sitzung_id})
 
+    response = isSessionActive(event, None)
+
+    assert response == expected_response
+
+    mock_session_instance.query.return_value.filter_by.assert_called_once_with(
+        id=sitzung_id
+    )
     mock_session_instance.close.assert_called_once()
