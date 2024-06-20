@@ -12,7 +12,7 @@ from models.models import (
     TeilnehmerAntwort,
 )
 from models.schemas import umfrage_schema
-from utils.utils import getDecodedTokenFromHeader
+from utils.utils import getDecodedTokenFromHeader, getErrorMessage
 from utils.database import create_local_engine
 
 engine = create_local_engine()
@@ -851,10 +851,7 @@ def isSessionActive(event, context):
 
 
 def getQuestionResult(event, context):
-    """Get the result of a Sitzung Umfragen
-
-    wiki: https://gitlab.rz.hft-stuttgart.de/sose2024-informatikprojekt-2/umfragetool/-/wikis/Backend-API-Dokumenation/Umfrage/Sitzung-Result
-    """
+    """Get the result of a Question in an Sitzung"""
     token = None
     try:
         token = getDecodedTokenFromHeader(event)
@@ -900,10 +897,3 @@ def getQuestionResult(event, context):
 
     return getErrorMessage("Question not found")
 
-
-def getErrorMessage(message="Error", error_code=404):
-    return {
-        "statusCode": error_code,
-        "body": json.dumps({"message": message}),
-        "headers": {"Content-Type": "application/json"},
-    }
