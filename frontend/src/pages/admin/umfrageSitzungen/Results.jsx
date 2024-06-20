@@ -1,91 +1,92 @@
-
-import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { resultsLaden } from './SitzungUtils';
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import axios from 'axios'; 
+import axios from 'axios';
 import AdminLayout from '../../../layouts/AdminLayout.jsx';
-import BarChart from '../../../components/Barchart.jsx';
-import Piechart from '../../../components/Piechart.jsx';
-import StackedBarchart from '../../../components/StackedBarchart.jsx';
-import Menu from '../../../components/StatistikMenü.jsx';
-
-
-
+import Menu from '../../../components/charts/StatistikMenü.jsx';
 
 export default function SitzungenResults() {
-    const { ids } = useParams();  //umfrageId aus der URL mittels useParams extrahiert.
-    console.log('ids:', ids);
+    const { ids } = useParams();
+    const idsArray = ids.split(',');
+    const idsIntArray = idsArray.map(id => parseInt(id, 10));
+    const accessToken = localStorage.getItem('accessToken');
+    const [loading, setLoading] = useState(true);
+    const [data, setData] = useState([]);
 
-    const idsArray = ids.split(','); // Aufteilen des Strings anhand des Kommas
-    const idsIntArray = idsArray.map(id => parseInt(id, 10)); // Konvertiert jeden String zu einer Ganzzahl
-    console.log('idsArray:', idsIntArray); // Hier wäre idsArray ein Array mit den Werten ['2', '3']
+    const resultsLaden = () => {
+        let allData = {};
 
-    const accessToken = localStorage.getItem('accessToken')
-    const [loading, setLoading] = useState(true)
-    const [data, setData] = useState([])
-
-    const  resultsLaden =  () => {
-        idsIntArray.forEach((id) => {
-          console.log(id)
+        idsIntArray.forEach((id, index) => {
             axios
                 .get(`${import.meta.env.VITE_BACKEND_URL}sitzung/${id}/result`, {
-                    headers: { 'Authorization' : `Bearer ${accessToken}` ,
-                               "ContentType": 'application/json' }
+                    headers: { 'Authorization': `Bearer ${accessToken}`, "ContentType": 'application/json' }
                 })
                 .then((r) => {
                     if (r.status === 200) {
-                      const responseData = r.data
-                      console.log(`Ergebnisse zur Sitzung mit ID  ${id}`);
-                      setData(responseData)
+                        const responseData = r.data;
+                        console.log(`Ergebnisse zur Sitzung mit ID ${id}`);
+                        console.log(JSON.stringify(responseData, null, 2));
+
+                        const resultData = responseData.result;
+
+                        Object.keys(resultData).forEach(key => {
+                            if (!allData[key]) {
+                                allData[key] = {
+                                    ...resultData[key],
+                                    antworten: resultData[key].antworten.map(option => ({
+                                        ...option,
+                                        antwortenTrue: 0,
+                                        antwortenFalse: 0
+                                    }))
+                                };
+                            }
+
+                            resultData[key].antworten.forEach((option, idx) => {
+                                allData[key].antworten[idx].antwortenTrue += option.antwortenTrue;
+                                allData[key].antworten[idx].antwortenFalse += option.antwortenFalse;
+                            });
+                        });
+
+                        // Set data only after all requests are completed
+                        if (index === idsIntArray.length - 1) {
+                            setData(Object.values(allData));
+                            setLoading(false);
+                        }
                     }
                 })
                 .catch((error) => {
                     if (error.response) {
                         if (error.response.status === 404) {
-                            console.error('not found',  error.response.data);
+                            console.error('not found', error.response.data);
                         } else if (error.response.status === 500) {
-                            console.error('server error',  error.response.data);
-                        }
-                        else {
-                            console.log('ERROR: ' + error.response.data)
+                            console.error('server error', error.response.data);
+                        } else {
+                            console.log('ERROR: ' + error.response.data);
                         }
                     } else {
-                        console.log('ERROR: ' + error.message)
+                        console.log('ERROR: ' + error.message);
                     }
-                })
-                .finally(() => {
-                    setLoading(false)
-                })
+                    // Set loading to false if there's an error
+                    if (index === idsIntArray.length - 1) {
+                        setLoading(false);
+                    }
+                });
         });
     };
 
     useEffect(() => {
         resultsLaden();
-    }, []); // Empty dependency array to run once on component mount
+    }, []);
 
     if (loading) {
-        return <div>Loading...</div>
+        return <div>Loading...</div>;
     }
 
     return (
         <AdminLayout>
-            
             <div>
                 <h1>Ergebnisse der ausgewählten Sitzungen</h1>
-                <Menu />
-                
+                <Menu data={data} />
             </div>
-        
         </AdminLayout>
     );
-
 }
-
-/*{data.map((result, index) => (
-                    <div key={index}>
-                        <h2>Sitzung ID: {result.sitzung_id}</h2>
-                        
-                        <BarChartComponent />
-                        <pre>{JSON.stringify(result, null, 2)}</pre>
-                    </div>*/

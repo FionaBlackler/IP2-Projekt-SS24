@@ -1,18 +1,16 @@
-'use client';
-
 import React, { useState } from 'react';
 import Barchart from './Barchart';
 import StackedBarchart from './StackedBarchart';
 
-const ChartComponent = () => {
+const ChartComponent = ({ data }) => {
   const [chartType, setChartType] = useState('bar');
 
   const renderChart = () => {
     switch (chartType) {
       case 'bar':
-        return <Barchart />;
+        return <Barchart data={data} />;
       case 'stackedBar':
-        return <StackedBarchart />;
+        return <StackedBarchart data={data} />;
       default:
         return null;
     }

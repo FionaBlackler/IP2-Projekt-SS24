@@ -1,5 +1,5 @@
 import './confirmationModal.scss'
-import alarmImage from '../../assets/alarm.jpg';
+//import alarmImage from '../../assets/alarm.jpg';
 
 const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, content }) => {
     if (!isOpen) return null
