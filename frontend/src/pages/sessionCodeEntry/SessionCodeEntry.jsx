@@ -5,21 +5,37 @@ import { useNavigate } from 'react-router-dom'
 const SessionCodeEntry = () => {
     const navigate = useNavigate()
     const [code, setCode] = useState('')
+    const [responseLabel, setResponseLabel] = useState('')
+    const [inputError, setInputError] = useState(false)
 
     const enterCodeBtnHandler = async () => {
-        //check if entered code(sessionID ?) is correct
-        /*try {
-            const request = await axios.get('')
+        if (!code) {
+            setInputError(true)
+            setResponseLabel('Bitte Code eingeben')
+            return
+        } else {
+            setInputError(false)
+            setResponseLabel('')
+        }
 
-            if (request === 200) {
-                navigate('/test')
-            } else {
-                alert('Invalid code')
+        try {
+            const request = await axios.get(
+                `http://localhost:3000/sitzung/${code}/active`
+            )
+
+            if (request.status === 200) {
+                const respond = request.data.status
+                if (respond === 'No Sitzung was found') {
+                    setResponseLabel('Falscher Code')
+                } else if (respond === 'inactive') {
+                    setResponseLabel('Umfrage nicht aktiv')
+                } else {
+                    navigate('/test')
+                }
             }
         } catch (error) {
-            console.error('Error validation code:', error)
-        }*/
-        navigate('/test')
+            console.error('Error validating code:', error)
+        }
     }
 
     return (
@@ -37,10 +53,19 @@ const SessionCodeEntry = () => {
                     <div className="w-2/4 flex flex-col justify-center items-center">
                         <input
                             type="text"
-                            className="w-3/4 rounded-lg my-5 px-5 h-12 hover:border-accent-color border focus:border-accent-color text-center"
+                            className={`w-3/4 rounded-lg my-5 px-5 h-12 text-center border ${
+                                inputError ? 'border-red-500' : 'border'
+                            }`}
                             placeholder="123456"
-                            onChange={(e) => setCode(e.target.value)}
+                            onChange={(e) => {
+                                setCode(e.target.value)
+                                setInputError(false)
+                                setResponseLabel('')
+                            }}
                         />
+                        <span className="text-lg mb-2 text-red-600">
+                            {responseLabel}
+                        </span>
                         <button
                             className="w-3/4 rounded-lg bg-secondary-color h-12 font-medium hover:font-bold"
                             onClick={enterCodeBtnHandler}
