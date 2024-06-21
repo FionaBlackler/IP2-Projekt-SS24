@@ -62,17 +62,24 @@ export default function Sitzung() {
 
     return (
         <>
-            <div className="h-screen justify-between p-8 bg-[#AF8A74] overflow-auto">
-                <div className="flex justify-between">
-                    <div className="flex-grow text-center">
-                        <h1 className="text-3xl text-white">Sitzungstabelle für Umfrage ID {umfrageId}</h1>
-                    </div>
-                </div>
-
-                <div className="flex flex-wrap justify-between p-8">
-                    <SitzungenTable data={data} setData={setData} />
-                </div>
+          <div className="h-screen justify-between p-8 bg-[#AF8A74] overflow-auto">
+            {/* Top block with Umfrage ID */}
+            <div className="relative inset-x-0 top-0 h-7 mb-0 mt-0 bg-[#210803] rounded-bl-xl rounded-br-xl" style={{ marginRight: '-30px', marginLeft: '-30px' }}>
+              {/* Umfrage ID text on the left */}
+              <div className="absolute left-8 top-1/2 transform -translate-y-1/2 text-white">
+                Umfrage {umfrageId}
+              </div>
+              {/* Sessions text in the middle */}
+              <div className="absolute inset-x-0 top-1/2 transform -translate-y-1/2 text-center text-white">
+                Alle Sessions
+              </div>
             </div>
+            {/* Main content */}
+            <div className="flex flex-wrap justify-between p-8">
+              <SitzungenTable data={data} setData={setData} />
+            </div>
+          </div>
         </>
-    )
+      );
+      
 }

@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { sitzungenLöschen, resultsLaden } from './SitzungUtils'
+import { sitzungenLöschen } from './SitzungUtils'
 import { AiOutlineDelete, AiOutlineDotChart } from 'react-icons/ai'
+import { MdOutlineStart } from 'react-icons/md'
 import SitzungenResults from './Results'
 
 
@@ -21,109 +22,135 @@ export default function SitzungenTable({ data, setData }) {
     const handleHistory = () => {
         let ids = [...selectedIds]
         setSelectedIds([])
-        navigate( `/sitzung/${ids}/results`)
+        navigate(`/sitzung/${ids}/results`)
+    }
+
+    // Navigate to session dashboard
+    const handleNavigation = (id) => {
+        navigate(``)  //TODO: add pfad
     }
 
     return (
-        <div className="h-full w-full">
-            {selectedIds.length > 0 && (
-                <div className="flex space-x-4 ">
-                    <button
-                        className="mb-4 text-white hover:text-gray-200 hover:underline"
-                        onClick={() =>
-                            sitzungenLöschen(
-                                selectedIds,
-                                setSelectedIds,
-                                data,
-                                setData
-                            )
-                        }
-                    >
-                        <AiOutlineDelete className="size-7" data-testid="delete-button"/>
-                    </button>
+        <div className="h-full w-full flex">
+            <div className="flex-1 bg-white p-2 ml-0 mr-2 rounded-lg" style={{ borderRadius: '16px', marginLeft: '-43px', flexBasis: '66.66%' }}>
+                {/* Left section - currently empty */}
+            </div>
+            <div className="flex-1 bg-[#FEF2DE] p-2 mr-0 ml-1 rounded-lg" style={{ borderRadius: '16px', marginRight: '-43px', flexBasis: '33.33%' }}>
+                <div className="border-t-2 border-[#AF8A74] mt-4" style={{ marginRight: '-10px', marginLeft: '-10px' }}></div>
+                {selectedIds.length > 0 && (
+                    <div className="flex space-x-4 mt-2">
+                        <button
+                            className="mb-4 hover:text-gray-200 hover:underline" 
+                            onClick={() =>
+                                sitzungenLöschen(selectedIds, setSelectedIds, data, setData)
+                            }
+                        >
+                            <AiOutlineDelete className="size-7" data-testid="delete-button" />
+                        </button>
+                        <button
+                            className="mb-4 hover:text-gray-200 hover:underline"
+                            onClick={handleHistory}
+                        >
+                            <AiOutlineDotChart className="size-7" data-testid="results-button" />
+                        </button>
+                    </div>
+                )}
 
-                    <button
-                        className="mb-4 text-white hover:text-gray-200 hover:underline"
-                        onClick={handleHistory}
+                <div className="overflow-x-auto">
+                    <table
+                        id="Sitzungentabelle"
+                        className="w-full text-center border-separate"
+                        style={{ borderSpacing: '0 10px' }}
                     >
-                        <AiOutlineDotChart className="size-7" data-testid="results-button"/>
-                    </button>
-                </div>
-            )}
-
-            <table id="Sitzungentabelle" className="w-full text-center ">
-                <thead>
-                    <tr>
-                        <th className="text-lg">ID</th>
-                        <th className="text-lg">Startzeit</th>
-                        <th className="text-lg">Endzeit</th>
-                        <th className="text-lg">Teilnehmerzahl</th>
-                        <th className="text-lg">Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {data?.sitzungen && data.sitzungen.length !== 0 ? (
-                        data.sitzungen.map((sitzung) =>
-                            <tr
-                                className="text-lg even:bg-[#210803] odd:bg-[#FAEEDB] even:text-white odd:text-black"
-                                key={sitzung.id}
-                            >
-                                <td className="min-w-[100px] min-h-[50px] p-2  ">
-                                    <div className="flex items-center">
-                                        <input
-                                            type="checkbox"
-                                            id={sitzung.id}
-                                            className="mr-10"
-                                            checked={selectedIds.includes(
-                                                sitzung.id
-                                            )}
-                                            onChange={(event) =>
-                                                handleCheckboxChange(
-                                                    event,
-                                                    sitzung.id
-                                                )
-                                            }
-                                        />
-                                        <label htmlFor={sitzung.id}>     
-                                            <h1>{sitzung.id}</h1>
-                                        </label>
-                                    </div>
-                                </td>
-                                <td className="min-w-[100px] min-h-[50px] p-2  ">
-                                    <h1>{sitzung.startzeit}</h1>
-                                </td>
-                                <td className="min-w-[100px] min-h-[50px] p-2  ">
-                                    <h1>{sitzung.endzeit || 'N/A'}</h1>
-                                </td>
-                                <td className="min-w-[100px] min-h-[50px] p-2  ">
-                                    <h1>{sitzung.teilnehmerzahl}</h1>
-                                </td>
-                                <td className="min-w-[100px] min-h-[50px] p-2  ">
-                                    <h1>{sitzung.aktiv ? 'Aktiv' : 'Geschlossen'}</h1>
-                                </td>
-                                {/* <td className="min-w-[100px] min-h-[50px] p-2  ">       
-                                    <button
-                                        className="hover:underline"
-                                        onClick={() =>
-                                            handleHistory(sitzung)
-                                        }
-                                    >
-                                        <AiOutlineDotChart />
-                                    </button>
-                                </td> */}
-                            </tr>
-                        ))
-                        : (
+                        <thead>
                             <tr>
-                                <td colSpan="7">
-                                    <p className="mt-16 text-xl">
-                                        Keine Sitzungen vorhanden
-                                    </p>
-                                </td>
+                                <th className="text-sm text-sm leading-4 py-2 px-4"></th>
+                                <th className="text-sm text-sm leading-4 py-2 px-4">Startzeit</th>
+                                <th className="text-sm text-sm leading-4 py-2 px-4">Endzeit</th>
+                                <th className="text-sm text-sm leading-4 py-2 px-4">Teilnehmer</th>
+                                <th className="text-sm text-sm leading-4 py-2 px-4">Status</th>
+                                <th className="text-sm text-sm leading-4 py-2 px-4"></th> {/* Empty header for icon */}
                             </tr>
-                        )}
-                </tbody>
-            </table>
+                        </thead>
+                        <tbody>
+                            {data?.sitzungen && data.sitzungen.length !== 0 ? (
+                                data.sitzungen.map((sitzung) => {
+                                    const startzeit = sitzung.startzeit ? sitzung.startzeit.toString().slice(0, 16) : 'N/A';
+                                    const endzeit = sitzung.endzeit ? sitzung.endzeit.toString().slice(0, 16) : 'N/A';
+
+                                    return (
+                                        <tr
+                                            className="text-sm text-black rounded-full"
+                                            key={sitzung.id}
+                                            style={{ backgroundColor: '#AF8A74', borderRadius: '10px' }}
+                                        >
+                                            <td className="p-2 rounded-l-full">
+                                                <div className="flex items-center">
+                                                    <input
+                                                        type="checkbox"
+                                                        id={sitzung.id}
+                                                        className="hidden"
+                                                        checked={selectedIds.includes(sitzung.id)}
+                                                        onChange={(event) =>
+                                                            handleCheckboxChange(event, sitzung.id)
+                                                        }
+                                                    />
+                                                    <label
+                                                        htmlFor={sitzung.id}
+                                                        className={`cursor-pointer mr-2 w-6 h-6 border-2 rounded-full flex items-center justify-center ${selectedIds.includes(sitzung.id)
+                                                                ? 'bg-[#210803] border-[#210803]'
+                                                                : 'bg-[#FEF2DE] border-[#FEF2DE]'
+                                                            }`}
+                                                    >
+                                                        {selectedIds.includes(sitzung.id) && (
+                                                            <div className="w-3 h-3 bg-white rounded-full"></div>
+                                                        )}
+                                                    </label>
+                                                </div>
+                                            </td>
+                                            <td className="p-2 px-1 py-0">
+                                                <h1 className="text-sm">{startzeit}</h1>
+                                            </td>
+                                            <td className="p-2 px-0 py-0">
+                                                <h1 className="text-sm">{endzeit}</h1>
+                                            </td>
+                                            <td className="p-2 px-0 py-0">
+                                                <h1 className="text-sm">{sitzung.teilnehmerzahl}</h1>
+                                            </td>
+                                            <td className="p-2 px-0 py-0">
+                                                <div className="flex items-center justify-center h-full">
+                                                    {sitzung.aktiv ? (
+                                                        <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                                                    ) : (
+                                                        <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                                                    )}
+                                                </div>
+                                            </td>
+                                            <td className="p-2 bg-[#FEF2DE] border-2 border-[#AF8A74] rounded-r-full">
+                                                {/* Icon */}
+                                                <button
+                                                    className="hover:underline ml-0"
+                                                    onClick={() => handleNavigation(sitzung.id)}
+                                                >
+                                                    <MdOutlineStart className="size-5" data-testid="navigate-button" />
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    );
+                                })
+                            ) : (
+                                <tr>
+                                    <td colSpan="6">
+                                        <p className="mt-16 text-xl">Keine Sitzungen vorhanden</p>
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
-    )
-}
+    );
+
+
+}      

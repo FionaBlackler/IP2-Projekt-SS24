@@ -1,7 +1,6 @@
 
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { resultsLaden } from './SitzungUtils';
 import { useParams } from 'react-router-dom';
 import axios from 'axios'; 
 
