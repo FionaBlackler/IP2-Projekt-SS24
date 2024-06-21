@@ -1,3 +1,4 @@
+import json
 import os
 import jwt
 
@@ -37,3 +38,12 @@ def getDecodedTokenFromHeader(event) -> dict:
         )  # Keine genauere Fehlermeldung, ansonsten bietet es leichetere Angriffsmöglichkeiten
 
     return decoded_token
+
+
+def getErrorMessage(message="Error", error_code=404):
+    """Returns a simple Error Message"""
+    return {
+        "statusCode": error_code,
+        "body": json.dumps({"message": message}),
+        "headers": {"Content-Type": "application/json"},
+    }
