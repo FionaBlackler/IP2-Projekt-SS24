@@ -7,10 +7,13 @@ import SitzungenResults from './Results'
 
 
 export default function SitzungenTable({ data, setData }) {
-    const [selectedIds, setSelectedIds] = useState([])
+    const [selectedIds, setSelectedIds] = useState([])  // keeps track of selected checkboxes
+    const [showResults, setShowResults] = useState(false); // State to toggle showing results
+    const [displayedIds, setDisplayedIds] = useState([]); //  keeps track of the session IDs for which results should be displayed
     const navigate = useNavigate()
 
     const handleCheckboxChange = (event, id) => {
+        // Updates selectedIds when checkboxes are checked or unchecked
         if (event.target.checked) {
             setSelectedIds([...selectedIds, id])
         } else {
@@ -18,22 +21,28 @@ export default function SitzungenTable({ data, setData }) {
         }
     }
 
-    // Navigate to result page
-    const handleHistory = () => {
-        let ids = [...selectedIds]
-        setSelectedIds([])
-        navigate(`/sitzung/${ids}/results`)
-    }
-
     // Navigate to session dashboard
     const handleNavigation = (id) => {
         navigate(``)  //TODO: add pfad
     }
 
+    const handleShowResults = () => {
+        /* Sets displayedIds to selectedIds when clicked.
+           Toggles showResults to true without clearing selectedIds. 
+           Clearing selectedIds will not affect the results display because displayedIds and showResults are managed separately.
+        */
+        setDisplayedIds(selectedIds);
+        setShowResults(true);
+        setSelectedIds([]);
+    };
+
     return (
         <div className="h-full w-full flex">
             <div className="flex-1 bg-white p-2 ml-0 mr-2 rounded-lg" style={{ borderRadius: '16px', marginLeft: '-43px', flexBasis: '66.66%' }}>
                 {/* Left section - currently empty */}
+                {/* integrate the SitzungenResults component into existing component by conditionally rendering it based on the showResults state */}
+                {showResults && <SitzungenResults displayedIds= {displayedIds} />}  
+                
             </div>
             <div className="flex-1 bg-[#FEF2DE] p-2 mr-0 ml-1 rounded-lg" style={{ borderRadius: '16px', marginRight: '-43px', flexBasis: '33.33%' }}>
                 <div className="border-t-2 border-[#AF8A74] mt-4" style={{ marginRight: '-10px', marginLeft: '-10px' }}></div>
@@ -49,7 +58,7 @@ export default function SitzungenTable({ data, setData }) {
                         </button>
                         <button
                             className="mb-4 hover:text-gray-200 hover:underline"
-                            onClick={handleHistory}  //todo
+                            onClick={handleShowResults} // The "Dot Chart" button toggles showResults, triggering the display of SitzungenResults when clicked.
                         >
                             <AiOutlineDotChart className="size-7" data-testid="results-button" />
                         </button>
@@ -153,6 +162,4 @@ export default function SitzungenTable({ data, setData }) {
             </div>
         </div>
     );
-
-
 }      

@@ -1,24 +1,16 @@
 
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useParams } from 'react-router-dom';
 import axios from 'axios'; 
 
 
-export default function SitzungenResults() {
-    const { ids } = useParams();  //umfrageId aus der URL mittels useParams extrahiert.
-    console.log('ids:', ids);
-
-    const idsArray = ids.split(','); // Aufteilen des Strings anhand des Kommas
-    const idsIntArray = idsArray.map(id => parseInt(id, 10)); // Konvertiert jeden String zu einer Ganzzahl
-    console.log('idsArray:', idsIntArray); // Hier wäre idsArray ein Array mit den Werten ['2', '3']
+export default function SitzungenResults({ displayedIds }) {
 
     const accessToken = localStorage.getItem('accessToken')
     const [loading, setLoading] = useState(true)
     const [data, setData] = useState([])
 
     const  resultsLaden =  () => {
-        idsIntArray.forEach((id) => {
+        displayedIds.forEach((id) => {
           console.log(id)
             axios
                 .get(`${import.meta.env.VITE_BACKEND_URL}sitzung/${id}/result`, {
@@ -58,8 +50,19 @@ export default function SitzungenResults() {
 
     if (loading) {
         return <div>Loading...</div>
-    }
+    }  
 
-    return(<></>)
+    //For Test!!!!  TODO: muss angepasst werden
+    return (
+        <div>
+            {/* Display results based on selectedIds */}
+            {displayedIds.map(id => (
+                <div key={id}>
+                    {/* Render results for each selected id */}
+                    <p>Results for session {id}</p>
+                </div>
+            ))}
+        </div>
+    );
 
 }
