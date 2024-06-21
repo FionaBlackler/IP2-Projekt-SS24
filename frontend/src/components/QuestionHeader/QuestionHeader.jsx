@@ -1,10 +1,10 @@
 import './questionHeader.scss';
 
-const QuestionHeader = ({ number, score, text }) => {
+const QuestionHeader = ({ questionId, score, text }) => {
     return (
         <div className="question-header-container">
             <div className="question-header">
-                <div className="question-number">Frage {number}</div>
+                <div className="question-number">Frage {questionId}</div>
                 <div className="question-score">{score} Punkt</div>
             </div>
             <div className="question-text">{text}</div>

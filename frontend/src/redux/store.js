@@ -1,6 +1,6 @@
 import { configureStore } from '@reduxjs/toolkit'
 import { adminLogin, adminRegister } from './reducers/adminReducers.js'
-import { questionAnswersSave, surveyAnswersSave, surveyDetails } from './reducers/surveyReducer.js'
+import { questionAnswersSave, surveyScoresSave, surveyDetails } from './reducers/surveyReducer.js'
 
 const store = configureStore({
     reducer: {
@@ -8,7 +8,7 @@ const store = configureStore({
         adminRegister: adminRegister,
         surveyDetails: surveyDetails,
         questionAnswersSave: questionAnswersSave,
-        surveyAnswersSave: surveyAnswersSave
+        surveyScoresSave: surveyScoresSave
     }
 })
 

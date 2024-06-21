@@ -33,20 +33,24 @@ export const surveyDetails = (state = initialSurveyState, action) => {
 export const questionAnswersSave = (state = {}, action) => {
     switch (action.type) {
         case actionTypes.SAVE_QUESTION_ANSWERS_REQUEST:
-            return { isSaving: true, saveSuccess: false, saveError: null }
+            return { ...state, isSaving: true, saveSuccess: false, saveError: null }
         case actionTypes.SAVE_QUESTION_ANSWERS_SUCCESS:
-            return { isSaving: false, saveSuccess: true, saveError: null }
+            return { ...state, isSaving: false, saveSuccess: true, saveError: null }
         case actionTypes.SAVE_QUESTION_ANSWERS_FAILURE:
-            return { isSaving: false, saveSuccess: false, saveError: action.payload }
+            return { ...state, isSaving: false, saveSuccess: false, saveError: action.payload }
         default:
             return state
     }
 }
 
-export const surveyAnswersSave = (state = {}, action) => {
+export const surveyScoresSave = (state = { scores: 0, totalScore: 0 }, action) => {
     switch (action.type) {
-        case actionTypes.SAVE_SURVEY_ANSWERS:
-            return { data: action.payload }
+        case actionTypes.SAVE_SURVEY_SCORES:
+            return {
+                ...state,
+                scores: action.payload.scores,
+                totalScore: action.payload.totalScore
+            }
         default:
             return state
     }

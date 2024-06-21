@@ -2,22 +2,10 @@ import { useState, useEffect } from 'react'
 import QuestionHeader from '../QuestionHeader/QuestionHeader.jsx'
 import './question.scss'
 
-const Question = ({
-                      number,
-                      text,
-                      options,
-                      score,
-                      questionType,
-                      onAnswerSelect,
-                      isScreenReaderMode,
-                      index,
-                      isLocked,
-                      onSubmit,
-                  }) => {
+const Question = ({ number, text, options, score, questionType, onAnswerSelect, index, isLocked, onSubmit }) => {
     const [selectedAnswers, setSelectedAnswers] = useState([])
-    console.log('index passed: ', index)
-    console.log("number: ", number)
-    console.log("isLocked: ", isLocked)
+    const [submitted, setSubmitted] = useState(false)
+    const [showError, setShowError] = useState(false);
 
     useEffect(() => {
         setSelectedAnswers(options.filter(option => option.isSelected).map(option => option.id))
@@ -28,24 +16,11 @@ const Question = ({
 
         switch (questionType) {
             case 'A':
-                updatedSelections = options.map(option => {
-                    const isSelected = selectedOptionIds.includes(option.id)
-                    const isCorrect = option.ist_richtig
-                    const isAnswerCorrect = isSelected && isCorrect
-                    return {
-                        id: option.id,
-                        text: option.text,
-                        isCorrect: isCorrect,
-                        isSelected: isSelected,
-                        isAnswerCorrect: isAnswerCorrect
-                    }
-                })
-                break
             case 'P':
                 updatedSelections = options.map(option => {
                     const isSelected = selectedOptionIds.includes(option.id)
                     const isCorrect = option.ist_richtig
-                    const isAnswerCorrect = isSelected && isCorrect
+                    const isAnswerCorrect = isSelected == isCorrect
                     return {
                         id: option.id,
                         text: option.text,
@@ -78,7 +53,7 @@ const Question = ({
         onAnswerSelect(updatedSelections)
     }
 
-    const handleRadioChange = (optionId) => {
+    const handleRadioChangeForA = (optionId) => {
         setSelectedAnswers([optionId])
         handleChange([optionId])
     }
@@ -112,86 +87,132 @@ const Question = ({
     const renderOptions = () => {
         switch (questionType) {
             case 'A':
-                return (<div className="question-options-container">
-                    {options.map((option) => (<div key={option.id} className="option">
-                        <input
-                            type="radio"
-                            id={`option-${option.id}`}
-                            name={`question-${number}`}
-                            value={option.text}
-                            onChange={() => handleRadioChange(option.id)}
-                            disabled={isLocked}
-                            className="option-checkbox"
-                        />
-                        <label htmlFor={`option-${option.id}`} className="option-label">
-                            {option.text}
-                        </label>
-                    </div>))}
-                </div>)
-            case 'P':
-                return (<div className="question-options-container">
-                    {options.map((option) => (<div key={option.id} className="option">
-                        <input
-                            type="checkbox"
-                            id={`option-${option.id}`}
-                            name={`question-${number}`}
-                            value={option.text}
-                            checked={selectedAnswers.includes(option.id)}
-                            onChange={() => handleCheckboxChangeForP(option.id)}
-                            disabled={isLocked}
-                            className="option-checkbox"
-                        />
-                        <label htmlFor={`option-${option.id}`} className="option-label">
-                            {option.text}
-                        </label>
-                    </div>))}
-                </div>)
-            case 'K':
-                return (<div className="question-options-container">
-                    <div className="label-container">
-                        <span className="label-text">Zutreffend</span>
-                        <span className="label-text">Nicht Zutreffend</span>
-                    </div>
-                    {options.map((option) => (
-                        <div key={option.id} className="checkbox-container">
-                            <div className="option-text-container">
-                                <span className="option-text">{option.text}</span>
+                return (
+                    <div className="question-options-container">
+                        {options.map((option) => (
+                            <div
+                                key={option.id}
+                                className={`option ${selectedAnswers.includes(option.id) ? 'selected' : ''} ${submitted ? (option.ist_richtig ? 'correct' : 'incorrect') : ''}`}
+                            >
+                                <input
+                                    type="radio"
+                                    id={`option-${option.id}`}
+                                    name={`question-${number}`}
+                                    value={option.text}
+                                    onChange={() => handleRadioChangeForA(option.id)}
+                                    disabled={isLocked}
+                                    className="option-checkbox"
+                                />
+                                <label htmlFor={`option-${option.id}`} className="option-label">
+                                    {option.text}
+                                </label>
                             </div>
-                            <fieldset className="checkbox-options">
+                        ))}
+                    </div>
+                )
+            case 'P':
+                return (
+                    <div className="question-options-container">
+                        {options.map((option) => (
+                            <div
+                                key={option.id}
+                                className={`option ${selectedAnswers.includes(option.id) ? 'selected' : ''} ${submitted ? (option.ist_richtig ? 'correct' : 'incorrect') : ''}`}
+                            >
                                 <input
                                     type="checkbox"
-                                    id={`option-${option.id}-true`}
-                                    onChange={() => handleCheckboxChangeForK(option.id, true)}
-                                    checked={selectedAnswers.includes(`${option.id}-true`)}
+                                    id={`option-${option.id}`}
+                                    name={`question-${number}`}
+                                    value={option.text}
+                                    checked={selectedAnswers.includes(option.id)}
+                                    onChange={() => handleCheckboxChangeForP(option.id)}
                                     disabled={isLocked}
-                                    className="checkbox-left"
+                                    className="option-checkbox"
                                 />
-                                <input
-                                    type="checkbox"
-                                    id={`option-${option.id}-false`}
-                                    onChange={() => handleCheckboxChangeForK(option.id, false)}
-                                    checked={selectedAnswers.includes(`${option.id}-false`)}
-                                    disabled={isLocked}
-                                    className="checkbox-right"
-                                />
-                            </fieldset>
+                                <label htmlFor={`option-${option.id}`} className="option-label">
+                                    {option.text}
+                                </label>
+                            </div>
+                        ))}
+                    </div>
+                )
+            case 'K':
+                return (
+                    <div className="question-options-container">
+                        <div className="label-container">
+                            <span className="label-text">Zutreffend</span>
+                            <span className="label-text">Nicht Zutreffend</span>
                         </div>
-                    ))}
-                </div>)
+                        {options.map((option) => (
+                            <div
+                                key={option.id}
+                                className={`checkbox-container ${
+                                    selectedAnswers.includes(`${option.id}-true`) || selectedAnswers.includes(`${option.id}-false`) ? 'selected' : ''
+                                } ${submitted ? (option.ist_richtig ? 'correct' : 'incorrect') : ''}`}
+                            >
+                                <div className="option-text-container">
+                                    <span className="option-text">{option.text}</span>
+                                </div>
+                                <fieldset className="checkbox-options">
+                                    <input
+                                        type="checkbox"
+                                        id={`option-${option.id}-true`}
+                                        onChange={() => handleCheckboxChangeForK(option.id, true)}
+                                        checked={selectedAnswers.includes(`${option.id}-true`)}
+                                        disabled={isLocked}
+                                        className="checkbox-left"
+                                    />
+                                    <input
+                                        type="checkbox"
+                                        id={`option-${option.id}-false`}
+                                        onChange={() => handleCheckboxChangeForK(option.id, false)}
+                                        checked={selectedAnswers.includes(`${option.id}-false`)}
+                                        disabled={isLocked}
+                                        className="checkbox-right"
+                                    />
+                                </fieldset>
+                            </div>
+                        ))}
+                    </div>
+                )
             default:
                 return null
         }
     }
 
+    const handleSubmit = () => {
+        if (selectedAnswers.length === 0) {
+            setShowError(true);
+        } else {
+            setShowError(false);
+            setSubmitted(true);
+            onSubmit();
+        }
+    }
+
     return (
-        <div className={`survey-question ${isScreenReaderMode && index > 0 ? 'blurred' : ''}`}>
-            <QuestionHeader number={number} score={score} text={text} />
-            <div className="question-options-container">
-                {renderOptions()}
+        <div className="question-container">
+            <QuestionHeader
+                number={number}
+                text={text}
+                score={score}
+                index={index}
+            />
+            {renderOptions()}
+            <div className="submit-container">
+                {showError && (
+                    <div className="error-message">
+                        Bitte wählen Sie eine Antwort aus.
+                    </div>
+                )}
+                {!isLocked && (
+                    <button
+                        onClick={handleSubmit}
+                        className={`submit-question-button ${selectedAnswers.length === 0 ? 'disabled' : ''}`}
+                    >
+                        Überprüfen
+                    </button>
+                )}
             </div>
-            {!isLocked && (<button onClick={() => onSubmit(number)} className="submit-question-button">
-                Antworten und sperren
-            </button>)}
         </div>
     )
 }

@@ -5,15 +5,13 @@ import DeleteAccount from '../pages/admin/DeleteAccount.jsx'
 import ForgotPassword from '../pages/password/forgotPassword/ForgotPassword.jsx'
 import SetPassword from '../pages/password/forgotPassword/SetPassword.jsx'
 import Register from '../pages/register/Register.jsx'
-import Umfrage from '../pages/admin/meineUmfrage/Umfrage.jsx'
 import ProtectedRoute from './protected.route.jsx'
 import Homepage from '../pages/home/Homepage.jsx'
-import Survey from '../pages/Survey/Survey.jsx'
 import Question from '../components/Question/Question.jsx'
 import FocusExample from '../components/FocusExample.jsx'
 import FinishSurveyView from '../pages/FinishSurveyView/FinishSurveyView.jsx'
 import MeineUmfragen from '../pages/admin/meineUmfrage/MeineUmfragen.jsx'
-import SessionCodeEntry from '../pages/sessionCodeEntry/SessionCodeEntry.jsx'
+import Survey from '../pages/Survey/Survey.jsx'
 
 function RootRoutes() {
     return (
@@ -37,6 +35,16 @@ function RootRoutes() {
                     exact={true}
                     path="/changePassword"
                     element={<ChangePassword />}
+                />
+                <Route
+                    exact={true}
+                    path="/umfrage/:id"
+                    element={<Survey />}
+                />
+                <Route
+                    exact={true}
+                    path="/finish-survey"
+                    element={<FinishSurveyView />}
                 />
                 <Route
                     exact={true}
