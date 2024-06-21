@@ -78,11 +78,6 @@ function RootRoutes() {
                     path="/deleteAccount"
                     element={<DeleteAccount />}
                 />
-                <Route
-                    exact={true}
-                    path="/sessionCodeEntry"
-                    element={<SessionCodeEntry />}
-                />
             </Routes>
         </BrowserRouter>
     )
