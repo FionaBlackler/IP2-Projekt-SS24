@@ -605,6 +605,8 @@ def getQuestionsWithOptions(event, context):
                     antwort_option.to_json()
                     for antwort_option in frage.antwort_optionen
                 ],
+                "bestaetigt": frage.bestaetigt,
+                "verneint": frage.verneint,
             }
             fragen_with_options.append(frage_json)
 
