@@ -1,136 +1,159 @@
 @import "../../styles/_variables.scss";
 
 .question-options-container {
-    margin-top: 20px;
-    padding: 10px;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-}
-
-.label-container {
-    display: flex;
-    width: 33.33%;
-    max-width: calc(33.33% - 20px);
-    padding: 0 40px;
-    justify-content: space-between;
-    margin-bottom: 20px;
-    margin-left: auto;
+  margin-top: 20px;
+  padding: 10px;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
 }
 
 .option {
-    display: flex;
-    align-items: center;
-    margin-bottom: 10px;
-    padding: 10px;
-    border: 2px solid transparent;
-    border-radius: 5px;
-    transition: border-color 0.3s;
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+  padding: 10px;
+  border: 2px solid transparent;
+  border-radius: 5px;
+  transition: border-color 0.3s;
 
-    &.selected {
-        border-color: blue;
-    }
+  &.selected {
+    border-color: $background-color;
+  }
 
-    &.correct {
-        border-color: green;
+  &.correct .option-label::before {
+    content: ' ✔';
+    color: green;
+    font-weight: bold;
+    margin-left: 10px;
+    margin-right: 10px;
+  }
 
-        .option-label::after {
-            content: ' ✔';
-            color: green;
-            font-weight: bold;
-            margin-left: 10px;
-        }
-    }
-
-    &.incorrect {
-        border-color: red;
-
-        .option-label::after {
-            content: ' ✘';
-            color: red;
-            font-weight: bold;
-            margin-left: 10px;
-        }
-    }
+  &.incorrect .option-label::before {
+    content: ' ✘';
+    color: red;
+    font-weight: bold;
+    margin-left: 10px;
+    margin-right: 20px;
+  }
 }
 
 .option-checkbox {
-    margin-right: 10px;
-    width: 20px;
-    height: 20px;
+  margin-right: 10px;
+  width: 20px;
+  height: 20px;
 }
 
 .option-label {
-    background-color: $background-color;
-    color: #fff;
-    padding: 10px;
-    border-radius: 5px;
-    flex-grow: 1;
-    cursor: pointer;
-    transition: background-color 0.3s;
+  background-color: $background-color;
+  color: #fff;
+  padding: 10px;
+  border-radius: 5px;
+  flex-grow: 1;
+  cursor: pointer;
+  transition: background-color 0.3s;
 
-    &:hover {
-        background-color: rgba(175, 41, 41, 0.8);
-    }
+  &:hover {
+    background-color: rgba(175, 41, 41, 0.8);
+  }
+}
+
+// Begin case K
+
+.label-container {
+  display: flex;
+  width: 33.33%;
+  max-width: calc(33.33% - 20px);
+  padding: 0 40px;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  margin-left: auto;
+
+  .label-text {
+    font-size: 18px;
+    color: $background-color;
+  }
 }
 
 .checkbox-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  margin-bottom: 10px;
+  padding: 10px;
+  border: 2px solid transparent;
+  border-radius: 5px;
+  transition: border-color 0.3s;
+
+  &.selected {
+    border-color: $background-color;
+  }
+
+  &.correct .option-text::before {
+    content: '✔';
+    color: green;
+    font-weight: bold;
+    margin-left: 10px;
+    margin-right: 10px;
+  }
+
+  &.incorrect .option-text::before {
+    content: '✘';
+    color: red;
+    font-weight: bold;
+    margin-left: 10px;
+    margin-right: 20px;
+  }
+
+  .option-text-container {
+    margin-top: 10px;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: $background-color;
+    border-radius: 5px;
+    width: 66.66%;
+    max-width: calc(66.66% - 20px);
+
+    .option-text {
+      margin-right: 10px;
+      color: #fff;
+    }
+  }
+
+  .checkbox-options {
+    padding: 10px 70px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    flex-wrap: wrap;
+    width: 33.33%;
+    max-width: calc(33.33% - 20px);
 
-    .option-text-container {
-        margin-top: 10px;
-        padding: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        background-color: $background-color;
-        border-radius: 5px;
-        width: 66.66%;
-        max-width: calc(66.66% - 20px);
+    .checkbox-right {
+      margin-right: 15px;
+      width: 25px;
+      height: 25px;
     }
 
-    .checkbox-options {
-        padding: 10px 70px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        width: 33.33%;
-        max-width: calc(33.33% - 20px);
+    .checkbox-left {
+      width: 25px;
+      height: 25px;
     }
+  }
 }
 
-.option-text {
-    margin-right: 10px;
-    color: #fff;
-}
-
-.label-text {
-    font-size: 18px;
-    color: $background-color;
-}
-
-.checkbox-right {
-    margin-right: 15px;
-    width: 25px;
-    height: 25px;
-}
-
-.checkbox-left {
-    width: 25px;
-    height: 25px;
-}
+// End case K
 
 .submit-container {
-    display: flex;
-    justify-content: flex-end;
-    margin-top: 20px;
-    margin-right: 20px;
-}
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+  margin-right: 20px;
+  margin-bottom: 50px;
 
-.submit-question-button {
+  .submit-question-button {
     background-color: $background-color;
     color: #fff;
     padding: 10px 20px;
@@ -140,6 +163,7 @@
     transition: background-color 0.3s;
 
     &:hover {
-        background-color: rgba(175, 41, 41, 0.8);
+      background-color: rgba(175, 41, 41, 0.8);
     }
+  }
 }

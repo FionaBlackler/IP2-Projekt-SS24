@@ -46,6 +46,8 @@ const Survey = () => {
             [questionId]: true
         }))
 
+        console.log('selections: ', selections[questionId])
+
         const currentSelection = {
             antworten: selections[questionId].map(selection => ({
                 antwort_id: selection.id,
