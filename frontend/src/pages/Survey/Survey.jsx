@@ -3,16 +3,15 @@ import { useNavigate } from 'react-router-dom'
 import './survey.scss'
 import { useDispatch, useSelector } from 'react-redux'
 import { fetchSurveyData, saveQuestionAnswers, saveSurveyAnswers } from '../../redux/actions/surveyActions.js'
-import { EyeInvisibleOutlined, EyeOutlined, LeftOutlined } from '@ant-design/icons'
+import { LeftOutlined } from '@ant-design/icons'
 import Question from '../../components/Question/Question.jsx'
 import ConfirmationModal from '../../components/ConfirmationModal/ConfirmationModal.jsx'
 
-const umfrageId = '1'
+const umfrageId = '2'
 const sitzungId = '1'
 
 const Survey = () => {
     const [selections, setSelections] = useState({})
-    const [isScreenReaderMode, setIsScreenReaderMode] = useState(false)
     const [lockedQuestions, setLockedQuestions] = useState({})
     const [isModalOpen, setIsModalOpen] = useState(false)
     const navigate = useNavigate()
@@ -23,7 +22,6 @@ const Survey = () => {
     console.log('data: ', data)
 
     useEffect(() => {
-        console.log('Fetching survey data...')
         dispatch(fetchSurveyData(umfrageId))
     }, [dispatch])
 
@@ -39,7 +37,7 @@ const Survey = () => {
         setSelections(prevSelections => ({
             ...prevSelections,
             [questionId]: updatedSelections
-        }));
+        }))
     }
 
     const handleQuestionSubmit = (questionId) => {
@@ -80,10 +78,6 @@ const Survey = () => {
     const progress = (answeredQuestionsCount / totalQuestions) * 100
     const progressText = `${answeredQuestionsCount} von ${totalQuestions} beantwortet`
 
-    const toggleMode = () => {
-        setIsScreenReaderMode(!isScreenReaderMode)
-    }
-
     return (
         <div className="survey-container">
             <header className="survey-header">
@@ -91,9 +85,6 @@ const Survey = () => {
                     <LeftOutlined /> Zurück zur letzten Seite
                 </button>
                 <h1>Umfrage</h1>
-                <button onClick={toggleMode} className="toggle-mode-button">
-                    {isScreenReaderMode ? <EyeInvisibleOutlined /> : <EyeOutlined />}
-                </button>
             </header>
 
             <div className="survey-content">
@@ -110,8 +101,6 @@ const Survey = () => {
                                 onAnswerSelect={(updatedSelections) => {
                                     handleAnswerSelection(frage.id, updatedSelections)
                                 }}
-                                isScreenReaderMode={isScreenReaderMode}
-                                index={index}
                                 isLocked={lockedQuestions[frage.id] || false}
                                 onSubmit={() => handleQuestionSubmit(frage.id)}
                             />

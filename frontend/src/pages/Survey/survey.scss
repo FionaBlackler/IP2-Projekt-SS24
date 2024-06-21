@@ -20,8 +20,7 @@
   justify-content: space-between;
   align-items: center;
 
-  .back-button,
-  .toggle-mode-button {
+  .back-button {
     padding: 8px 16px;
     font-size: 0.9em;
     background-color: $background-color;
@@ -32,20 +31,15 @@
     transition: background-color 0.3s ease;
     display: flex;
     align-items: center;
-  }
 
-  .back-button:hover,
-  .toggle-mode-button:hover {
-    background-color: $background-color;
-  }
+    &:hover {
+      background-color: lighten($background-color, 10%);
+    }
 
-  .back-button:disabled,
-  .toggle-mode-button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-
-  .anticon {
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
   }
 
   h1 {
@@ -76,12 +70,6 @@
   border-radius: 5px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   transition: all 0.3s ease;
-
-  &.blurred {
-    filter: blur(3px);
-    opacity: 0.7;
-    pointer-events: none;
-  }
 }
 
 h2 {
@@ -110,6 +98,10 @@ button {
   border-radius: 5px;
   cursor: pointer;
   transition: background-color 0.3s ease;
+
+  &:hover {
+    background-color: lighten($background-color, 10%);
+  }
 }
 
 .survey-footer {
@@ -129,10 +121,10 @@ button {
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s;
-  }
 
-  .submit-button:hover {
-    background-color: $background-color;
+    &:hover {
+      background-color: lighten($background-color, 10%);
+    }
   }
 }
 

@@ -22,6 +22,36 @@
     display: flex;
     align-items: center;
     margin-bottom: 10px;
+    padding: 10px;
+    border: 2px solid transparent;
+    border-radius: 5px;
+    transition: border-color 0.3s;
+
+    &.selected {
+        border-color: blue;
+    }
+
+    &.correct {
+        border-color: green;
+
+        .option-label::after {
+            content: ' ✔';
+            color: green;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+    }
+
+    &.incorrect {
+        border-color: red;
+
+        .option-label::after {
+            content: ' ✘';
+            color: red;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+    }
 }
 
 .option-checkbox {
@@ -82,13 +112,13 @@
     color: $background-color;
 }
 
-.checkbox-right{
+.checkbox-right {
     margin-right: 15px;
     width: 25px;
     height: 25px;
 }
 
-.checkbox-left{
+.checkbox-left {
     width: 25px;
     height: 25px;
 }
