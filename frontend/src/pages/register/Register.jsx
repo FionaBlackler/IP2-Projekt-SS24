@@ -43,7 +43,7 @@ const Register = () => {
     }, [success, redirect, navigate, error])
 
     return (
-        <div className="min-h-screen flex flex-col justify-center items-center bg-gray-100">
+        <div className="min-h-screen w-full flex flex-col justify-center items-center bg-gray-100">
             {errorMessage ? (
                 <div className="mb-6 w-full max-w-md">
                     <Alert message={errorMessage} type="error" showIcon />
