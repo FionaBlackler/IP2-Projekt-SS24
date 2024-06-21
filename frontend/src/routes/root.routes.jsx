@@ -13,6 +13,7 @@ import Question from '../components/Question/Question.jsx'
 import FocusExample from '../components/FocusExample.jsx'
 import FinishSurveyView from '../pages/FinishSurveyView/FinishSurveyView.jsx'
 import MeineUmfragen from '../pages/admin/meineUmfrage/MeineUmfragen.jsx'
+import SessionCodeEntry from '../pages/sessionCodeEntry/SessionCodeEntry.jsx'
 
 function RootRoutes() {
     return (
@@ -51,6 +52,11 @@ function RootRoutes() {
                     exact={true}
                     path="/deleteAccount"
                     element={<DeleteAccount />}
+                />
+                <Route
+                    exact={true}
+                    path="/sessionCodeEntry"
+                    element={<SessionCodeEntry />}
                 />
             </Routes>
         </BrowserRouter>
