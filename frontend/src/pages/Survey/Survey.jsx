@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import './survey.scss'
 import { useDispatch, useSelector } from 'react-redux'
-import { fetchSurveyData, saveQuestionAnswers, saveSurveyAnswers } from '../../redux/actions/surveyActions.js'
+import { fetchSurveyData, saveQuestionAnswers, saveSurveyScores } from '../../redux/actions/surveyActions.js'
 import { LeftOutlined } from '@ant-design/icons'
 import Question from '../../components/Question/Question.jsx'
 import ConfirmationModal from '../../components/ConfirmationModal/ConfirmationModal.jsx'
@@ -14,16 +14,26 @@ const Survey = () => {
     const [selections, setSelections] = useState({})
     const [lockedQuestions, setLockedQuestions] = useState({})
     const [isModalOpen, setIsModalOpen] = useState(false)
+    const [scores, setScores] = useState({})
+    const [maxScore, setMaxScore] = useState(0)
     const navigate = useNavigate()
     const dispatch = useDispatch()
 
     const { data, isLoading } = useSelector((state) => state.surveyDetails)
 
-    console.log('data: ', data)
-
     useEffect(() => {
         dispatch(fetchSurveyData(umfrageId))
     }, [dispatch])
+
+    useEffect(() => {
+        if (data && data.fragen) {
+            let max = 0;
+            data.fragen.forEach(frage => {
+                max += frage.punktzahl;
+            });
+            setMaxScore(max);
+        }
+    }, [data]);
 
     if (isLoading) {
         return <div>Loading...</div>
@@ -46,7 +56,21 @@ const Survey = () => {
             [questionId]: true
         }))
 
-        console.log('selections: ', selections[questionId])
+        const selectedOptions = selections[questionId]
+        let isQuestionCorrect = true
+
+        selectedOptions.forEach(option => {
+            if (option.isSelected && !option.isAnswerCorrect) {
+                isQuestionCorrect = false
+            }
+        })
+
+        const score = isQuestionCorrect ? data.fragen.find(frage => frage.id === questionId).punktzahl : 0
+
+        setScores((prevScores) => ({
+            ...prevScores,
+            [questionId]: score
+        }))
 
         const currentSelection = {
             antworten: selections[questionId].map(selection => ({
@@ -60,7 +84,7 @@ const Survey = () => {
 
     const confirmSubmit = () => {
         setIsModalOpen(false)
-        dispatch(saveSurveyAnswers(selections))
+        dispatch(saveSurveyScores(calculateTotalScore(), maxScore))
         navigate('/finish-survey')
     }
 
@@ -75,6 +99,14 @@ const Survey = () => {
         }
     }
 
+    const calculateTotalScore = () => {
+        let totalScore = 0
+        Object.keys(scores).forEach((questionId) => {
+            totalScore += scores[questionId]
+        })
+        return totalScore
+    }
+
     const totalQuestions = data.fragen.length
     const answeredQuestionsCount = Object.keys(lockedQuestions).length
     const progress = (answeredQuestionsCount / totalQuestions) * 100
@@ -86,12 +118,12 @@ const Survey = () => {
                 <button onClick={() => navigate(-1)} className="back-button">
                     <LeftOutlined /> Zurück zur letzten Seite
                 </button>
-                <h1>Umfrage</h1>
+                <h1>Umfrage {umfrageId}</h1>
             </header>
 
             <div className="survey-content">
                 <div className="survey-questions">
-                    {data.fragen.map((frage, index) => {
+                    {data.fragen.map((frage) => {
                         return (
                             <Question
                                 key={frage.id}

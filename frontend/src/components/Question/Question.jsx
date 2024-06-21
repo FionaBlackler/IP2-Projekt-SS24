@@ -2,20 +2,10 @@ import { useState, useEffect } from 'react'
 import QuestionHeader from '../QuestionHeader/QuestionHeader.jsx'
 import './question.scss'
 
-const Question = ({
-                      number,
-                      text,
-                      options,
-                      score,
-                      questionType,
-                      onAnswerSelect,
-                      isScreenReaderMode,
-                      index,
-                      isLocked,
-                      onSubmit
-                  }) => {
+const Question = ({ number, text, options, score, questionType, onAnswerSelect, index, isLocked, onSubmit }) => {
     const [selectedAnswers, setSelectedAnswers] = useState([])
     const [submitted, setSubmitted] = useState(false)
+    const [showError, setShowError] = useState(false);
 
     useEffect(() => {
         setSelectedAnswers(options.filter(option => option.isSelected).map(option => option.id))
@@ -26,24 +16,11 @@ const Question = ({
 
         switch (questionType) {
             case 'A':
-                updatedSelections = options.map(option => {
-                    const isSelected = selectedOptionIds.includes(option.id)
-                    const isCorrect = option.ist_richtig
-                    const isAnswerCorrect = isSelected && isCorrect
-                    return {
-                        id: option.id,
-                        text: option.text,
-                        isCorrect: isCorrect,
-                        isSelected: isSelected,
-                        isAnswerCorrect: isAnswerCorrect
-                    }
-                })
-                break
             case 'P':
                 updatedSelections = options.map(option => {
                     const isSelected = selectedOptionIds.includes(option.id)
                     const isCorrect = option.ist_richtig
-                    const isAnswerCorrect = isSelected && isCorrect
+                    const isAnswerCorrect = isSelected == isCorrect
                     return {
                         id: option.id,
                         text: option.text,
@@ -203,8 +180,13 @@ const Question = ({
     }
 
     const handleSubmit = () => {
-        setSubmitted(true)
-        onSubmit(selectedAnswers)
+        if (selectedAnswers.length === 0) {
+            setShowError(true);
+        } else {
+            setShowError(false);
+            setSubmitted(true);
+            onSubmit();
+        }
     }
 
     return (
@@ -213,14 +195,23 @@ const Question = ({
                 number={number}
                 text={text}
                 score={score}
-                isScreenReaderMode={isScreenReaderMode}
                 index={index}
             />
             {renderOptions()}
             <div className="submit-container">
-                <button onClick={handleSubmit} className="submit-question-button" disabled={isLocked}>
-                    Überprüfen
-                </button>
+                {showError && (
+                    <div className="error-message">
+                        Bitte wählen Sie eine Antwort aus.
+                    </div>
+                )}
+                {!isLocked && (
+                    <button
+                        onClick={handleSubmit}
+                        className={`submit-question-button ${selectedAnswers.length === 0 ? 'disabled' : ''}`}
+                    >
+                        Überprüfen
+                    </button>
+                )}
             </div>
         </div>
     )

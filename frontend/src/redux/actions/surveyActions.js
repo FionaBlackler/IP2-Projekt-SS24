@@ -67,11 +67,14 @@ export const saveQuestionAnswers = (sitzungId, antworten) => {
     }
 }
 
-export const saveSurveyAnswers = (antworten) => {
+export const saveSurveyScores = (scores, totalScore) => {
     return (dispatch) => {
         dispatch({
-            type: actionTypes.SAVE_SURVEY_ANSWERS,
-            payload: antworten
+            type: actionTypes.SAVE_SURVEY_SCORES,
+            payload: {
+                scores: scores,
+                totalScore: totalScore
+            }
         });
     };
 };

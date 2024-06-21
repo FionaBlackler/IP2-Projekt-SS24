@@ -153,6 +153,13 @@
   margin-right: 20px;
   margin-bottom: 50px;
 
+  .error-message {
+    color: red;
+    padding: 10px 10px;
+    font-size: 1rem;
+    text-align: center;
+  }
+
   .submit-question-button {
     background-color: $background-color;
     color: #fff;
@@ -161,6 +168,11 @@
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s;
+
+    &.disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
 
     &:hover {
       background-color: rgba(175, 41, 41, 0.8);

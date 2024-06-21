@@ -18,7 +18,7 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, content }) => {
                 </div>
                 <div className="custom-modal-actions">
                     <button onClick={onClose} className="cancel-button">No</button>
-                    <button onClick={onConfirm} className="confirm-button">No but pink :)</button>
+                    <button onClick={onConfirm} className="confirm-button">Yes</button>
                 </div>
             </div>
         </div>
