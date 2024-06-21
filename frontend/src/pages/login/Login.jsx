@@ -4,6 +4,7 @@ import { useLocation, useNavigate, Link } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { login } from '../../redux/actions/authActions.js'
 import './login.css'
+import './login.css'
 
 const Login = () => {
     const dispatch = useDispatch()
@@ -76,6 +77,23 @@ const Login = () => {
                             />
                         </Form.Item>
 
+                        <Form.Item
+                            name="password"
+                            label="Passwort"
+                            rules={[
+                                {
+                                    required: true,
+                                    message: 'Please input your password!',
+                                },
+                            ]}
+                            className="w-full"
+                        >
+                            <Input.Password
+                                placeholder="Passwort"
+                                size="large"
+                                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-color"
+                            />
+                        </Form.Item>
                         <Form.Item
                             name="password"
                             label="Passwort"

@@ -58,6 +58,31 @@ function RootRoutes() {
                     path="/sessionCodeEntry"
                     element={<SessionCodeEntry />}
                 />
+                <Route
+                    exact={true}
+                    path="/changePassword"
+                    element={<ChangePassword />}
+                />
+                <Route
+                    exact={true}
+                    path="/forgotPassword"
+                    element={<ForgotPassword />}
+                />
+                <Route
+                    exact={true}
+                    path="/setPassword"
+                    element={<SetPassword />}
+                />
+                <Route
+                    exact={true}
+                    path="/deleteAccount"
+                    element={<DeleteAccount />}
+                />
+                <Route
+                    exact={true}
+                    path="/sessionCodeEntry"
+                    element={<SessionCodeEntry />}
+                />
             </Routes>
         </BrowserRouter>
     )
