@@ -1,0 +1,22 @@
+#normal_register_name:hover, #normal_register_email:hover {
+    border-color: #73594b !important;
+    box-shadow: 0 0 0 1px rgba(115, 89, 75) !important;
+}
+
+.ant-input-password:hover {
+    border-color: #73594b !important;
+    box-shadow: 0 0 0 1px rgba(115, 89, 75)!important;
+}
+
+.ant-input-outlined:focus {
+    border-color: #73594b !important;
+    box-shadow: 0 0 0 1px rgba(115, 89, 75)!important;
+}
+
+.ant-btn-primary {
+    background-color: #AF8A74 !important;
+}
+
+.ant-btn-primary:hover {
+    background-color: #73594b !important;
+}
