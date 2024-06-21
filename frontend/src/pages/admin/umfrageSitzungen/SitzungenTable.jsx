@@ -49,7 +49,7 @@ export default function SitzungenTable({ data, setData }) {
                         </button>
                         <button
                             className="mb-4 hover:text-gray-200 hover:underline"
-                            onClick={handleHistory}
+                            onClick={handleHistory}  //todo
                         >
                             <AiOutlineDotChart className="size-7" data-testid="results-button" />
                         </button>
@@ -94,6 +94,7 @@ export default function SitzungenTable({ data, setData }) {
                                                         onChange={(event) =>
                                                             handleCheckboxChange(event, sitzung.id)
                                                         }
+                                                        data-testid={`checkbox-${sitzung.id}`} 
                                                     />
                                                     <label
                                                         htmlFor={sitzung.id}
@@ -120,9 +121,9 @@ export default function SitzungenTable({ data, setData }) {
                                             <td className="p-2 px-0 py-0">
                                                 <div className="flex items-center justify-center h-full">
                                                     {sitzung.aktiv ? (
-                                                        <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                                                        <div data-testid={`status-${sitzung.id}`} className="w-3 h-3 bg-green-500 rounded-full"></div>
                                                     ) : (
-                                                        <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                                                        <div data-testid={`status-${sitzung.id}`} className="w-3 h-3 bg-red-500 rounded-full"></div>
                                                     )}
                                                 </div>
                                             </td>
@@ -130,6 +131,7 @@ export default function SitzungenTable({ data, setData }) {
                                                 {/* Icon */}
                                                 <button
                                                     className="hover:underline ml-0"
+                                                    data-testid={`navigate-button-${sitzung.id}`}
                                                     onClick={() => handleNavigation(sitzung.id)}
                                                 >
                                                     <MdOutlineStart className="size-5" data-testid="navigate-button" />
