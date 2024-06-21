@@ -13,6 +13,7 @@ import Question from '../components/Question/Question.jsx'
 import FocusExample from '../components/FocusExample.jsx'
 import FinishSurveyView from '../pages/FinishSurveyView/FinishSurveyView.jsx'
 import MeineUmfragen from '../pages/admin/meineUmfrage/MeineUmfragen.jsx'
+import SessionCodeEntry from '../pages/sessionCodeEntry/SessionCodeEntry.jsx'
 
 function RootRoutes() {
     return (
@@ -32,6 +33,31 @@ function RootRoutes() {
                 />
                 <Route exact={true} path="/login" element={<Login />} />
                 <Route exact={true} path="/register" element={<Register />} />
+                <Route
+                    exact={true}
+                    path="/changePassword"
+                    element={<ChangePassword />}
+                />
+                <Route
+                    exact={true}
+                    path="/forgotPassword"
+                    element={<ForgotPassword />}
+                />
+                <Route
+                    exact={true}
+                    path="/setPassword"
+                    element={<SetPassword />}
+                />
+                <Route
+                    exact={true}
+                    path="/deleteAccount"
+                    element={<DeleteAccount />}
+                />
+                <Route
+                    exact={true}
+                    path="/sessionCodeEntry"
+                    element={<SessionCodeEntry />}
+                />
                 <Route
                     exact={true}
                     path="/changePassword"

@@ -1,0 +1,28 @@
+.ant-btn-primary:hover {
+    background-color: #73594b !important;
+}
+
+#normal_login_email:hover, #normal_login_email:focus {
+    border-color: #73594b !important;
+    box-shadow: 0 0 0 1px rgba(115, 89, 75) !important;
+}
+
+.ant-input-password:hover {
+    border-color: #73594b !important;
+    box-shadow: 0 0 0 1px rgba(115, 89, 75)!important;
+}
+
+
+.ant-input-outlined:focus {
+    border-color: #73594b !important;
+    box-shadow: 0 0 0 1px rgba(115, 89, 75)!important;
+}
+
+#root {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+}
