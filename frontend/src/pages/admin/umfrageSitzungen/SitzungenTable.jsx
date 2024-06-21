@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { sitzungenLöschen } from './SitzungUtils'
 import { AiOutlineDelete, AiOutlineDotChart } from 'react-icons/ai'
@@ -36,9 +36,16 @@ export default function SitzungenTable({ data, setData }) {
         setSelectedIds([]);
     };
 
+    // Use useEffect to log state changes and effects
+    useEffect(() => {
+        console.log('selected ids:', selectedIds);
+        console.log('displayed ids:', displayedIds);
+        console.log('show results:', showResults);
+    }, [selectedIds, displayedIds, showResults]);
+
     return (
         <div className="h-full w-full flex">
-            <div className="flex-1 bg-white p-2 ml-0 mr-2 rounded-lg" style={{ borderRadius: '16px', marginLeft: '-43px', flexBasis: '66.66%' }}>
+            <div className="flex-1 bg-white p-2 ml-0 mr-2 rounded-lg" style={{ borderRadius: '16px', marginLeft: '-43px', flexBasis: '66.66%' }} data-testid="sitzungen-results">
                 {/* Left section - currently empty */}
                 {/* integrate the SitzungenResults component into existing component by conditionally rendering it based on the showResults state */}
                 {showResults && <SitzungenResults displayedIds= {displayedIds} />}  
@@ -58,7 +65,7 @@ export default function SitzungenTable({ data, setData }) {
                         </button>
                         <button
                             className="mb-4 hover:text-gray-200 hover:underline"
-                            onClick={handleShowResults} // The "Dot Chart" button toggles showResults, triggering the display of SitzungenResults when clicked.
+                            onClick={() => handleShowResults()} // The "Dot Chart" button toggles showResults, triggering the display of SitzungenResults when clicked.
                         >
                             <AiOutlineDotChart className="size-7" data-testid="results-button" />
                         </button>

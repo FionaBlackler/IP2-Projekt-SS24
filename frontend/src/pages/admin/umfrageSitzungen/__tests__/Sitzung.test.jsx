@@ -1,16 +1,13 @@
-import { render, screen, waitFor, fireEvent, getByText } from '@testing-library/react'
+import { render, screen, waitFor, fireEvent } from '@testing-library/react'
 import '@testing-library/jest-dom'
-import { BrowserRouter, useNavigate, MemoryRouter, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, MemoryRouter, Route, Routes } from 'react-router-dom'
 import axios from 'axios'
 import AxiosMockAdapter from 'axios-mock-adapter'
 import { expect, vi } from 'vitest'
 import Sitzung from '../Sitzung'
 import SitzungenTable from '../SitzungenTable'
 import { sitzungenLöschen } from '../SitzungUtils'
-import SitzungenResults from '../Results'
 import UmfrageSitzungen from '../UmfrageSizungen'
-import { func } from 'prop-types'
-import { MdOutlinePanoramaPhotosphereSelect } from 'react-icons/md'
 
 // Mock for useParams, useNavigate
 const navigate = vi.fn();
@@ -23,10 +20,10 @@ vi.mock('react-router-dom', () => ({
     useNavigate: () => navigate, // Mock the navigate function
 }));
 
-const handleNavigation = vi.fn();
 const setData = vi.fn();
 const setSelectedIds = vi.fn();
-const handleCheckboxChange = vi.fn();
+const setShowResults = vi.fn();
+const setDisplayedIds = vi.fn();
 
 //response value des Requests 
 const mockData = {
@@ -46,6 +43,9 @@ const mockData = {
             aktiv: false,
         },
     ],
+};
+
+const mockResultData = {
 };
 
 
@@ -206,51 +206,62 @@ describe('Sitzung Component', () => {
         }); 
     });
 
-    test('navigates to session dashboard page when navigate button is clicked', () => {
-
+    test('handleShowResults after clicking DotChart button', async () => {
         render(
             <BrowserRouter>
-              <SitzungenTable data={mockData} setData={setData}/>
+                <SitzungenTable data={mockData} setData={setData} />
             </BrowserRouter>
         );
 
-        mockData.sitzungen.forEach((sitzung) => {
-            const navigateButton = screen.getByTestId(`navigate-button-${sitzung.id}`);
-            fireEvent.click(navigateButton);
-           
-           // expect(handleNavigation).toHaveBeenCalledWith(sitzung.id);
-            expect(navigate).toHaveBeenCalledWith(``);   //TODO add pfad
-        });
+        mockData.sitzungen.forEach((sitzung) => async () => {
+            const checkbox = screen.getByTestId(`checkbox-${sitzung.id}`);
+            fireEvent.click(checkbox);
+            expect(checkbox.checked).toBe(true);
+            expect(setSelectedIds).toHaveBeenCalledWith([sitzung.id]);
+
+            const dotChartButton = screen.getByTestId('results-button');
+            fireEvent.click(dotChartButton);
+
+            // Wait for state updates to propagate and component to re-render
+            await waitFor(() => {
+                expect(setDisplayedIds).toHaveBeenCalledWith([sitzung.id]);
+                expect(setShowResults).toHaveBeenCalledWith(true);
+                expect(setSelectedIds).toHaveBeenCalledWith([]);
+                expect(checkbox.checked).toBe(false);
+            });
+        }); 
     });
 
-    //TODO: an derselbe seite -->  render Results
-    /* test('navigates to results page when button is clicked', () => {
+    test('render SitzungResults after DotChart clicked', async () => {
 
         render(
             <BrowserRouter>
-              <SitzungenTable data={mockData} />
+                <SitzungenTable data={mockData} />
             </BrowserRouter>
         );
 
-        const checkbox1 = screen.getByLabelText('1'); 
-        const checkbox2 = screen.getByLabelText('2'); 
-        fireEvent.click(checkbox1);
-        fireEvent.click(checkbox2);
+        const checkbox = screen.getByTestId(`checkbox-${mockData.sitzungen[0].id}`);
+        fireEvent.click(checkbox);
 
-        const button = screen.getByTestId('results-button');
-        expect(button).toBeInTheDocument();
+        const dotChartButton = screen.getByTestId('results-button');
+        fireEvent.click(dotChartButton);
 
-        // Click the Results button
-        fireEvent.click(button);
-        // Expect navigate to have been called with the correct path
-        expect(navigate).toHaveBeenCalledWith('/sitzung/1,2/results');
-    }); */
+        // Wait for SitzungenResults to be rendered
+        await waitFor(() => {
+
+            // Assert that SitzungenResults component is rendered
+            const resultsComponent = screen.getByTestId('sitzungen-results');
+            expect(resultsComponent).toBeInTheDocument();
+
+            //expect(screen.getByText(`Results for session ${mockData.sitzungen[0].id}`)).toBeInTheDocument();
+        });
+    }); 
 
     test('clicking checkbox will display delete and dotChart button', () => {
 
         render(
             <BrowserRouter>
-              <SitzungenTable data={mockData} />
+              <SitzungenTable data={mockData} setData={setData} />
             </BrowserRouter>
         );
 
