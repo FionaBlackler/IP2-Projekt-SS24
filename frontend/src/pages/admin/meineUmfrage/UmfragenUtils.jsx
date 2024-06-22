@@ -1,48 +1,84 @@
-import axios from 'axios'
-import { useEffect } from 'react'
+import axiosInstance from '../../../axios/axiosConfig'
 
-const accessToken = localStorage.getItem('accessToken')
-
-export const umfragenArchivieren = (selectedIds, setSelectedIds, getData, setData) => {
-    const newUmfragen = getData.umfragen.filter((umfrage) => !selectedIds.includes(umfrage.id));
-    setData({ umfragen: newUmfragen });
-
-    selectedIds.forEach((id) => {
-        axios
-            .get(`${import.meta.env.VITE_BACKEND_URL}/umfrage/archive/${id}`, {
-                headers: { Authorization: `Bearer ${accessToken}` },
-            })
-            .then((r) => {
-                if (r.status === 200) {
-                    console.log(`Umfrage mit ID ${id} erfolgreich archiviert`);
-                }
-            })
-            .catch((error) => {
-                console.log('ERROR: ' + error);
-            });
-    });
-
-    setSelectedIds([]);
-};
-
-export const  umfragenLöschen =  (selectedIds, setSelectedIds, getData, setData) => {
-    const newUmfragen = getData.umfragen.filter((umfrage) => !selectedIds.includes(umfrage.id));
-    setData({ umfragen: newUmfragen });
+export const umfragenArchivieren = (
+    selectedIds,
+    setSelectedIds,
+    getData,
+    setData
+) => {
+    const newUmfragen = getData.umfragen.filter(
+        (umfrage) => !selectedIds.includes(umfrage.id)
+    )
 
     selectedIds.forEach((id) => {
-        axios
-            .delete(`${import.meta.env.VITE_BACKEND_URL}/umfrage/delete/${id}`, {
-                headers: { Authorization: `Bearer ${accessToken}` },
-            })
+        axiosInstance
+            .get(`/umfrage/archive/${id}`)
             .then((r) => {
                 if (r.status === 200) {
-                    console.log(`Umfrage mit ID ${id} erfolgreich gelöscht`);
+                    console.log(`Umfrage mit ID ${id} erfolgreich archiviert`)
+                    setData({ umfragen: newUmfragen })
                 }
             })
-            .catch((error) => {
-                console.log('ERROR: ' + error);
-            });
-    });
+            .finally(() => {
+                setSelectedIds([])
+            })
+    })
+}
 
-    setSelectedIds([]);
-};
+export const umfragenLöschen = (
+    selectedIds,
+    setSelectedIds,
+    getData,
+    setData
+) => {
+    const newUmfragen = getData.umfragen.filter(
+        (umfrage) => !selectedIds.includes(umfrage.id)
+    )
+
+    selectedIds.forEach((id) => {
+        axiosInstance
+            .delete(`/umfrage/delete/${id}`)
+            .then((r) => {
+                if (r.status === 200) {
+                    console.log(`Umfrage mit ID ${id} erfolgreich gelöscht`)
+                    setData({ umfragen: newUmfragen })
+                }
+            })
+            .finally(() => {
+                setSelectedIds([])
+            })
+    })
+}
+
+export const handleCheckboxChange = (
+    event,
+    id,
+    selectedIds,
+    setSelectedIds
+) => {
+    if (event.target.checked) {
+        setSelectedIds([...selectedIds, id])
+    } else {
+        setSelectedIds(selectedIds.filter((item) => item !== id))
+    }
+}
+
+export const checkData = (table, data) => {
+    if (table === 'umfragen') {
+        return (
+            data &&
+            data.umfragen &&
+            data.umfragen.filter(
+                (umfrage) => umfrage.archivierungsdatum === null
+            ).length > 0
+        )
+    } else if (table === 'archive') {
+        return (
+            data &&
+            data.umfragen &&
+            data.umfragen.filter(
+                (umfrage) => umfrage.archivierungsdatum !== null
+            ).length > 0
+        )
+    }
+}

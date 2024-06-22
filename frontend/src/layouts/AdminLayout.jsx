@@ -5,7 +5,7 @@ import NavigationBar from '../components/NavigationBar.jsx'
 import Footer from '../components/Footer.jsx'
 
 const AdminLayout = ({ children }) => (
-    <div className="admin-layout">
+    <div className="admin-layout h-screen">
         <NavigationBar />
         <div className="admin-layout__content">
             <SideMenu />
@@ -13,7 +13,6 @@ const AdminLayout = ({ children }) => (
                 {children}
             </div>
         </div>
-        <Footer />
     </div>
 )
 
