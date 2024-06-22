@@ -1,8 +1,21 @@
 import * as actionTypes from '../constants/authActionTypes.js'
 
+export const checkToken = () => {
+    const accessToken = localStorage.getItem('accessToken')
+    if (accessToken) {
+        const decodedToken = JSON.parse(atob(accessToken.split('.')[1]))
+        if (decodedToken.exp * 1000 < Date.now()) {
+            localStorage.removeItem('accessToken')
+            return null
+        }
+        return accessToken
+    }
+    return null
+}
+
 const initialState = {
-    accessToken: localStorage.getItem('accessToken') || null,
-    isAuthenticated: localStorage.getItem('accessToken') ? true : false,
+    accessToken: checkToken(),
+    isAuthenticated: !!checkToken(),
     error: null
 }
 
