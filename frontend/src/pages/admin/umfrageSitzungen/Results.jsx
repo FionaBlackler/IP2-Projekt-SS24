@@ -1,21 +1,17 @@
-import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import axios from 'axios';
-import AdminLayout from '../../../layouts/AdminLayout.jsx';
-import Menu from '../../../components/charts/StatistikMenü.jsx';
 
-export default function SitzungenResults() {
-    const { ids } = useParams();
-    const idsArray = ids.split(',');
-    const idsIntArray = idsArray.map(id => parseInt(id, 10));
-    const accessToken = localStorage.getItem('accessToken');
-    const [loading, setLoading] = useState(true);
-    const [data, setData] = useState([]);
+import { useEffect, useState } from 'react'
+import axios from 'axios'; 
 
-    const resultsLaden = () => {
-        let allData = {};
 
-        idsIntArray.forEach((id, index) => {
+export default function SitzungenResults({ displayedIds }) {
+
+    const accessToken = localStorage.getItem('accessToken')
+    const [loading, setLoading] = useState(true)
+    const [data, setData] = useState([])
+
+    const  resultsLaden =  () => {
+        displayedIds.forEach((id) => {
+          console.log(id)
             axios
                 .get(`${import.meta.env.VITE_BACKEND_URL}sitzung/${id}/result`, {
                     headers: { 'Authorization': `Bearer ${accessToken}`, "ContentType": 'application/json' }
@@ -78,15 +74,20 @@ export default function SitzungenResults() {
     }, []);
 
     if (loading) {
-        return <div>Loading...</div>;
-    }
+        return <div>Loading...</div>
+    }  
 
+    //For Test!!!!  TODO: muss angepasst werden
     return (
-        <AdminLayout>
-            <div>
-                <h1>Ergebnisse der ausgewählten Sitzungen</h1>
-                <Menu data={data} />
-            </div>
-        </AdminLayout>
+        <div>
+            {/* Display results based on selectedIds */}
+            {displayedIds.map(id => (
+                <div key={id}>
+                    {/* Render results for each selected id */}
+                    <p>Results for session {id}</p>
+                </div>
+            ))}
+        </div>
     );
+
 }

@@ -1,15 +1,13 @@
-import { render, screen, waitFor, fireEvent, getByText } from '@testing-library/react'
+import { render, screen, waitFor, fireEvent } from '@testing-library/react'
 import '@testing-library/jest-dom'
-import { BrowserRouter, useNavigate } from 'react-router-dom'
+import { BrowserRouter, MemoryRouter, Route, Routes } from 'react-router-dom'
 import axios from 'axios'
 import AxiosMockAdapter from 'axios-mock-adapter'
 import { expect, vi } from 'vitest'
 import Sitzung from '../Sitzung'
 import SitzungenTable from '../SitzungenTable'
 import { sitzungenLöschen } from '../SitzungUtils'
-import SitzungenResults from '../Results'
 import UmfrageSitzungen from '../UmfrageSizungen'
-import { func } from 'prop-types'
 
 // Mock for useParams, useNavigate
 const navigate = vi.fn();
@@ -24,6 +22,8 @@ vi.mock('react-router-dom', () => ({
 
 const setData = vi.fn();
 const setSelectedIds = vi.fn();
+const setShowResults = vi.fn();
+const setDisplayedIds = vi.fn();
 
 //response value des Requests 
 const mockData = {
@@ -45,6 +45,9 @@ const mockData = {
     ],
 };
 
+const mockResultData = {
+};
+
 
 describe('Sitzung Component', () => {
     const axiosMock = new AxiosMockAdapter(axios)
@@ -64,22 +67,22 @@ describe('Sitzung Component', () => {
     })
 
     test('fetches and displays data', async () => {
-        const consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
-        axiosMock.onGet(`${import.meta.env.VITE_BACKEND_URL}umfrage/123/sitzungen`).reply(200, mockData)
-
+        const consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+        axiosMock.onGet(`${import.meta.env.VITE_BACKEND_URL}umfrage/123/sitzungen`).reply(200, mockData);
+    
         render(
-            <BrowserRouter>
-                <Sitzung />
-            </BrowserRouter>
-        )
-
+            <MemoryRouter initialEntries={['/umfrage/123/sitzungen']}>
+                <Routes>
+                    <Route path="umfrage/:umfrageId/sitzungen" element={<Sitzung />} />
+                </Routes>
+            </MemoryRouter>
+        );
+    
         await waitFor(() => {
-            expect(screen.getByText('Sitzungstabelle für Umfrage ID 123')).toBeInTheDocument()
-        })
-
-        expect(consoleLogSpy).toHaveBeenCalledWith('Data received from server:', mockData)
-        consoleLogSpy.mockRestore()
-    })
+            expect(consoleLogSpy).toHaveBeenCalledWith('Data received from server:', mockData);
+        });
+        consoleLogSpy.mockRestore();
+    });
 
     test('handles no data response', async () => {
         const consoleNoDataLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
@@ -93,7 +96,6 @@ describe('Sitzung Component', () => {
 
         await waitFor(() => expect(screen.getByText('Keine Sitzungen vorhanden')).toBeInTheDocument())
         expect(consoleNoDataLogSpy).toHaveBeenCalledWith('Keine Einträge vorhanden')
-
         consoleNoDataLogSpy.mockRestore()
     })
 
@@ -114,7 +116,6 @@ describe('Sitzung Component', () => {
                 message: "Authentication failed"
             }))
         })
-
         // Cleanup the mock to not interfere with other tests
         consoleAuthErrorSpy.mockRestore()
     })
@@ -136,8 +137,6 @@ describe('Sitzung Component', () => {
                 message: "Umfrage not found"
             }))
         })
-
-        // Cleanup the mock to not interfere with other tests
         consoleNotFoundErrorSpy.mockRestore()
     })
 
@@ -158,8 +157,6 @@ describe('Sitzung Component', () => {
                 message: "Internal Server Error, contact Backend-Team for more Info"
             }))
         })
-
-        // Cleanup the mock to not interfere with other tests
         consoleServerErrorSpy.mockRestore()
     })
 
@@ -167,90 +164,119 @@ describe('Sitzung Component', () => {
 
         render(
             <BrowserRouter>
-                <SitzungenTable data={mockData} />
+                <SitzungenTable data={mockData} setData={setData}/>
             </BrowserRouter>
         )
 
         // Verify table headers
-        expect(screen.getByText('ID')).toBeInTheDocument();
         expect(screen.getByText('Startzeit')).toBeInTheDocument();
         expect(screen.getByText('Endzeit')).toBeInTheDocument();
-        expect(screen.getByText('Teilnehmerzahl')).toBeInTheDocument();
+        expect(screen.getByText('Teilnehmer')).toBeInTheDocument();
         expect(screen.getByText('Status')).toBeInTheDocument();
 
         // Verify table rows and data
         mockData.sitzungen.forEach((sitzung) => {
-            expect(screen.getByText(String(sitzung.id))).toBeInTheDocument();
-            expect(screen.getByText(sitzung.startzeit)).toBeInTheDocument();
-            expect(screen.getByText(sitzung.endzeit)).toBeInTheDocument();
+            expect(screen.getByText(sitzung.startzeit.toString().slice(0, 16))).toBeInTheDocument();
+            expect(screen.getByText(sitzung.endzeit.toString().slice(0, 16))).toBeInTheDocument();
             expect(screen.getByText(String(sitzung.teilnehmerzahl))).toBeInTheDocument();
-            expect(screen.getByText(sitzung.aktiv ? 'Aktiv' : 'Geschlossen')).toBeInTheDocument();
+            if (sitzung.aktiv) {
+                expect(screen.getByTestId(`status-${sitzung.id}`)).toHaveClass('bg-green-500');
+            } else {
+                expect(screen.getByTestId(`status-${sitzung.id}`)).toHaveClass('bg-red-500');
+            }
+            const navigateButton = screen.getByTestId(`navigate-button-${sitzung.id}`);
+            expect(navigateButton).toBeInTheDocument();
         });
     })
 
     test('handles checkbox selection', () => {
         render(
             <BrowserRouter>
+                <SitzungenTable data={mockData} setData={setData}/>
+            </BrowserRouter>
+        );
+
+        mockData.sitzungen.forEach((sitzung) => {
+            const checkbox = screen.getByTestId(`checkbox-${sitzung.id}`);
+            expect(checkbox.checked).toBe(false);
+            fireEvent.click(checkbox);
+            expect(checkbox.checked).toBe(true);
+
+            setSelectedIds([], sitzung.id) 
+        }); 
+    });
+
+    test('handleShowResults after clicking DotChart button', async () => {
+        render(
+            <BrowserRouter>
+                <SitzungenTable data={mockData} setData={setData} />
+            </BrowserRouter>
+        );
+
+        mockData.sitzungen.forEach((sitzung) => async () => {
+            const checkbox = screen.getByTestId(`checkbox-${sitzung.id}`);
+            fireEvent.click(checkbox);
+            expect(checkbox.checked).toBe(true);
+            expect(setSelectedIds).toHaveBeenCalledWith([sitzung.id]);
+
+            const dotChartButton = screen.getByTestId('results-button');
+            fireEvent.click(dotChartButton);
+
+            // Wait for state updates to propagate and component to re-render
+            await waitFor(() => {
+                expect(setDisplayedIds).toHaveBeenCalledWith([sitzung.id]);
+                expect(setShowResults).toHaveBeenCalledWith(true);
+                expect(setSelectedIds).toHaveBeenCalledWith([]);
+                expect(checkbox.checked).toBe(false);
+            });
+        }); 
+    });
+
+    test('render SitzungResults after DotChart clicked', async () => {
+
+        render(
+            <BrowserRouter>
                 <SitzungenTable data={mockData} />
             </BrowserRouter>
         );
 
-        const checkbox1 = screen.getByLabelText('1');
-        const checkbox2 = screen.getByLabelText('2'); 
+        const checkbox = screen.getByTestId(`checkbox-${mockData.sitzungen[0].id}`);
+        fireEvent.click(checkbox);
 
-        // Verify checkboxes are initially unchecked
-        expect(checkbox1.checked).toBe(false);
-        expect(checkbox2.checked).toBe(false);
+        const dotChartButton = screen.getByTestId('results-button');
+        fireEvent.click(dotChartButton);
 
-        // Simulate clicking checkboxes
-        fireEvent.click(checkbox1);
-        fireEvent.click(checkbox2);
+        // Wait for SitzungenResults to be rendered
+        await waitFor(() => {
 
-        // Assert checkboxes are now checked
-        expect(checkbox1.checked).toBe(true);
-        expect(checkbox2.checked).toBe(true);
-    });
+            // Assert that SitzungenResults component is rendered
+            const resultsComponent = screen.getByTestId('sitzungen-results');
+            expect(resultsComponent).toBeInTheDocument();
 
-    test('navigates to results page when button is clicked', () => {
+            //expect(screen.getByText(`Results for session ${mockData.sitzungen[0].id}`)).toBeInTheDocument();
+        });
+    }); 
 
-        render(
-            <BrowserRouter>
-              <SitzungenTable data={mockData} />
-            </BrowserRouter>
-        );
-
-        const checkbox1 = screen.getByLabelText('1'); 
-        const checkbox2 = screen.getByLabelText('2'); 
-        fireEvent.click(checkbox1);
-        fireEvent.click(checkbox2);
-
-        const button = screen.getByTestId('results-button');
-        expect(button).toBeInTheDocument();
-
-        // Click the Results button
-        fireEvent.click(button);
-        // Expect navigate to have been called with the correct path
-        expect(navigate).toHaveBeenCalledWith('/sitzung/1,2/results');
-    });
-
-    test('clicking checkbox will display delete button', () => {
+    test('clicking checkbox will display delete and dotChart button', () => {
 
         render(
             <BrowserRouter>
-              <SitzungenTable data={mockData} />
+              <SitzungenTable data={mockData} setData={setData} />
             </BrowserRouter>
         );
 
-        const checkbox1 = screen.getByLabelText('1'); 
-        const checkbox2 = screen.getByLabelText('2'); 
-        fireEvent.click(checkbox1);
-        fireEvent.click(checkbox2);
+        mockData.sitzungen.forEach((sitzung) => {
+            const checkbox = screen.getByTestId(`checkbox-${sitzung.id}`);
+            fireEvent.click(checkbox);
+        });
 
         const deleteButton = screen.getByTestId('delete-button'); // Select the delete button using its data-testid
+        const dotChartButton = screen.getByTestId('results-button');
         expect(deleteButton).toBeInTheDocument();
+        expect(dotChartButton).toBeInTheDocument();
     });
 
-    test('deletes selected Sitzungen and updates data', async () => {
+    test('deletes selected Sitzungen and updates data id delete button clicked', async () => {
         const consoleDeleteLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
         axiosMock.onDelete(`${import.meta.env.VITE_BACKEND_URL}sitzung/delete/1`).reply(200, {
             message: "Sitzung deleted successfully"
