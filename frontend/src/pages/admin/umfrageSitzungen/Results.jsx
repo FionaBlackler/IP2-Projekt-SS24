@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from 'react'
 import axios from 'axios'; 
-
+import Menu from '../../../components/charts/StatistikMenü.jsx';
 
 export default function SitzungenResults({ displayedIds }) {
 
@@ -10,7 +10,8 @@ export default function SitzungenResults({ displayedIds }) {
     const [data, setData] = useState([])
 
     const  resultsLaden =  () => {
-        displayedIds.forEach((id) => {
+        let allData = {};
+        displayedIds.forEach((id, index) => {
           console.log(id)
             axios
                 .get(`${import.meta.env.VITE_BACKEND_URL}sitzung/${id}/result`, {
@@ -43,8 +44,10 @@ export default function SitzungenResults({ displayedIds }) {
                         });
 
                         // Set data only after all requests are completed
-                        if (index === idsIntArray.length - 1) {
+                        if (index === displayedIds.length - 1) {
                             setData(Object.values(allData));
+                            console.log("data array:")
+                            console.log(data)
                             setLoading(false);
                         }
                     }
@@ -85,6 +88,7 @@ export default function SitzungenResults({ displayedIds }) {
                 <div key={id}>
                     {/* Render results for each selected id */}
                     <p>Results for session {id}</p>
+                    <Menu data={data} />
                 </div>
             ))}
         </div>
