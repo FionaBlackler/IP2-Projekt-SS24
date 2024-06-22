@@ -81,16 +81,29 @@ export default function SitzungenResults({ displayedIds }) {
     }  
 
     //For Test!!!!  TODO: muss angepasst werden
+    // return (
+    //     <div>
+    //         {/* Display results based on selectedIds */}
+    //         {displayedIds.map(id => (
+    //             <div key={id}>
+    //                 {/* Render results for each selected id */}
+    //                 <p>Results for session {id}</p>
+    //                 <Menu data={data} />
+    //             </div>
+    //         ))}
+    //     </div>
+    // );
+
     return (
         <div>
             {/* Display results based on selectedIds */}
-            {displayedIds.map(id => (
-                <div key={id}>
-                    {/* Render results for each selected id */}
-                    <p>Results for session {id}</p>
+            {
+                <div>
+                    
+                    
                     <Menu data={data} />
                 </div>
-            ))}
+            }
         </div>
     );
 
