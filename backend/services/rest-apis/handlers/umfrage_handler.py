@@ -33,7 +33,7 @@ internel_server_error = {
 
 def auth_error(message: str):
     return {
-        "statusCode": 404,
+        "statusCode": 401,
         "body": json.dumps({"message": message}),
         "headers": {"Content-Type": "application/json"},
     }
