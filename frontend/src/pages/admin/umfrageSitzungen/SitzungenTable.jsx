@@ -10,6 +10,7 @@ export default function SitzungenTable({ data, setData }) {
     const [selectedIds, setSelectedIds] = useState([])  // keeps track of selected checkboxes
     const [showResults, setShowResults] = useState(false); // State to toggle showing results
     const [displayedIds, setDisplayedIds] = useState([]); //  keeps track of the session IDs for which results should be displayed
+    const [keyForResults, setKeyForResults] = useState(0);
     const navigate = useNavigate()
 
     const handleCheckboxChange = (event, id) => {
@@ -34,6 +35,7 @@ export default function SitzungenTable({ data, setData }) {
         setDisplayedIds(selectedIds);
         setShowResults(true);
         setSelectedIds([]);
+        setKeyForResults(prevKey => prevKey + 1);
     };
 
     // Use useEffect to log state changes and effects
@@ -70,10 +72,11 @@ export default function SitzungenTable({ data, setData }) {
             </div>
 
             <div className="h-full w-full flex">
-                <div className="flex-1 bg-white p-2 ml-0 mr-2 rounded-lg" style={{ borderRadius: '16px', marginLeft: '-43px', flexBasis: '66.66%' }} data-testid="sitzungen-results">
+                <div className="flex-1 bg-white p-2 ml-0 mr-2 
+                rounded-lg" style={{ borderRadius: '16px', marginLeft: '-43px', flexBasis: '66.66%' }} data-testid="sitzungen-results">
                     {/* Left section - currently empty */}
                     {/* integrate the SitzungenResults component into existing component by conditionally rendering it based on the showResults state */}
-                    {showResults && <SitzungenResults displayedIds={displayedIds} />}
+                    {showResults && <SitzungenResults key={keyForResults} displayedIds={displayedIds} />}
 
                 </div>
                 <div className="flex-1 bg-[#FEF2DE] p-2 mr-0 ml-1 rounded-lg" style={{ borderRadius: '16px', marginRight: '-43px', flexBasis: '33.33%' }}>

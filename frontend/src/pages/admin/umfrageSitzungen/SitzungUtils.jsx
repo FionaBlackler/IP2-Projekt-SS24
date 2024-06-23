@@ -29,7 +29,7 @@ export const  sitzungenLöschen =  (selectedIds, setSelectedIds, getData, setDat
 };
 
 // Funktion zum Abrufen der Ergebnisse mehreren Sitzungen
-/*export const resultsLaden = (selectedIds, setSelectedIds, resultData, setResultData) => {
+export const resultsLaden = (selectedIds, setSelectedIds, resultData, setResultData) => {
     const accessToken = localStorage.getItem('accessToken')
 
     selectedIds.forEach((id) => {
@@ -56,4 +56,4 @@ export const  sitzungenLöschen =  (selectedIds, setSelectedIds, getData, setDat
     });
 
   setSelectedIds([]);  //empty 
-};*/
+};
