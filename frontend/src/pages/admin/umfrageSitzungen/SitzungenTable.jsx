@@ -23,7 +23,7 @@ export default function SitzungenTable({ data, setData }) {
 
     // Navigate to session dashboard
     const handleNavigation = (id) => {
-        navigate(``)  //TODO: add pfad
+        navigate(`/sessiondashboard`)  //TODO: add pfad
     }
 
     const handleShowResults = () => {
@@ -33,7 +33,7 @@ export default function SitzungenTable({ data, setData }) {
         */
         setDisplayedIds(selectedIds);
         setShowResults(true);
-        setSelectedIds([]);
+        //setSelectedIds([]);
         setKeyForResults(prevKey => prevKey + 1);
     };
 
