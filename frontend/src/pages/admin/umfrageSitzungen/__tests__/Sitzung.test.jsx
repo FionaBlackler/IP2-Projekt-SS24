@@ -256,7 +256,6 @@ describe('Sitzung Component', () => {
             //expect(screen.getByText(`Results for session ${mockData.sitzungen[0].id}`)).toBeInTheDocument();
         });
     }); 
-
     test('clicking checkbox will display delete and dotChart button', () => {
 
         render(

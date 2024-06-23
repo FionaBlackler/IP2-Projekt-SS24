@@ -5,7 +5,6 @@ import { AiOutlineDelete, AiOutlineDotChart } from 'react-icons/ai'
 import { MdOutlineStart } from 'react-icons/md'
 import SitzungenResults from './Results'
 
-
 export default function SitzungenTable({ data, setData }) {
     const [selectedIds, setSelectedIds] = useState([])  // keeps track of selected checkboxes
     const [showResults, setShowResults] = useState(false); // State to toggle showing results
@@ -46,9 +45,7 @@ export default function SitzungenTable({ data, setData }) {
     }, [selectedIds, displayedIds, showResults]);
 
     return (
-
         <div className="h-full w-full flex flex-col">
-
             {/* Buttons container */}
             <div className="flex justify-end space-x-4 mt-2 mb-4">
                 <button
@@ -70,18 +67,15 @@ export default function SitzungenTable({ data, setData }) {
                     <AiOutlineDotChart className="size-7" />
                 </button>
             </div>
-
+    
             <div className="h-full w-full flex">
-                <div className="flex-1 bg-white p-2 ml-0 mr-2 
-                rounded-lg" style={{ borderRadius: '16px', marginLeft: '-43px', flexBasis: '66.66%' }} data-testid="sitzungen-results">
+                <div className="flex-1 bg-white p-2 ml-0 mr-2 rounded-lg" style={{ borderRadius: '16px', marginLeft: '-43px', flexBasis: '66.66%' }} data-testid="sitzungen-results">
                     {/* Left section - currently empty */}
-                    {/* integrate the SitzungenResults component into existing component by conditionally rendering it based on the showResults state */}
                     {showResults && <SitzungenResults key={keyForResults} displayedIds={displayedIds} />}
-
                 </div>
                 <div className="flex-1 bg-[#FEF2DE] p-2 mr-0 ml-1 rounded-lg" style={{ borderRadius: '16px', marginRight: '-43px', flexBasis: '33.33%' }}>
                     <div className="border-t-2 border-[#AF8A74] mt-4" style={{ marginRight: '-10px', marginLeft: '-10px' }}></div>
-                    <div className="overflow-x-auto">
+                    <div id="scrollbar2" className="h-[55vh] overflow-auto  pr-4">
                         <table
                             id="Sitzungentabelle"
                             className="w-full text-center border-separate"
@@ -89,12 +83,12 @@ export default function SitzungenTable({ data, setData }) {
                         >
                             <thead>
                                 <tr>
-                                    <th className="text-sm text-sm leading-4 py-2 px-4"></th>
-                                    <th className="text-sm text-sm leading-4 py-2 px-4">Startzeit</th>
-                                    <th className="text-sm text-sm leading-4 py-2 px-4">Endzeit</th>
-                                    <th className="text-sm text-sm leading-4 py-2 px-4">Teilnehmer</th>
-                                    <th className="text-sm text-sm leading-4 py-2 px-4">Status</th>
-                                    <th className="text-sm text-sm leading-4 py-2 px-4"></th> {/* Empty header for icon */}
+                                    <th className="text-sm leading-4 py-2 px-4"></th>
+                                    <th className="text-sm leading-4 py-2 px-4">Startzeit</th>
+                                    <th className="text-sm leading-4 py-2 px-4">Endzeit</th>
+                                    <th className="text-sm leading-4 py-2 px-4">Teilnehmer</th>
+                                    <th className="text-sm leading-4 py-2 px-4">Status</th>
+                                    <th className="text-sm leading-4 py-2 px-4"></th> {/* Empty header for icon */}
                                 </tr>
                             </thead>
                             <tbody>
@@ -102,19 +96,21 @@ export default function SitzungenTable({ data, setData }) {
                                     data.sitzungen.map((sitzung) => {
                                         const startzeit = sitzung.startzeit ? sitzung.startzeit.toString().slice(0, 16) : 'N/A';
                                         const endzeit = sitzung.endzeit ? sitzung.endzeit.toString().slice(0, 16) : 'N/A';
-
+                                        /* const endzeitDatum = sitzung.endzeit ? new Date(sitzung.endzeit).toISOString().slice(0, 10) : 'N/A';
+                                        const endzeitUhrzeit = sitzung.endzeit ? new Date(sitzung.endzeit).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'N/A'; */
+    
                                         return (
                                             <tr
-                                                className="text-sm text-black rounded-full"
+                                                className="text-sm text-black"
                                                 key={sitzung.id}
-                                                style={{ backgroundColor: '#AF8A74', borderRadius: '10px' }}
+                                                style={{ backgroundColor: '#AF8A74'}}
                                             >
                                                 <td className="p-2 rounded-l-full">
-                                                    <div className="flex items-center">
+                                                    <div className="flex items-center justify-center pt-2">
                                                         <input
                                                             type="checkbox"
                                                             id={sitzung.id}
-                                                            className="hidden"
+                                                            className="mr-3 rounded-full border-2 bg-[#FEF2DE] appearance-none w-6 h-6 checked:bg-[#210803] border-[#FEF2DE]"
                                                             checked={selectedIds.includes(sitzung.id)}
                                                             onChange={(event) =>
                                                                 handleCheckboxChange(event, sitzung.id)
@@ -123,28 +119,30 @@ export default function SitzungenTable({ data, setData }) {
                                                         />
                                                         <label
                                                             htmlFor={sitzung.id}
-                                                            className={`cursor-pointer mr-2 w-6 h-6 border-2 rounded-full flex items-center justify-center ${selectedIds.includes(sitzung.id)
+                                                            /* className={`cursor-pointer w-6 h-6 border-2 rounded-full flex items-center justify-center ${selectedIds.includes(sitzung.id)
                                                                 ? 'bg-[#210803] border-[#210803]'
                                                                 : 'bg-[#FEF2DE] border-[#FEF2DE]'
-                                                                }`}
+                                                                }`} */
                                                         >
-                                                            {selectedIds.includes(sitzung.id) && (
+                                                            {/* {selectedIds.includes(sitzung.id) && (
                                                                 <div className="w-3 h-3 bg-white rounded-full"></div>
-                                                            )}
+                                                            )} */}
                                                         </label>
                                                     </div>
                                                 </td>
-                                                <td className="p-2 px-1 py-0">
+                                                <td width="99%">
                                                     <h1 className="text-sm">{startzeit}</h1>
                                                 </td>
-                                                <td className="p-2 px-0 py-0">
+                                                <td width="99%">
+                                                    {/* <span>{endzeitDatum}</span><br />
+                                                    <span>{endzeitUhrzeit}</span> */}
                                                     <h1 className="text-sm">{endzeit}</h1>
                                                 </td>
-                                                <td className="p-2 px-0 py-0">
+                                                <td className="p-2">
                                                     <h1 className="text-sm">{sitzung.teilnehmerzahl}</h1>
                                                 </td>
-                                                <td className="p-2 px-0 py-0">
-                                                    <div className="flex items-center justify-center h-full">
+                                                <td className="min-w-[50px] min-h-[50px] p-2">
+                                                    <div className="flex justify-center gap-y-1 pt-4">
                                                         {sitzung.aktiv ? (
                                                             <div data-testid={`status-${sitzung.id}`} className="w-3 h-3 bg-green-500 rounded-full"></div>
                                                         ) : (
@@ -155,7 +153,7 @@ export default function SitzungenTable({ data, setData }) {
                                                 <td className="p-2 bg-[#FEF2DE] border-2 border-[#AF8A74] rounded-r-full">
                                                     {/* Icon */}
                                                     <button
-                                                        className="hover:underline ml-0"
+                                                        className="hover:underline"
                                                         data-testid={`navigate-button-${sitzung.id}`}
                                                         onClick={() => handleNavigation(sitzung.id)}
                                                     >
