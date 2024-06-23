@@ -11,67 +11,6 @@ import {
 } from 'recharts';
 
 
-let data = {
-  "result": {
-    "umfrage": {
-      "id": 2,
-      "admin_id": 1,
-      "titel": "Umfrage 2024",
-      "beschreibung": "In dieser Umfrage geht es um X",
-      "erstellungsdatum": "2024-06-04",
-      "archivierungsdatum": null,
-      "status": "aktiv"
-    },
-    "fragen": [
-      {
-        "id": 4,
-        "antwort_optionen": [
-          { "id": 14, "text": "Paris", "ist_richtig": true, "antwortenTrue": 23, "antwortenFalse": 4 },
-          { "id": 15, "text": "Berlin", "ist_richtig": false, "antwortenTrue": 3, "antwortenFalse": 24 },
-          { "id": 16, "text": "London", "ist_richtig": false, "antwortenTrue": 7, "antwortenFalse": 20 },
-          { "id": 17, "text": "Rom", "ist_richtig": false, "antwortenTrue": 11, "antwortenFalse": 16 }
-        ],
-        "punktzahl": 2,
-        "text": "Wie lautet die Hauptstadt von Frankreich?",
-        "umfrage_id": 2,
-        "typ_id": "A",
-        "bestaetigt": null,
-        "verneint": null
-      },
-      {
-        "id": 5,
-        "antwort_optionen": [
-          { "id": 18, "text": "Berlin", "ist_richtig": true, "antwortenTrue": 0, "antwortenFalse": 0 },
-          { "id": 19, "text": "Hamburg", "ist_richtig": true, "antwortenTrue": 0, "antwortenFalse": 0 },
-          { "id": 20, "text": "München", "ist_richtig": true, "antwortenTrue": 0, "antwortenFalse": 0 },
-          { "id": 21, "text": "Paris", "ist_richtig": false, "antwortenTrue": 0, "antwortenFalse": 0 },
-          { "id": 22, "text": "London", "ist_richtig": false, "antwortenTrue": 0, "antwortenFalse": 0 },
-          { "id": 23, "text": "Rom", "ist_richtig": false, "antwortenTrue": 0, "antwortenFalse": 0 }
-        ],
-        "punktzahl": 1,
-        "text": "Welche der folgenden Städte liegt in Deutschland?",
-        "umfrage_id": 2,
-        "typ_id": "P",
-        "bestaetigt": null,
-        "verneint": null
-      },
-      {
-        "id": 6,
-        "antwort_optionen": [
-          { "id": 24, "text": "Das Internet ist eine Erfindung des 20. Jahrhunderts'?", "ist_richtig": true, "antwortenTrue": 0, "antwortenFalse": 0 },
-          { "id": 25, "text": "Trifft diese Aussage zu: 'Wasser besteht aus den Elementen Wasserstoff und Sauerstoff'?", "ist_richtig": true, "antwortenTrue": 0, "antwortenFalse": 0 },
-          { "id": 26, "text": "Trifft diese Aussage zu: 'Die Sonne ist ein Planet'?", "ist_richtig": false, "antwortenTrue": 0, "antwortenFalse": 0 }
-        ],
-        "punktzahl": 2,
-        "text": "welche der folgenden Antworten trifft zu ...:",
-        "umfrage_id": 2,
-        "typ_id": "K",
-        "bestaetigt": "zutreffend",
-        "verneint": "nicht zutreffend"
-      }
-    ]
-  }
-};
 
 
 let processedData = data.result.fragen.map((frage, index) => {

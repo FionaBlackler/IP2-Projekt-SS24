@@ -47,8 +47,8 @@ const BarChartComponent = ({ data }) => {
           <YAxis />
           <Tooltip content={<CustomTooltip />} />
           <Legend formatter={(value) => value === 'correctAnswers' ? 'Richtige Antworten' : 'Falsche Antworten'} />
-          <Bar dataKey="correctAnswers" fill="#34d399" /> {/* Dunkleres Grün für richtige Antworten */}
-          <Bar dataKey="incorrectAnswers" fill="#f87171" /> {/* Dunkleres Rot für falsche Antworten */}
+          <Bar dataKey="correctAnswers" fill="#34d399" /> 
+          <Bar dataKey="incorrectAnswers" fill="#f87171" /> 
         </BarChart>
       </ResponsiveContainer>
     </div>

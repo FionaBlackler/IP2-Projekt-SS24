@@ -1,21 +1,22 @@
-
-import { useEffect, useState } from 'react'
-import axios from 'axios'; 
+import { useEffect, useState } from 'react';
+import axios from 'axios';
 import Menu from '../../../components/charts/StatistikMenü.jsx';
 
 export default function SitzungenResults({ displayedIds }) {
+    const accessToken = localStorage.getItem('accessToken');
+    const [loading, setLoading] = useState(true);
+    const [data, setData] = useState(null);
 
-    const accessToken = localStorage.getItem('accessToken')
-    const [loading, setLoading] = useState(true)
-    const [data, setData] = useState([])
+    const resultsLaden = () => {
+        let allData = {
+            umfrage: {},
+            result: {}
+        };
 
-    const  resultsLaden =  () => {
-        let allData = {};
         displayedIds.forEach((id, index) => {
-          console.log(id)
             axios
                 .get(`${import.meta.env.VITE_BACKEND_URL}sitzung/${id}/result`, {
-                    headers: { 'Authorization': `Bearer ${accessToken}`, "ContentType": 'application/json' }
+                    headers: { 'Authorization': `Bearer ${accessToken}`, 'ContentType': 'application/json' }
                 })
                 .then((r) => {
                     if (r.status === 200) {
@@ -23,11 +24,18 @@ export default function SitzungenResults({ displayedIds }) {
                         console.log(`Ergebnisse zur Sitzung mit ID ${id}`);
                         console.log(JSON.stringify(responseData, null, 2));
 
-                        const resultData = responseData.result;
+                        // Umfrage-Daten initialisieren, wenn sie noch nicht gesetzt sind
+                        if (!allData.umfrage.titel && !allData.umfrage.beschreibung) {
+                            allData.umfrage = {
+                                titel: responseData.umfrage.titel,
+                                beschreibung: responseData.umfrage.beschreibung
+                            };
+                        }
 
+                        const resultData = responseData.result;
                         Object.keys(resultData).forEach(key => {
-                            if (!allData[key]) {
-                                allData[key] = {
+                            if (!allData.result[key]) {
+                                allData.result[key] = {
                                     ...resultData[key],
                                     antworten: resultData[key].antworten.map(option => ({
                                         ...option,
@@ -38,16 +46,14 @@ export default function SitzungenResults({ displayedIds }) {
                             }
 
                             resultData[key].antworten.forEach((option, idx) => {
-                                allData[key].antworten[idx].antwortenTrue += option.antwortenTrue;
-                                allData[key].antworten[idx].antwortenFalse += option.antwortenFalse;
+                                allData.result[key].antworten[idx].antwortenTrue += option.antwortenTrue;
+                                allData.result[key].antworten[idx].antwortenFalse += option.antwortenFalse;
                             });
                         });
 
-                        // Set data only after all requests are completed
+                        // Setze die Daten nach dem letzten Request
                         if (index === displayedIds.length - 1) {
-                            setData(Object.values(allData));
-                            console.log("data array:")
-                            console.log(data)
+                            setData(allData);
                             setLoading(false);
                         }
                     }
@@ -55,9 +61,9 @@ export default function SitzungenResults({ displayedIds }) {
                 .catch((error) => {
                     if (error.response) {
                         if (error.response.status === 404) {
-                            console.error('not found', error.response.data);
+                            console.error('Not found', error.response.data);
                         } else if (error.response.status === 500) {
-                            console.error('server error', error.response.data);
+                            console.error('Server error', error.response.data);
                         } else {
                             console.log('ERROR: ' + error.response.data);
                         }
@@ -65,7 +71,7 @@ export default function SitzungenResults({ displayedIds }) {
                         console.log('ERROR: ' + error.message);
                     }
                     // Set loading to false if there's an error
-                    if (index === idsIntArray.length - 1) {
+                    if (index === displayedIds.length - 1) {
                         setLoading(false);
                     }
                 });
@@ -77,34 +83,12 @@ export default function SitzungenResults({ displayedIds }) {
     }, []);
 
     if (loading) {
-        return <div>Loading...</div>
-    }  
-
-    //For Test!!!!  TODO: muss angepasst werden
-    // return (
-    //     <div>
-    //         {/* Display results based on selectedIds */}
-    //         {displayedIds.map(id => (
-    //             <div key={id}>
-    //                 {/* Render results for each selected id */}
-    //                 <p>Results for session {id}</p>
-    //                 <Menu data={data} />
-    //             </div>
-    //         ))}
-    //     </div>
-    // );
+        return <div>Loading...</div>;
+    }
 
     return (
         <div>
-            {/* Display results based on selectedIds */}
-            {
-                <div>
-                    
-                    
-                    <Menu data={data} />
-                </div>
-            }
+            <Menu data={data} />
         </div>
     );
-
 }

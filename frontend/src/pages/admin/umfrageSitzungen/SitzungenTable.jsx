@@ -72,7 +72,8 @@ export default function SitzungenTable({ data, setData }) {
             </div>
 
             <div className="h-full w-full flex">
-                <div className="flex-1 bg-white p-2 ml-0 mr-2 rounded-lg" style={{ borderRadius: '16px', marginLeft: '-43px', flexBasis: '66.66%' }} data-testid="sitzungen-results">
+                <div className="flex-1 bg-white p-2 ml-0 mr-2 
+                rounded-lg" style={{ borderRadius: '16px', marginLeft: '-43px', flexBasis: '66.66%' }} data-testid="sitzungen-results">
                     {/* Left section - currently empty */}
                     {/* integrate the SitzungenResults component into existing component by conditionally rendering it based on the showResults state */}
                     {showResults && <SitzungenResults key={keyForResults} displayedIds={displayedIds} />}
