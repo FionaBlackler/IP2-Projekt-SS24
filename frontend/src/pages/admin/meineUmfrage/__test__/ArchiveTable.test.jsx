@@ -37,7 +37,7 @@ describe('ArchiveTable', () => {
         expect(checkbox2.checked).toBeTruthy()
     })
 
-    it('Überprüfe die Navigierung', () => {
+    it('Überprüfe ob die Archivseite angezeigt wird', () => {
         const data = {
             umfragen: [
                 {
@@ -59,7 +59,7 @@ describe('ArchiveTable', () => {
 
         expect(getByTestId('archiveTable')).toBeTruthy()
     });
-    it('Überprüfe die Navigierung', () => {
+    it('Überprüfe ob Archivtabelle angezeigt wird', () => {
         const data = {
             umfragen: [
                 {
