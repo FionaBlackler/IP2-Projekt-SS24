@@ -14,8 +14,6 @@ import FocusExample from '../components/FocusExample.jsx'
 import FinishSurveyView from '../pages/FinishSurveyView/FinishSurveyView.jsx'
 import MeineUmfragen from '../pages/admin/meineUmfrage/MeineUmfragen.jsx'
 import UmfrageSitzungen from '../pages/admin/umfrageSitzungen/UmfrageSizungen.jsx'
-import StaticUmfrageSitzungen from '../pages/admin/staticUmfrageSitzungen/StaticUmfrageSitzungen.jsx'
-import SitzungenResults from '../pages/admin/umfrageSitzungen/Results.jsx'
 
 function RootRoutes() {
     return (
@@ -34,9 +32,10 @@ function RootRoutes() {
                     element={<ProtectedRoute component={MeineUmfragen} />}
                 />
 
-                <Route exact={true} path="/dashboard/static/:umfrageId" element={<StaticUmfrageSitzungen />} />  {/* statistische daten zum testen */}
-                <Route path="/dashboard/:umfrageId" element={<ProtectedRoute component={UmfrageSitzungen}/>} />
-                <Route path="/sitzung/:ids/results" element={<ProtectedRoute component={SitzungenResults} />} />
+                <Route
+                    path="/dashboard/:umfrageId"
+                    element={<ProtectedRoute component={UmfrageSitzungen} />} 
+                />
 
                 <Route exact={true} path="/login" element={<Login />} />
                 <Route exact={true} path="/register" element={<Register />} />
