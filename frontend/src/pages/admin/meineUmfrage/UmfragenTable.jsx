@@ -55,9 +55,13 @@ export default function UmfragenTable({ data, setData }) {
                 </button>
             </div>
 
-            <div id="scrollbar2" className="h-[55vh] overflow-auto  pr-4  ">
-                <table id="Umfragentabelle" className="w-full text-center">
-                    <thead className="sticky top-0 bg-[#AF8A74]">
+            <div id="scrollbar2" className="h-[55vh] overflow-auto  pr-4">
+                <table
+                    id="Umfragentabelle"
+                    className="w-full text-center border-separate"
+                    style={{ borderSpacing: '0 10px' }}
+                >
+                    <thead className="sticky top-0 bg-[#AF8A74] ">
                         <tr>
                             <th className="text-lg">Name</th>
                             <th className="text-lg">ID</th>
@@ -76,16 +80,16 @@ export default function UmfragenTable({ data, setData }) {
                                 )
                                 .map((umfrage) => (
                                     <tr
-                                        className="text-lg  even:bg-[#FAEEDB] odd:bg-[#210803] even:text-black odd:text-white"
+                                        className="text-lg even:bg-[#FAEEDB] odd:bg-[#210803] even:text-black odd:text-white"
                                         key={umfrage.id}
                                     >
-                                        <td className="min-w-[100px] min-h-[50px] p-3">
-                                            <div className="flex items-center justify-center">
+                                        <td className="min-w-[100px] min-h-[50px] p-3 rounded-l-full">
+                                            <div className="flex items-center justify-center pt-3">
                                                 <input
                                                     type="checkbox"
                                                     id={umfrage.id}
                                                     data-testid={`checkbox-${umfrage.id}`}
-                                                    className="mr-10 rounded-[50px] "
+                                                    className="mr-10 rounded-full border-2 border-gray-400 appearance-none w-6 h-6 checked:bg-green-500 checked:border-transparent"
                                                     checked={selectedIds.includes(
                                                         umfrage.id
                                                     )}
@@ -98,6 +102,7 @@ export default function UmfragenTable({ data, setData }) {
                                                         )
                                                     }
                                                 />
+
                                                 <label htmlFor={umfrage.id}>
                                                     <h1>{umfrage.titel}</h1>
                                                 </label>
@@ -112,17 +117,16 @@ export default function UmfragenTable({ data, setData }) {
                                         <td className="min-w-[100px] min-h-[50px] p-3">
                                             <h1>{umfrage.erstellungsdatum}</h1>
                                         </td>
-                                        <td className="min-w-[100px] min-h-[50px] p-3 flex justify-center items-center">
-                                            <h1>
-                                                {umfrage.status == 'aktiv' ? (
-                                                    <div className="bg-green-700 h-[12.5px] w-[12.5px] justify-center aling-center items-center rounded-[50px]" />
-                                                ) : (
-                                                    <div className="bg-red-700 h-[12.5px] w-[12.5px] justify-center aling-center items-center rounded-[50px]" />
-                                                )}
-                                            </h1>
+                                        <td className="min-w-[100px] min-h-[50px] p-3 ">
+                                            <div className="flex justify-center gap-y-1">
+                                            {umfrage.status === 'aktiv' ? (
+                                                <h1 className="pt-3 w-3 h-3 bg-green-500 rounded-full" />
+                                            ) : (
+                                                <h1 className="pt-3 w-3 h-3 bg-red-500 rounded-full" />
+                                            )}
+                                            </div>
                                         </td>
-
-                                        <td className="min-w-[100px] min-h-[50px] p-3">
+                                        <td className="min-w-[100px] min-h-[50px] rounded-r-full">
                                             <button
                                                 data-testid={`button-${umfrage.id}`}
                                                 className="hover:underline"
@@ -130,7 +134,7 @@ export default function UmfragenTable({ data, setData }) {
                                                     handleHistory(umfrage.id)
                                                 }
                                             >
-                                                <MdOutlineStart />
+                                                        <MdOutlineStart  className='w-10 h-5'/>
                                             </button>
                                         </td>
                                     </tr>

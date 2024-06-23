@@ -4,7 +4,7 @@ import { BrowserRouter } from 'react-router-dom';
 import {describe , it , expect} from 'vitest'
 
 describe('MeineUmfragen Component', () => {
-    it('renders AdminLayout with Umfrage inside', () => {
+    it('Render AdminLayout mit Umfrage', () => {
         try {
             render(<BrowserRouter><MeineUmfragen /></BrowserRouter>);
       
