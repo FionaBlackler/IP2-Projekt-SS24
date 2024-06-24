@@ -20,11 +20,10 @@ export const useUploadPoll = (json) => {
         }
         if(!noJSON){
             try {
-                const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/umfrage/upload`, parsedJSON['umfrage'], {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        Authorization: `Bearer ${accessToken}`
-                    }
+                const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}umfrage/upload`, parsedJSON['umfrage'], {
+                    headers: { 'Authorization' : `Bearer ${accessToken}` ,
+                               "ContentType": 'application/json' 
+                            } 
                 });
                 console.log(response.data)
                 if (response.status === 201) {

@@ -89,6 +89,7 @@ class Frage(Base):
         }
 
 
+
 class AntwortOption(Base):
     __tablename__ = "antwort_optionen"
     id = Column(Integer, primary_key=True)

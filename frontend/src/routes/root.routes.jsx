@@ -10,8 +10,10 @@ import Homepage from '../pages/home/Homepage.jsx'
 import Question from '../components/Question/Question.jsx'
 import FocusExample from '../components/FocusExample.jsx'
 import FinishSurveyView from '../pages/FinishSurveyView/FinishSurveyView.jsx'
+import SessionCodeEntry from '../pages/sessionCodeEntry/SessionCodeEntry.jsx'
 import MeineUmfragen from '../pages/admin/meineUmfrage/MeineUmfragen.jsx'
 import Survey from '../pages/Survey/Survey.jsx'
+import UmfrageSitzungen from '../pages/admin/umfrageSitzungen/UmfrageSizungen.jsx'
 
 function RootRoutes() {
     return (
@@ -29,6 +31,12 @@ function RootRoutes() {
                     path="/meineUmfragen"
                     element={<ProtectedRoute component={MeineUmfragen} />}
                 />
+
+                <Route
+                    path="/dashboard/:umfrageId"
+                    element={<ProtectedRoute component={UmfrageSitzungen} />} 
+                />
+
                 <Route exact={true} path="/login" element={<Login />} />
                 <Route exact={true} path="/register" element={<Register />} />
                 <Route
