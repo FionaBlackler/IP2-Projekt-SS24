@@ -73,7 +73,7 @@ export default function SitzungenTable({ data, setData }) {
                     {/* Left section - currently empty */}
                     {showResults && <SitzungenResults key={keyForResults} displayedIds={displayedIds} />}
                 </div>
-                <div className="flex-1 bg-[#FEF2DE] p-2 mr-0 ml-1 rounded-lg" style={{ borderRadius: '16px', marginRight: '-43px', flexBasis: '33.33%' }}>
+                <div className="flex-1 bg-[#FEF2DE] p-2 mr-0 ml-1 rounded-lg" style={{ borderRadius: '16px', marginRight: '-43px', flexBasis: '33.33%' }} data-testid="sitzungen-table">
                     <div className="border-t-2 border-[#AF8A74] mt-4" style={{ marginRight: '-10px', marginLeft: '-10px' }}></div>
                     <div id="scrollbar2" className="h-[55vh] overflow-auto  pr-4">
                         <table

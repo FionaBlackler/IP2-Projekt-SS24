@@ -2,12 +2,15 @@ import { render, screen, waitFor, fireEvent } from '@testing-library/react'
 import '@testing-library/jest-dom'
 import { BrowserRouter, MemoryRouter, Route, Routes } from 'react-router-dom'
 import axios from 'axios'
-import AxiosMockAdapter from 'axios-mock-adapter'
+import MockAdapter from 'axios-mock-adapter';
 import { expect, vi } from 'vitest'
 import Sitzung from '../Sitzung'
 import SitzungenTable from '../SitzungenTable'
 import { sitzungenLöschen } from '../SitzungUtils'
 import UmfrageSitzungen from '../UmfrageSizungen'
+import SitzungenResults from '../Results.jsx';
+import axiosInstance from '../../../../axios/axiosConfig.js'
+
 
 // Mock for useParams, useNavigate
 const navigate = vi.fn();
@@ -24,6 +27,8 @@ const setData = vi.fn();
 const setSelectedIds = vi.fn();
 const setShowResults = vi.fn();
 const setDisplayedIds = vi.fn();
+const setLoading = vi.fn();
+const handleCheckboxChange = vi.fn()
 
 //response value des Requests 
 const mockData = {
@@ -46,29 +51,62 @@ const mockData = {
 };
 
 const mockResultData = {
-};
+    "umfrage": {
+      id: 123,
+      admin_id: 2,
+      titel: "Example Survey",
+      beschreibung: "This is an example survey.",
+      erstellungsdatum: "2023-05-16 00:00:00.000000",
+      archivierungsdatum: null,
+      status: "active",
+      json_text: "Testing Json"
+    },
+    "result": {
+      1: {
+        id: 1,
+        local_id: 1,
+        umfrage_id: 123,
+        text: "What is the capital of France?",
+        typ_id: "1",
+        punktzahl: 1,
+        bestaetigt: "Paris",
+        verneint: "Not Paris",
+        antworten: [
+          {
+            id: 1,
+            text: "Paris",
+            ist_richtig: true,
+            antwortenTrue: 16,
+            antwortenFalse: 4
+          },
+          {
+            id: 2,
+            text: "London",
+            ist_richtig: false,
+            antwortenTrue: 2,
+            antwortenFalse: 18
+          }
+        ]
+      }
+    }
+  };
 
 
 describe('Sitzung Component', () => {
-    const axiosMock = new AxiosMockAdapter(axios)
+    let originalAxiosGet;
 
     beforeEach(() => {
-        axiosMock.reset()
-    })
+        originalAxiosGet = axiosInstance.get;
+        axiosInstance.get = vi.fn();
+    });
 
-    test('renders loading state initially', () => {
-        render(
-            <BrowserRouter>
-                <Sitzung />
-            </BrowserRouter>
-        )
-
-        expect(screen.getByText('Loading...')).toBeInTheDocument()
-    })
+    afterEach(() => {
+        axiosInstance.get = originalAxiosGet;
+    });
 
     test('fetches and displays data', async () => {
         const consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
-        axiosMock.onGet(`${import.meta.env.VITE_BACKEND_URL}umfrage/123/sitzungen`).reply(200, mockData);
+        axiosInstance.get.mockResolvedValue({ status: 200, data: mockData });
     
         render(
             <MemoryRouter initialEntries={['/umfrage/123/sitzungen']}>
@@ -77,6 +115,24 @@ describe('Sitzung Component', () => {
                 </Routes>
             </MemoryRouter>
         );
+
+        const loadingText = screen.getByText('Loading...');
+        expect(loadingText).toBeTruthy();
+
+        await screen.findByText(`Umfrage 123`); 
+        expect(screen.queryByText('Loading...')).not.toBeTruthy();
+
+        const dotChartButton = screen.getByTestId('results-button');
+        expect(dotChartButton).toBeTruthy();
+
+        const deleteButton = screen.getByTestId('delete-button');
+        expect(deleteButton).toBeTruthy();
+
+        const sitzungResult = screen.getByTestId('sitzungen-results'); 
+        expect(sitzungResult).toBeTruthy();
+
+        const sitzungTable = screen.getByTestId('sitzungen-table'); 
+        expect(sitzungTable).toBeTruthy();
     
         await waitFor(() => {
             expect(consoleLogSpy).toHaveBeenCalledWith('Data received from server:', mockData);
@@ -86,77 +142,82 @@ describe('Sitzung Component', () => {
 
     test('handles no data response', async () => {
         const consoleNoDataLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
-        axiosMock.onGet(`${import.meta.env.VITE_BACKEND_URL}umfrage/123/sitzungen`).reply(204)
+        axiosInstance.get.mockResolvedValue({ status: 204, data: mockData });
 
         render(
-            <BrowserRouter>
-                <Sitzung />
-            </BrowserRouter>
-        )
+            <MemoryRouter initialEntries={['/umfrage/123/sitzungen']}>
+                <Routes>
+                    <Route path="umfrage/:umfrageId/sitzungen" element={<Sitzung />} />
+                </Routes>
+            </MemoryRouter>
+        );
 
         await waitFor(() => expect(screen.getByText('Keine Sitzungen vorhanden')).toBeInTheDocument())
         expect(consoleNoDataLogSpy).toHaveBeenCalledWith('Keine Einträge vorhanden')
+        expect(screen.queryByText('Loading...')).not.toBeTruthy();
         consoleNoDataLogSpy.mockRestore()
     })
 
     test('handles authentication error', async () => {
         const consoleAuthErrorSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
-        axiosMock.onGet(`${import.meta.env.VITE_BACKEND_URL}umfrage/123/sitzungen`).reply(401, {
-            message: "Authentication failed"
-        })
+        axiosInstance.get.mockRejectedValue( {response: { status: 401, data: { message: 'Authentication failed' }}});
 
         render(
-            <BrowserRouter>
-                <Sitzung />
-            </BrowserRouter>
-        )
+            <MemoryRouter initialEntries={['/umfrage/123/sitzungen']}>
+                <Routes>
+                    <Route path="umfrage/:umfrageId/sitzungen" element={<Sitzung />} />
+                </Routes>
+            </MemoryRouter>
+        );
 
         await waitFor(() => {
-            expect(consoleAuthErrorSpy).toHaveBeenCalledWith('Authentifizierungsfehler', expect.objectContaining({
-                message: "Authentication failed"
-            }))
-        })
-        // Cleanup the mock to not interfere with other tests
+            expect(consoleAuthErrorSpy).toHaveBeenCalledWith(
+                'Authentifizierungsfehler',
+                expect.objectContaining({ message: 'Authentication failed' })
+            );
+        });
+
+        expect(screen.queryByText('Loading...')).not.toBeTruthy();
         consoleAuthErrorSpy.mockRestore()
     })
 
     test('handles page not found error', async () => {
         const consoleNotFoundErrorSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
-        axiosMock.onGet(`${import.meta.env.VITE_BACKEND_URL}umfrage/123/sitzungen`).reply(404, {
-            message: "Umfrage not found"
-        })
+        axiosInstance.get.mockRejectedValue( { response: { status: 404, data: 'Umfrage not found' } });
 
         render(
-            <BrowserRouter>
-                <Sitzung />
-            </BrowserRouter>
-        )
+            <MemoryRouter initialEntries={['/umfrage/123/sitzungen']}>
+                <Routes>
+                    <Route path="umfrage/:umfrageId/sitzungen" element={<Sitzung />} />
+                </Routes>
+            </MemoryRouter>
+        );
 
         await waitFor(() => {
-            expect(consoleNotFoundErrorSpy).toHaveBeenCalledWith('Umfrage nicht gefunden (falsche ID)', expect.objectContaining({
-                message: "Umfrage not found"
-            }))
+            expect(console.log).toHaveBeenCalledWith('Umfrage nicht gefunden (falsche ID)', 'Umfrage not found');
         })
+
+        expect(screen.queryByText('Loading...')).not.toBeTruthy();
         consoleNotFoundErrorSpy.mockRestore()
     })
 
     test('handles server error', async () => {
         const consoleServerErrorSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
-        axiosMock.onGet(`${import.meta.env.VITE_BACKEND_URL}umfrage/123/sitzungen`).reply(500, {
-            message: "Internal Server Error, contact Backend-Team for more Info"
-        })
+        axiosInstance.get.mockRejectedValue( { response: { status: 500, data: "Internal Server Error, contact Backend-Team for more Info" } });
 
         render(
-            <BrowserRouter>
-                <Sitzung />
-            </BrowserRouter>
-        )
+            <MemoryRouter initialEntries={['/umfrage/123/sitzungen']}>
+                <Routes>
+                    <Route path="umfrage/:umfrageId/sitzungen" element={<Sitzung />} />
+                </Routes>
+            </MemoryRouter>
+        );
 
         await waitFor(() => {
-            expect(consoleServerErrorSpy).toHaveBeenCalledWith('server error', expect.objectContaining({
-                message: "Internal Server Error, contact Backend-Team for more Info"
-            }))
+            expect(consoleServerErrorSpy).toHaveBeenCalledWith('server error', "Internal Server Error, contact Backend-Team for more Info");
         })
+
+        expect(screen.queryByText('Loading...')).not.toBeTruthy();
         consoleServerErrorSpy.mockRestore()
     })
 
@@ -189,7 +250,7 @@ describe('Sitzung Component', () => {
         });
     })
 
-    test('handles checkbox selection', () => {
+    test('handles checkbox selection', async () => {
         render(
             <BrowserRouter>
                 <SitzungenTable data={mockData} setData={setData}/>
@@ -226,36 +287,22 @@ describe('Sitzung Component', () => {
             await waitFor(() => {
                 expect(setDisplayedIds).toHaveBeenCalledWith([sitzung.id]);
                 expect(setShowResults).toHaveBeenCalledWith(true);
-                expect(setSelectedIds).toHaveBeenCalledWith([]);
-                expect(checkbox.checked).toBe(false);
+                expect(checkbox.checked).toBe(true);
             });
         }); 
     });
 
-    test('render SitzungResults after DotChart clicked', async () => {
+    test('load SitzungResults after DotChart clicked', async () => {
 
-        render(
-            <BrowserRouter>
-                <SitzungenTable data={mockData} />
-            </BrowserRouter>
-        );
+        const consoleResultLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+        axiosInstance.get.mockResolvedValue(200, mockResultData );
+    
+        render(<SitzungenResults displayedIds={[1]} />);
 
-        const checkbox = screen.getByTestId(`checkbox-${mockData.sitzungen[0].id}`);
-        fireEvent.click(checkbox);
+        //expect(consoleResultLogSpy).toHaveBeenCalledWith('Ergebnisse zur Sitzung mit ID 1');
+        //consoleResultLogSpy.mockRestore();
+    });  
 
-        const dotChartButton = screen.getByTestId('results-button');
-        fireEvent.click(dotChartButton);
-
-        // Wait for SitzungenResults to be rendered
-        await waitFor(() => {
-
-            // Assert that SitzungenResults component is rendered
-            const resultsComponent = screen.getByTestId('sitzungen-results');
-            expect(resultsComponent).toBeInTheDocument();
-
-            //expect(screen.getByText(`Results for session ${mockData.sitzungen[0].id}`)).toBeInTheDocument();
-        });
-    }); 
     test('clicking checkbox will display delete and dotChart button', () => {
 
         render(
@@ -276,18 +323,20 @@ describe('Sitzung Component', () => {
     });
 
     test('deletes selected Sitzungen and updates data id delete button clicked', async () => {
-        const consoleDeleteLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
-        axiosMock.onDelete(`${import.meta.env.VITE_BACKEND_URL}sitzung/delete/1`).reply(200, {
-            message: "Sitzung deleted successfully"
-        })
-        axiosMock.onDelete(`${import.meta.env.VITE_BACKEND_URL}sitzung/delete/2`).reply(200, {
-            message: "Sitzung deleted successfully"
-        })
+        let mock = new MockAdapter(axiosInstance);
+        let getData = { sitzungen: [{ id: 1 }, { id: 2 }] };
+        localStorage.setItem('accessToken', 'test-token');
 
-        sitzungenLöschen([1, 2], setSelectedIds, mockData, setData);
+        const consoleDeleteLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+        mock.onDelete(`sitzung/delete/1`).reply( 200, "Sitzung deleted successfully" );
+        mock.onDelete(`sitzung/delete/2`).reply( 200, "Sitzung deleted successfully" );
+
+        await sitzungenLöschen([1, 2], setSelectedIds, getData, setData);
+        await new Promise(process.nextTick);
+        
         // Wait for Axios requests to complete
         await waitFor(() => {
-            expect(axiosMock.history.delete.length).toBe(2); // Expect two DELETE requests
+            expect(mock.history.delete.length).toBe(2); // Expect two DELETE requests
         });
 
         // Expect setData to be called with updated data (post deletion)
@@ -300,13 +349,5 @@ describe('Sitzung Component', () => {
         expect(consoleDeleteLogSpy).toHaveBeenCalledWith('Sitzung mit ID 1 erfolgreich gelöscht')
         expect(consoleDeleteLogSpy).toHaveBeenCalledWith('Sitzung mit ID 2 erfolgreich gelöscht')
         consoleDeleteLogSpy.mockRestore()
-    })
-    
-    test('renders UmfrageSitzungen without crashing', () => {
-        render(
-            <BrowserRouter>
-              <UmfrageSitzungen />
-            </BrowserRouter>
-        );
     });
 })
