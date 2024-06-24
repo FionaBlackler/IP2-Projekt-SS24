@@ -1,27 +1,20 @@
-import axios from 'axios'
+import axiosInstance from '../../../axios/axiosConfig.js'
 import { useEffect, useState } from 'react'
 import React from 'react'
 import { useParams } from 'react-router-dom';
-import { useNavigate } from 'react-router-dom'
 import SitzungenTable from './SitzungenTable'
-import { VscAccount } from 'react-icons/vsc'
 
 export default function Sitzung() {
     const { umfrageId } = useParams();  //umfrageId aus der URL mittels useParams extrahiert.
-    //console.log('umfrageId:', umfrageId);
-    //const navigate = useNavigate()
 
     const [data, setData] = useState({ sitzungen: [] })
 
     const [loading, setLoading] = useState(true)
-    const accessToken = localStorage.getItem('accessToken')
+    //const accessToken = localStorage.getItem('accessToken')
 
     const sitzungenLaden = () => {
-        axios
-            .get(`${import.meta.env.VITE_BACKEND_URL}umfrage/${umfrageId}/sitzungen`, {  //HTTP-GET-Anfrage
-                headers: { 'Authorization' : `Bearer ${accessToken}` ,
-                           "ContentType": `application/json` } 
-            })
+        axiosInstance
+            .get(`umfrage/${umfrageId}/sitzungen`)
             .then((r) => {
                 //console.log(r.data)
                 if (r.status === 200) {

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
+import axiosInstance from '../../../axios/axiosConfig.js'
 import Menu from '../../../components/charts/StatistikMenü.jsx';
 
 export default function SitzungenResults({ displayedIds }) {
@@ -14,10 +15,8 @@ export default function SitzungenResults({ displayedIds }) {
         };
 
         displayedIds.forEach((id, index) => {
-            axios
-                .get(`${import.meta.env.VITE_BACKEND_URL}sitzung/${id}/result`, {
-                    headers: { 'Authorization': `Bearer ${accessToken}`, 'ContentType': 'application/json' }
-                })
+            axiosInstance
+                .get(`sitzung/${id}/result`)
                 .then((r) => {
                     if (r.status === 200) {
                         const responseData = r.data;
