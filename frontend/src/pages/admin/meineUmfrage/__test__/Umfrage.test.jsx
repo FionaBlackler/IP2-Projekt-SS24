@@ -16,7 +16,7 @@ describe('Umfrage Component', () => {
         axiosInstance.get = originalAxiosGet;
     });
 
-    it('renders loading state and then data', async () => {
+    it('Archivierte Umfragen:Überprüfe ob alle button angezeigt werden und funktionieren', async () => {
         const mockData = {
             umfragen: [
                 { id: 1, title: 'Umfrage 1' },
@@ -44,7 +44,7 @@ describe('Umfrage Component', () => {
         expect(umfragenTable).toBeTruthy();
     });
 
-    it('toggles filter and opens popup correctly', async () => {
+    it('Archivierte Umfragen:Überprüfe ob alle button angezeigt werden und funktionieren', async () => {
         const mockData = {
             umfragen: [
                 { id: 1, title: 'Umfrage 1' },

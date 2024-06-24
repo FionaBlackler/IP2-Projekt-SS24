@@ -16,7 +16,7 @@ describe('Axios Interceptors', () => {
     localStorage.clear();
   });
 
-  it('should set Authorization header correctly', async () => {
+  it('sollte den Autorisierungs-Header korrekt setzen', async () => {
     mock.onGet('/test').reply(200);
 
     await axiosInstance.get('/test');
@@ -24,8 +24,18 @@ describe('Axios Interceptors', () => {
     assert.equal(mock.history.get[0].headers.Authorization, 'Bearer test-token');
   });
 
-  it('should remove accessToken and redirect on 404 error', async () => {
+  it('sollte accessToken entfernen und bei 404-Fehlern nach login umleiten', async () => {
     mock.onGet('/false-address').reply(404);
+
+    try {
+      await axiosInstance.get('/false-address');
+    } catch (error) {
+      assert.isNull(localStorage.getItem('accessToken'));
+      assert.equal(window.location.href, '/login');
+    }
+  });
+  it('sollte accessToken entfernen und bei 401-Fehlern nach login umleiten', async () => {
+    mock.onGet('/false-address').reply(401);
 
     try {
       await axiosInstance.get('/false-address');
