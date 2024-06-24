@@ -23,7 +23,7 @@ export default function SitzungenTable({ data, setData }) {
 
     // Navigate to session dashboard
     const handleNavigation = (id) => {
-        navigate(`/sessiondashboard`)  //TODO: add pfad
+        navigate(`/sessiondashboard/${id}`)  //TODO: add pfad
     }
 
     const handleShowResults = () => {
